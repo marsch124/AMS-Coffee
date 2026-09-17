@@ -1,166 +1,150 @@
 #!/usr/bin/env python3
-"""Draws AMS Coffee icon candidates: flat calm background, hand-drawn glyph.
-Nothing glows, nothing gradients.   python3 tools/make-icons.py
+"""Draws the AMS Coffee app icon.
+
+  python3 tools/make-icons.py            install the chosen icon
+  python3 tools/make-icons.py --sheet    write a contact sheet of alternatives
+
+The chosen one: flat clay background, one solid hand-drawn coffee bean, its
+seam cut back out of the bean in the background colour. Nothing glows, nothing
+gradients, and it stays readable at home-screen size.
 """
 import math, random, sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-S, SS = 1024, 4
+S, SS = 1024, 4                     # final size, and supersampling
 W = S * SS
 
+CLAY = (138, 90, 60)
+INK = (255, 255, 255)
 
-class Pen:
-    def __init__(self, img, ink, seed=7):
-        self.d = ImageDraw.Draw(img)
-        self.ink = ink
-        self.rng = random.Random(seed)
+OUT = "App/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png"
 
-    def wobble(self, points, amp):
-        out = []
-        n = max(1, len(points) - 1)
-        for i, (x, y) in enumerate(points):
-            k = math.sin(i / n * math.pi)          # steady at the ends
-            out.append((x * SS + self.rng.uniform(-amp, amp) * k * SS,
-                        y * SS + self.rng.uniform(-amp, amp) * k * SS))
-        return out
 
-    def stroke(self, points, width, amp=3.5):
-        pts = self.wobble(points, amp)
-        self.d.line(pts, fill=self.ink, width=int(width * SS), joint="curve")
-        r = width * SS / 2
-        for x, y in (pts[0], pts[-1]):
-            self.d.ellipse([x - r, y - r, x + r, y + r], fill=self.ink)
+# ---------------------------------------------------------------- geometry
 
-    def arc(self, cx, cy, rx, ry, a0, a1, width, n=48, amp=3.0):
-        pts = [(cx + rx * math.cos(math.radians(a)), cy + ry * math.sin(math.radians(a)))
-               for a in [a0 + (a1 - a0) * i / n for i in range(n + 1)]]
-        self.stroke(pts, width, amp)
+def rot(pts, deg, cx=512, cy=512):
+    a = math.radians(deg)
+    return [((x - cx) * math.cos(a) - (y - cy) * math.sin(a) + cx,
+             (x - cx) * math.sin(a) + (y - cy) * math.cos(a) + cy) for x, y in pts]
 
-    def line_between(self, a, b, width, amp=3.0, n=16):
-        pts = [(a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n)
-               for i in range(n + 1)]
-        self.stroke(pts, width, amp)
+
+def wobbled(pts, amp, seed):
+    """Nudge a path so it looks drawn by a hand, not by a compass.
+    Steady at the ends, loose in the middle — that is how a pen behaves."""
+    rng = random.Random(seed)
+    out = []
+    n = max(1, len(pts) - 1)
+    for i, (x, y) in enumerate(pts):
+        k = math.sin(i / n * math.pi)
+        out.append((x * SS + rng.uniform(-amp, amp) * k * SS,
+                    y * SS + rng.uniform(-amp, amp) * k * SS))
+    return out
+
+
+def bean_outline(rx, ry, tilt, cx=512, cy=512):
+    pts = [(cx + rx * math.cos(math.radians(a)), cy + ry * math.sin(math.radians(a)))
+           for a in range(0, 361, 3)]
+    return rot(pts, tilt, cx, cy)
+
+
+def bean_seam(ry, tilt, cx=512, cy=512, amp=78):
+    """The S down the middle of a coffee bean."""
+    pts = [(cx + amp * math.sin(i / 80 * 2 * math.pi),
+            cy - ry * 0.82 + i / 80 * ry * 1.64) for i in range(81)]
+    return rot(pts, tilt, cx, cy)
+
+
+def ink_line(d, pts, width, colour, amp=2.2, seed=3):
+    p = wobbled(pts, amp, seed)
+    d.line(p, fill=colour, width=int(width * SS), joint="curve")
+    r = width * SS / 2
+    for x, y in (p[0], p[-1]):
+        d.ellipse([x - r, y - r, x + r, y + r], fill=colour)
 
 
 # ---------------------------------------------------------------- glyphs
 
-def cup_side(p):
-    """The original: cup, saucer, two curls of steam."""
-    top, bot = 430, 700
-    lt, rt, lb, rb = 296, 620, 352, 564
-    body = ([(lt + (lb - lt) * i / 20, top + (bot - top) * i / 20) for i in range(21)]
-            + [((lb + rb) / 2 + (rb - lb) / 2 * math.cos(math.radians(180 - 180 * i / 24)),
-                bot - 6 + 46 * math.sin(math.radians(180 - 180 * i / 24))) for i in range(1, 25)]
-            + [(rt - (rt - rb) * (1 - i / 20), top + (bot - top) * (1 - i / 20))
-               for i in range(20, -1, -1)])
-    p.stroke(body, 34)
-    p.line_between((lt + 26, top + 30), (rt - 26, top + 26), 22)
-    p.arc(636, 540, 104, 86, -78, 78, 32)
-    p.line_between((236, 782), (788, 776), 34)
-    for x0, h, ph in [(404, 300, 0.0), (520, 250, 1.1)]:
-        p.stroke([(x0 + 34 * math.sin(t / 44 + ph), 384 - t) for t in range(0, h, 6)], 26, 4.0)
+def filled_bean(img, bg=CLAY):
+    """The chosen mark: a solid bean with its seam cut back out."""
+    d = ImageDraw.Draw(img)
+    d.polygon(wobbled(bean_outline(238, 310, -16), 2.0, 1), fill=INK)
+    ink_line(d, bean_seam(310, -16), 54, bg, seed=5)
 
 
-def cup_top(p):
-    """A cup seen from straight above. Two rings, one handle. Nothing else."""
-    p.arc(512, 512, 286, 286, 0, 359, 36, n=90, amp=2.4)
-    p.arc(490, 512, 176, 176, 0, 359, 30, n=80, amp=2.2)
-    p.arc(800, 512, 70, 92, -96, 96, 32, amp=2.4)
+def cropped_bean(img, bg=CLAY):
+    """Oversized, running off the tile."""
+    d = ImageDraw.Draw(img)
+    d.polygon(wobbled(bean_outline(400, 520, -24, 470, 512), 2.0, 2), fill=INK)
+    ink_line(d, bean_seam(520, -24, 470, 512, amp=120), 74, bg, seed=5)
 
 
-def bean(p):
-    """One coffee bean with its seam."""
-    p.arc(512, 512, 250, 316, 0, 359, 38, n=96, amp=2.6)
-    seam = [(512 + 74 * math.sin(t / 96), 512 - 250 + t) for t in range(0, 500, 6)]
-    p.stroke(seam, 34, 3.0)
+def outlined_bean(img, bg=CLAY):
+    """Outline only — calmer, less distinctive."""
+    d = ImageDraw.Draw(img)
+    ink_line(d, bean_outline(232, 302, -14), 46, INK, seed=1)
+    ink_line(d, bean_seam(302, -14), 42, INK, seed=2)
 
 
-def portafilter(p):
-    """The basket and handle — for someone who actually pulls shots."""
-    p.line_between((316, 380), (708, 376), 36)            # rim
-    p.line_between((344, 392), (416, 640), 34)            # left wall
-    p.line_between((680, 388), (608, 640), 34)            # right wall
-    p.arc(512, 628, 96, 52, 0, 180, 34, amp=2.6)          # basket floor
-    p.line_between((474, 684), (474, 754), 28)            # spouts
-    p.line_between((550, 684), (550, 754), 28)
-    p.line_between((712, 378), (884, 372), 40)            # handle
+CHOSEN = filled_bean
 
-
-def v60(p):
-    """A pour-over cone, dripping."""
-    p.line_between((250, 340), (774, 334), 36)            # rim
-    p.line_between((280, 352), (486, 690), 34)            # cone
-    p.line_between((744, 348), (538, 690), 34)
-    p.line_between((486, 690), (538, 690), 34)
-    for i, (x, y, r) in enumerate([(512, 762, 20), (512, 830, 14)]):
-        p.d.ellipse([(x - r) * SS, (y - r) * SS, (x + r) * SS, (y + r) * SS], fill=p.ink)
-
-
-GLYPHS = {"cup_side": cup_side, "cup_top": cup_top, "bean": bean,
-          "portafilter": portafilter, "v60": v60}
-
-# letter, background, ink, glyph, description
-OPTIONS = [
-    ("A", (226, 129,  58), (255, 255, 255), "cup_side",    "the one you have"),
-    ("B", ( 31, 107,  94), (255, 255, 255), "cup_top",     "deep teal, cup from above"),
-    ("C", ( 74,  46,  30), (255, 255, 255), "bean",        "cocoa brown, one bean"),
-    ("D", (239, 226, 204), ( 74,  46,  30), "cup_side",    "oat, dark glyph"),
-    ("E", (107,  74,  94), (255, 255, 255), "portafilter", "dusty plum, portafilter"),
-    ("F", (110, 139, 106), (255, 255, 255), "v60",         "sage, pour-over cone"),
+ALTERNATIVES = [
+    ("1", filled_bean, CLAY, "filled bean, seam cut through  (chosen)"),
+    ("2", cropped_bean, CLAY, "oversized, cropped by the tile"),
+    ("3", outlined_bean, CLAY, "outline only"),
 ]
 
 
-def draw(bg, ink, glyph, seed=7):
+# ---------------------------------------------------------------- output
+
+def render(glyph, bg=CLAY):
     img = Image.new("RGB", (W, W), bg)
-    GLYPHS[glyph](Pen(img, ink, seed))
+    glyph(img, bg)
     img = img.filter(ImageFilter.GaussianBlur(0.6 * SS / 4))
     return img.resize((S, S), Image.LANCZOS)
 
 
-def rounded(img, radius_frac=0.235):
+def rounded(img, frac=0.235):
+    """Only for the preview sheet — the real icon must stay a full square."""
     mask = Image.new("L", img.size, 0)
     ImageDraw.Draw(mask).rounded_rectangle(
         [0, 0, img.size[0] - 1, img.size[1] - 1],
-        radius=int(img.size[0] * radius_frac), fill=255)
+        radius=int(img.size[0] * frac), fill=255)
     out = Image.new("RGBA", img.size, (0, 0, 0, 0))
     out.paste(img, (0, 0), mask)
     return out
 
 
-if __name__ == "__main__":
-    pick = sys.argv[1].upper() if len(sys.argv) > 1 else None
-
-    if pick:                                   # write the chosen one into the app
-        letter, bg, ink, glyph, _ = next(o for o in OPTIONS if o[0] == pick)
-        out = "App/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png"
-        draw(bg, ink, glyph).save(out)
-        print(f"option {letter} written to {out}")
-        raise SystemExit
-
-    # otherwise: one contact sheet of every option, labelled
-    tile, gap, pad, label_h = 300, 34, 44, 62
-    cols = 3
-    rows = (len(OPTIONS) + cols - 1) // cols
-    sheet_w = pad * 2 + cols * tile + (cols - 1) * gap
-    sheet_h = pad * 2 + rows * (tile + label_h) + (rows - 1) * gap
-    sheet = Image.new("RGB", (sheet_w, sheet_h), (247, 244, 239))
+def write_sheet(path="/tmp/ams-coffee-icon-options.png"):
+    big, small, gap, pad, lab = 300, 92, 40, 46, 66
+    w = pad * 2 + len(ALTERNATIVES) * big + (len(ALTERNATIVES) - 1) * gap
+    h = pad * 2 + big + lab + small + 26
+    sheet = Image.new("RGB", (w, h), (247, 244, 239))
     d = ImageDraw.Draw(sheet)
     try:
-        font = ImageFont.truetype("/System/Library/Fonts/SFNSRounded.ttf", 30)
-        small = ImageFont.truetype("/System/Library/Fonts/SFNSRounded.ttf", 21)
+        f1 = ImageFont.truetype("/System/Library/Fonts/SFNSRounded.ttf", 30)
+        f2 = ImageFont.truetype("/System/Library/Fonts/SFNSRounded.ttf", 20)
     except OSError:
-        font = small = ImageFont.load_default()
+        f1 = f2 = ImageFont.load_default()
 
-    for i, (letter, bg, ink, glyph, note) in enumerate(OPTIONS):
-        c, r = i % cols, i // cols
-        x = pad + c * (tile + gap)
-        y = pad + r * (tile + label_h + gap)
-        icon = rounded(draw(bg, ink, glyph).resize((tile, tile), Image.LANCZOS))
-        sheet.paste(icon, (x, y), icon)
-        d.text((x + tile / 2, y + tile + 14), letter, fill=(40, 30, 25),
-               font=font, anchor="ma")
-        d.text((x + tile / 2, y + tile + 50), note, fill=(120, 110, 100),
-               font=small, anchor="ma")
+    for i, (letter, glyph, bg, note) in enumerate(ALTERNATIVES):
+        x, y = pad + i * (big + gap), pad
+        full = render(glyph, bg)
+        tile = rounded(full.resize((big, big), Image.LANCZOS))
+        sheet.paste(tile, (x, y), tile)
+        d.text((x + big / 2, y + big + 12), letter, fill=(40, 30, 25), font=f1, anchor="ma")
+        d.text((x + big / 2, y + big + 46), note, fill=(120, 110, 100), font=f2, anchor="ma")
+        tiny = rounded(full.resize((small, small), Image.LANCZOS))
+        sheet.paste(tiny, (int(x + big / 2 - small / 2), y + big + lab + 12), tiny)
 
-    sheet.save("/tmp/ams-coffee-icon-options.png")
-    print("wrote /tmp/ams-coffee-icon-options.png")
+    d.text((pad, h - 20), "bottom row = actual size on a home screen",
+           fill=(150, 140, 130), font=f2, anchor="ls")
+    sheet.save(path)
+    print("wrote", path)
+
+
+if __name__ == "__main__":
+    if "--sheet" in sys.argv:
+        write_sheet()
+    else:
+        render(CHOSEN).save(OUT)
+        print("wrote", OUT)
