@@ -313,19 +313,32 @@ struct Chip: View {
     }
 }
 
-/// Big rounded headline used at the top of every screen.
-struct BigTitle: View {
-    let emoji: String
+/// Big rounded headline used at the top of every screen. Takes either an
+/// emoji — fine for content, a bag or a brew method — or one of the drawn
+/// marks, for the four places the tab bar names.
+struct BigTitle<Mark: View>: View {
+    let mark: Mark
     let text: String
 
+    init(text: String, @ViewBuilder mark: () -> Mark) {
+        self.mark = mark()
+        self.text = text
+    }
+
     var body: some View {
-        HStack(spacing: 10) {
-            Text(emoji).font(.system(size: 34))
+        HStack(spacing: 12) {
+            mark
             Text(text)
-                .font(.system(size: 32, weight: .black, design: .rounded))
+                .font(.system(size: 34, weight: .black, design: .rounded))
                 .foregroundStyle(Candy.cocoa)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+extension BigTitle where Mark == Text {
+    init(emoji: String, text: String) {
+        self.init(text: text) { Text(emoji).font(.system(size: 38)) }
     }
 }
 

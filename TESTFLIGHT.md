@@ -99,8 +99,16 @@ sits in App Store Connect until it is released to a group of testers, and until
 then TestFlight stays silent and sends no email. A brand-new app has no groups,
 so this bites once per app.
 
-This is already set up for AMS Coffee: an internal group called **Martin**,
-with you in it, receiving every build. Nothing to do.
+This is set up for AMS Coffee: an internal group called **Martin**, with you
+in it.
+
+⚠️ A group does **not** take new builds by itself — each build has to be
+released to it. I said otherwise twice and you had to come back both times and
+say the new version was not there. The workflow now does it for you: after the
+upload it waits for Apple to finish processing and releases the build to the
+group. If that step ever goes red, the build is uploaded but has not reached
+your phone, and the fix is App Store Connect › TestFlight › the group › **+**
+next to Builds.
 
 For the next app, it is three API calls or two minutes in App Store Connect ›
 TestFlight › Internal Testing › **+** › name the group › add yourself › tick

@@ -223,6 +223,20 @@ jobs:
             2>&1 | tee build/export.log | grep -E "error:|Upload|EXPORT" || true
           grep -q "\*\* EXPORT SUCCEEDED \*\*" build/export.log
 
+      - name: Release it to the tester group
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          # An upload alone does not reach the phone. The build has to be
+          # released to a group, and an internal group does not take new
+          # builds by itself.
+          ASC_KEY_PATH="$HOME/private_keys/AuthKey_$ASC_KEY_ID.p8" \
+          BUILD_VERSION="$BUILD" \
+          APP_BUNDLE_ID=com.schabbauer.AMSCoffee \
+          TESTER_GROUP=Martin \
+          python3 tools/release-to-testers.py
+
       - name: Say what happened
         if: success()
         run: |

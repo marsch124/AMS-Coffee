@@ -95,8 +95,8 @@ struct CandyTabBar: View {
                 Button {
                     withAnimation(.spring(response: 0.32, dampingFraction: 0.5)) { tab = item }
                 } label: {
-                    VStack(spacing: 2) {
-                        Text(item.emoji).font(.system(size: on ? 34 : 29))
+                    VStack(spacing: 4) {
+                        TabMark(tab: item, size: on ? 34 : 29)
                         Text(item.title)
                             .font(.system(size: 13, weight: .heavy, design: .rounded))
                     }
