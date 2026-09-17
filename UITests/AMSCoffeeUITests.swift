@@ -35,7 +35,8 @@ final class AMSCoffeeUITests: XCTestCase {
             }
             // Scroll down the left-hand gutter, clear of the taste sliders —
             // a swipe through the middle of the card would drag one of them.
-            if scrolls < 8 {
+            dismissKeyboard(app)
+            if scrolls < 10 {
                 scrollDown(app)
                 scrolls += 1
             }
@@ -45,9 +46,19 @@ final class AMSCoffeeUITests: XCTestCase {
     }
 
     private func scrollDown(_ app: XCUIApplication) {
-        let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.78))
-        let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.28))
-        from.press(forDuration: 0.05, thenDragTo: to)
+        // A raw coordinate drag can land inside a text field, focus it and
+        // raise the keyboard — which on a small phone covers the sticky Save
+        // bar, and the test then reports Save as "not hittable". swipeUp on
+        // the scroll view is a real scroll gesture and touches nothing.
+        let scroll = app.scrollViews.firstMatch
+        if scroll.exists { scroll.swipeUp() } else { app.swipeUp() }
+    }
+
+    /// The keyboard hides the sticky bar on a small screen. Put it away.
+    private func dismissKeyboard(_ app: XCUIApplication) {
+        guard app.keyboards.count > 0 else { return }
+        if app.buttons["Return"].exists { app.buttons["Return"].tap(); return }
+        app.scrollViews.firstMatch.swipeDown()
     }
 
     private func waitFor(_ app: XCUIApplication, _ id: String,

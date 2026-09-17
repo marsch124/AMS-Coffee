@@ -32,19 +32,22 @@ jobs:
       - run: xcodegen generate
       - name: Pick a simulator the runner actually has
         run: |
-          # Naming "iPhone 16" broke the moment GitHub rotated the runner
-          # image, so ask the machine what it has and use that UDID.
-          UDID=$(xcrun simctl list devices available \
-            | grep -E "^ +iPhone" | tail -1 \
-            | sed -E 's/.*\(([0-9A-Fa-f-]{36})\).*/\1/')
+          # Naming "iPhone 16" broke when GitHub rotated the runner image, and
+          # taking the last line gave us an iPhone SE. Take the highest
+          # numbered iPhone, so the device is both present and predictable.
+          LINE=$(xcrun simctl list devices available \
+            | grep -E "^ +iPhone [0-9]" | sort -V | tail -1)
+          if [ -z "$LINE" ]; then
+            LINE=$(xcrun simctl list devices available | grep -E "^ +iPhone" | tail -1)
+          fi
+          UDID=$(echo "$LINE" | sed -E 's/.*\(([0-9A-Fa-f-]{36})\).*/\1/')
           if [ -z "$UDID" ]; then
             echo "::error::no iPhone simulator on this runner"
             xcrun simctl list devices available
             exit 1
           fi
           echo "SIM_UDID=$UDID" >> $GITHUB_ENV
-          echo "Using simulator:"
-          xcrun simctl list devices available | grep "$UDID"
+          echo "Using simulator:$(echo "$LINE" | sed -E 's/ *\(.*//')"
 
       - name: Unit tests and UI tests
         run: |
