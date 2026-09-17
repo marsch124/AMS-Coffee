@@ -110,6 +110,29 @@ jobs:
           printf '%s\n' "$KEY" > "$HOME/private_keys/AuthKey_$KEY_ID.p8"
           chmod 600 "$HOME/private_keys/AuthKey_$KEY_ID.p8"
 
+      - name: Check the key is actually a key
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+        run: |
+          # A mangled copy-paste of the .p8 into the secret shows up much later
+          # as Apple's "Authentication failed: make sure a bearer token was
+          # provided", forty seconds into an archive, which explains nothing.
+          # Catch it here instead, in one second, and say what to do.
+          F="$HOME/private_keys/AuthKey_$KEY_ID.p8"
+          if ! head -1 "$F" | grep -q "BEGIN PRIVATE KEY"; then
+            echo "::error::ASC_KEY_P8 does not start with -----BEGIN PRIVATE KEY-----."
+            echo "The secret holds something other than the .p8 file's contents."
+            exit 1
+          fi
+          if ! openssl pkey -in "$F" -noout 2>/dev/null; then
+            echo "::error::ASC_KEY_P8 is not a valid private key — the paste was"
+            echo "truncated or its line breaks were lost. Re-copy the whole"
+            echo "AuthKey_$KEY_ID.p8 file, including the BEGIN and END lines,"
+            echo "into the secret."
+            exit 1
+          fi
+          echo "The key parses. $(wc -l < "$F" | tr -d " ") lines."
+
       - name: Archive the app
         env:
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
