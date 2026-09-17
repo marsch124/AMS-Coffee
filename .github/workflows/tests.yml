@@ -1,0 +1,50 @@
+name: Tests
+
+# Every push runs the suite. A red run means the build is not fit to install.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the newest Xcode on the runner
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer || true
+
+      - name: Show what we are building with
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available | grep -E "iPhone" | head
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the project
+        working-directory: .
+        run: xcodegen generate
+
+      - name: Unit tests and UI tests
+        run: |
+          xcodebuild test \
+            -project AMSCoffee.xcodeproj \
+            -scheme AMSCoffee \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -derivedDataPath build \
+            -resultBundlePath TestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            | xcbeautify || exit 1
+
+      - name: Keep the results when it goes red
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          path: TestResults.xcresult
