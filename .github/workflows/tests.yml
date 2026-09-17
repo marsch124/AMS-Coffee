@@ -25,12 +25,28 @@ jobs:
       - name: Generate the project
         run: xcodegen generate
 
+      - name: Pick a simulator the runner actually has
+        run: |
+          # Hardcoding "iPhone 16" broke the moment GitHub rotated the runner
+          # image. Ask the machine what it has instead, and use its UDID.
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+import json, sys
+devices = json.load(sys.stdin)["devices"]
+found = [d for rt in devices for d in devices[rt]
+         if d.get("isAvailable") and d["name"].startswith("iPhone")]
+if not found:
+    sys.exit("no iPhone simulator on this runner")
+print(found[-1]["udid"], found[-1]["name"], sep="\t")
+')
+          echo "SIM_UDID=$(echo "$UDID" | cut -f1)" >> $GITHUB_ENV
+          echo "Using simulator: $(echo "$UDID" | cut -f2)"
+
       - name: Unit tests and UI tests
         run: |
           xcodebuild test \
             -project AMSCoffee.xcodeproj \
             -scheme AMSCoffee \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -destination "platform=iOS Simulator,id=$SIM_UDID" \
             -derivedDataPath build \
             -resultBundlePath TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO \
