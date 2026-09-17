@@ -1,0 +1,188 @@
+name: TestFlight
+
+# Builds AMS Coffee and sends it to TestFlight, so a new version reaches the
+# phone without touching the Mac. Started by hand from the Actions tab.
+#
+# Needs four repository secrets, made once in App Store Connect:
+#   ASC_KEY_ID     the key's ID, ten characters
+#   ASC_ISSUER_ID  the issuer ID shown above the key list
+#   ASC_KEY_P8     the whole contents of the AuthKey_XXXXXXXXXX.p8 file
+#   ASC_TEAM_ID    the ten-character Team ID from App Store Connect > Membership
+on:
+  workflow_dispatch:
+    inputs:
+      notes:
+        description: What is new in this build
+        required: false
+        default: ""
+
+jobs:
+  # A red suite must never reach the phone.
+  tests:
+    name: The suite has to pass first
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - run: xcodegen generate
+      - name: Unit tests and UI tests
+        run: |
+          xcodebuild test \
+            -project AMSCoffee.xcodeproj \
+            -scheme AMSCoffee \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM=""
+
+  upload:
+    name: Build and send to TestFlight
+    needs: tests
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the newest Xcode on the runner
+        run: |
+          # Apple refuses uploads built with an older SDK, so always take the
+          # highest Xcode the image has.
+          newest=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          echo "Using $newest"
+          sudo xcode-select -s "$newest"
+          xcodebuild -version
+
+      - name: Check the secrets are there
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+          KEY: ${{ secrets.ASC_KEY_P8 }}
+          TEAM_ID: ${{ secrets.ASC_TEAM_ID }}
+        run: |
+          missing=""
+          [ -z "$KEY_ID" ] && missing="$missing ASC_KEY_ID"
+          [ -z "$ISSUER" ] && missing="$missing ASC_ISSUER_ID"
+          [ -z "$KEY" ] && missing="$missing ASC_KEY_P8"
+          [ -z "$TEAM_ID" ] && missing="$missing ASC_TEAM_ID"
+          if [ -n "$missing" ]; then
+            echo "Missing repository secrets:$missing"
+            echo "Add them under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the project
+        run: xcodegen generate
+
+      - name: Number this build
+        run: |
+          # The version the app shows itself is the single source — Guide.swift.
+          # TestFlight and the Version history pill can then never disagree.
+          APP_VERSION=$(sed -n 's/.*static let appVersion = "\([^"]*\)".*/\1/p' \
+            App/Sources/Guide.swift | head -1)
+          if [ -z "$APP_VERSION" ]; then
+            echo "Could not read Guide.appVersion from App/Sources/Guide.swift"
+            exit 1
+          fi
+          echo "App version: $APP_VERSION"
+          # Apple refuses a second upload of the same build number, so the run
+          # number keeps them unique within a version.
+          BUILD="$APP_VERSION.${{ github.run_number }}"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" App/Config/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" App/Config/Info.plist
+          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+          echo "BUILD=$BUILD" >> $GITHUB_ENV
+
+      - name: Write the App Store Connect key
+        env:
+          KEY: ${{ secrets.ASC_KEY_P8 }}
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+        run: |
+          mkdir -p "$HOME/private_keys"
+          printf '%s\n' "$KEY" > "$HOME/private_keys/AuthKey_$KEY_ID.p8"
+          chmod 600 "$HOME/private_keys/AuthKey_$KEY_ID.p8"
+
+      - name: Archive the app
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.ASC_TEAM_ID }}
+        run: |
+          set -o pipefail
+          mkdir -p build
+          # -allowProvisioningUpdates lets Apple register the bundle identifier
+          # and its iCloud container on the first run.
+          xcodebuild archive \
+            -project AMSCoffee.xcodeproj \
+            -scheme AMSCoffee \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/build/AMSCoffee.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_$KEY_ID.p8" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            2>&1 | tee build/archive.log | grep -E "error:|\*\* ARCHIVE" || true
+          grep -q "\*\* ARCHIVE SUCCEEDED \*\*" build/archive.log
+
+      - name: Send it to TestFlight
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.ASC_TEAM_ID }}
+        run: |
+          set -o pipefail
+          cat > build/ExportOptions.plist <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          PLIST
+          /usr/libexec/PlistBuddy -c "Add :teamID string $TEAM_ID" build/ExportOptions.plist
+          xcodebuild -exportArchive \
+            -archivePath "$PWD/build/AMSCoffee.xcarchive" \
+            -exportPath "$PWD/build/export" \
+            -exportOptionsPlist build/ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_$KEY_ID.p8" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER" \
+            2>&1 | tee build/export.log | grep -E "error:|Upload|EXPORT" || true
+          grep -q "\*\* EXPORT SUCCEEDED \*\*" build/export.log
+
+      - name: Say what happened
+        if: success()
+        run: |
+          echo "### Sent to TestFlight" >> $GITHUB_STEP_SUMMARY
+          echo "AMS Coffee $APP_VERSION, build $BUILD — the same version the app's" >> $GITHUB_STEP_SUMMARY
+          echo "Version history pill shows." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Apple processes it for a few minutes, then it appears in TestFlight on the phone." >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ github.event.inputs.notes }}" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "What is new: ${{ github.event.inputs.notes }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Keep the logs when something fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testflight-logs
+          path: build/*.log
+          if-no-files-found: ignore
+
+      - name: Remove the key
+        if: always()
+        run: rm -rf "$HOME/private_keys"
