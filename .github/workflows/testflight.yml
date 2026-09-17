@@ -126,12 +126,10 @@ jobs:
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
         run: |
           mkdir -p "$HOME/private_keys"
-          # The secret's value already ends with a newline, so a plain
-          # printf '%s\n' left a trailing BLANK line in the key file — six
-          # lines where the .p8 has five. openssl tolerates that; Apple's
-          # signer may not. awk 'NF' drops empty lines, so the file written
-          # here is byte-for-byte the PEM and nothing else.
-          printf '%s\n' "$KEY" | awk 'NF' > "$HOME/private_keys/AuthKey_$KEY_ID.p8"
+          # A browser textarea can normalise newlines to CRLF on submit, and
+          # a PEM with carriage returns in it is a good way to make Apple say
+          # something unhelpful. Strip them, and drop any blank lines.
+          printf '%s\n' "$KEY" | tr -d '\r' | awk 'NF' > "$HOME/private_keys/AuthKey_$KEY_ID.p8"
           chmod 600 "$HOME/private_keys/AuthKey_$KEY_ID.p8"
 
       - name: Check the key is actually a key
@@ -155,13 +153,19 @@ jobs:
             echo "into the secret."
             exit 1
           fi
-          LINES=$(wc -l < "$F" | tr -d " ")
-          if [ "$LINES" -ne 5 ]; then
-            echo "::error::The key file came out $LINES lines; a .p8 is 5."
-            echo "Something in ASC_KEY_P8 is not just the key."
+          # Do NOT count lines. A .p8 is six lines and its last one has no
+          # trailing newline, so wc -l says five — asserting "five lines"
+          # failed a perfectly good key and cost a run.
+          if ! tail -1 "$F" | grep -q "END PRIVATE KEY"; then
+            echo "::error::ASC_KEY_P8 does not end with -----END PRIVATE KEY-----."
+            echo "The paste was truncated. Copy the whole file."
             exit 1
           fi
-          echo "The key parses, and is exactly 5 lines."
+          if [ "$(tr -cd '\r' < "$F" | wc -c | tr -d ' ')" != "0" ]; then
+            echo "::error::carriage returns survived into the key file."
+            exit 1
+          fi
+          echo "The key parses, starts and ends correctly, and has no stray characters."
 
       - name: Archive the app
         env:
