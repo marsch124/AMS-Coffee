@@ -11,7 +11,7 @@ struct BagsView: View {
                 adding = true
             } label: {
                 HStack(spacing: 10) {
-                    Image(systemName: "plus.circle.fill").font(.system(size: 24, weight: .black))
+                    PlusMark(size: 28, weight: 6)
                     Text("Add a bag")
                     Spacer()
                 }
@@ -41,14 +41,6 @@ struct BagsView: View {
                 .poppyAppear(Double(index) * 0.04)
             }
 
-            if store.sinkCount > 0 {
-                NavigationLinkless(label: "🚰 The Sink",
-                                   subtitle: "\(store.sinkCount) rinsed, waiting 30 days",
-                                   tint: Candy.sky,
-                                   identifier: "bags-sink") {
-                    SinkView()
-                }
-            }
         }
         .sheet(isPresented: $adding) { BagEditor(bean: Bean()) }
         .sheet(item: $editing) { BagEditor(bean: $0) }
@@ -73,23 +65,27 @@ struct BagCard: View {
     var body: some View {
         WobbleCard(tint: tint, tilt: tilt) {
             VStack(alignment: .leading, spacing: 10) {
+                if let photoID = bean.photoID {
+                    PhotoImage(data: store.photo(photoID), corner: 18)
+                        .frame(height: 160)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                }
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 1) {
                         if !bean.roaster.isEmpty {
                             Text(bean.roaster.uppercased())
-                                .font(.system(size: 12, weight: .heavy, design: .rounded))
+                                .font(.system(size: 14, weight: .heavy, design: .rounded))
                                 .foregroundStyle(tint)
                         }
                         Text(bean.displayName)
-                            .font(.system(size: 22, weight: .black, design: .rounded))
+                            .font(.system(size: 25, weight: .black, design: .rounded))
                             .foregroundStyle(Candy.cocoa)
                     }
                     Spacer()
-                    Image(systemName: bean.verdict.symbol)
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(bean.verdict == .buyAgain ? Candy.mango
-                                         : bean.verdict == .never ? Candy.bubblegum
-                                         : Color.secondary.opacity(0.35))
+                    Text(bean.verdict.emoji)
+                        .font(.system(size: 30))
+                        .opacity(bean.verdict == .undecided ? 0.35 : 1)
                 }
 
                 // Grams left, as a bar you can read across the kitchen.
@@ -105,18 +101,15 @@ struct BagCard: View {
                 .frame(height: 14)
 
                 HStack(spacing: 8) {
-                    Chip(text: "\(Int(left)) g left", tint: tint, symbol: "scalemass.fill")
+                    Chip(text: "\(Int(left)) g left", tint: tint, symbol: "⚖️")
                     if bean.rating > 0 {
                         Chip(text: String(repeating: "★", count: bean.rating), tint: Candy.mango)
-                    }
-                    if let kilo = bean.pricePerKilo {
-                        Chip(text: "\(Int(kilo)) kr/kg", tint: Candy.blueberry)
                     }
                 }
 
                 if !bean.flavours.isEmpty {
                     Text(bean.flavours.map { "\($0.emoji) \($0.title)" }.joined(separator: "  "))
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
                 }
 
                 let methods = store.data.methodsUsed(beanID: bean.id)
@@ -160,6 +153,13 @@ struct BagEditor: View {
         ZStack {
             CoffeeBackground()
             Screen(emoji: "🫘", title: isNew ? "New bag" : "The bag") {
+                WobbleCard(tint: Candy.bubblegum, tilt: -0.6) {
+                    PhotoRow(title: "📷 The bag",
+                             hint: "A photo of the label beats any description",
+                             photoID: $bean.photoID,
+                             identifier: "bag-photo")
+                }
+
                 WobbleCard(tint: Candy.mint, tilt: -0.5) {
                     VStack(alignment: .leading, spacing: 12) {
                         FatField(label: "Roaster", text: $bean.roaster,
@@ -178,7 +178,8 @@ struct BagEditor: View {
                         NumberDial(label: "Bag weight", unit: "g", value: $bean.bagWeightGrams,
                                    step: 50, range: 0...5000, tint: Candy.blueberry,
                                    identifier: "bag-weight")
-                        NumberDial(label: "Price", unit: "kr", value: $bean.priceSEK,
+                        NumberDial(label: "What it cost, if you want it noted",
+                                   unit: "kr", value: $bean.priceSEK,
                                    step: 10, range: 0...9999, tint: Candy.blueberry,
                                    identifier: "bag-price")
                         Toggle(isOn: $hasRoastDate) {
@@ -216,7 +217,7 @@ struct BagEditor: View {
                 if !isNew {
                     Button { confirmRinse = true } label: {
                         HStack {
-                            Image(systemName: "drop.circle.fill").font(.system(size: 22, weight: .black))
+                            Text("🚰").font(.system(size: 28))
                             Text("Rinse it into the Sink")
                             Spacer()
                         }
@@ -329,8 +330,9 @@ struct NavigationLinkless<Content: View>: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Image(systemName: "chevron.right.circle.fill")
-                    .font(.system(size: 24)).foregroundStyle(tint)
+                ChevronMark(size: 26, weight: 5)
+                    .rotationEffect(.degrees(-90))
+                    .foregroundStyle(tint)
             }
             .padding(16)
             .background(RoundedRectangle(cornerRadius: 26, style: .continuous)

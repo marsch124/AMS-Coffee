@@ -19,10 +19,10 @@ struct CupsView: View {
                     Text("Every save is poured into a cup, and every cup proves itself by being opened again and counted. A cup holding less than the last one is refused, not written over.")
                         .font(.system(size: 14, weight: .medium, design: .rounded))
                     HStack(spacing: 8) {
-                        Chip(text: "\(tested) tested", tint: Candy.mint, symbol: "checkmark.seal.fill")
+                        Chip(text: "\(tested) proved", tint: Candy.mint, symbol: "✅")
                         if untested > 0 {
                             Chip(text: "\(untested) unproven", tint: Candy.apricot,
-                                 symbol: "exclamationmark.triangle.fill")
+                                 symbol: "⚠️")
                         }
                     }
                 }
@@ -48,7 +48,7 @@ struct CupsView: View {
                 naming = true
             } label: {
                 HStack(spacing: 10) {
-                    Image(systemName: "archivebox.fill").font(.system(size: 22, weight: .black))
+                    Text("🏺").font(.system(size: 28))
                     Text("Save a cup")
                     Spacer()
                 }
@@ -147,13 +147,17 @@ struct CupRow: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Image(systemName: cup.tested ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
-                        .font(.system(size: 24))
-                        .foregroundStyle(cup.tested ? Candy.mint : Candy.apricot)
+                    Group {
+                        if cup.tested {
+                            TickMark(size: 30, weight: 6).foregroundStyle(Candy.mint)
+                        } else {
+                            Text("⚠️").font(.system(size: 28))
+                        }
+                    }
                         .accessibilityIdentifier("cup-tested-\(index)")
                 }
 
-                Chip(text: cup.contentsLine, tint: tint, symbol: "tray.full.fill")
+                Chip(text: cup.contentsLine, tint: tint, symbol: "📦")
 
                 Text(cup.testedNote)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
@@ -227,7 +231,7 @@ struct RestoreSheet: View {
                         Text(cup.pouredAt.formatted(date: .complete, time: .shortened))
                             .font(.system(size: 13, weight: .bold, design: .rounded))
                             .foregroundStyle(.secondary)
-                        Chip(text: cup.contentsLine, tint: Candy.grape, symbol: "tray.full.fill")
+                        Chip(text: cup.contentsLine, tint: Candy.grape, symbol: "📦")
                     }
                 }
 

@@ -31,18 +31,6 @@ enum BrewMethod: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    var symbol: String {
-        switch self {
-        case .espresso:    return "cup.and.saucer.fill"
-        case .v60:         return "drop.fill"
-        case .aeropress:   return "arrow.down.circle.fill"
-        case .frenchPress: return "cylinder.fill"
-        case .moka:        return "flame.fill"
-        case .coldBrew:    return "snowflake"
-        case .filter:      return "line.3.horizontal.decrease.circle.fill"
-        }
-    }
-
     /// Espresso is weighed out of the cup; everything else is weighed in.
     var isWeighedByWaterIn: Bool { self != .espresso }
 
@@ -179,11 +167,12 @@ enum Verdict: String, Codable, CaseIterable {
         }
     }
 
-    var symbol: String {
+    /// An emoji, never a stock glyph.
+    var emoji: String {
         switch self {
-        case .undecided: return "questionmark.circle.fill"
-        case .buyAgain:  return "star.fill"
-        case .never:     return "hand.thumbsdown.fill"
+        case .undecided: return "🤔"
+        case .buyAgain:  return "⭐️"
+        case .never:     return "👎"
         }
     }
 }
@@ -233,6 +222,8 @@ struct Bean: Identifiable, Codable, Equatable {
     var verdict: Verdict = .undecided
     var flavours: [Flavour] = []
     var notes = ""
+    /// The photo lives as a file; this is only its name.
+    var photoID: String?
     var createdAt = Date()
     var modifiedAt = Date()
     /// The Sink. Nothing is ever hard-deleted from under you.
@@ -268,6 +259,7 @@ struct Bean: Identifiable, Codable, Equatable {
         verdict = try c.decodeIfPresent(Verdict.self, forKey: .verdict) ?? .undecided
         flavours = try c.decodeIfPresent([Flavour].self, forKey: .flavours) ?? []
         notes = try c.decodeIfPresent(String.self, forKey: .notes) ?? ""
+        photoID = try c.decodeIfPresent(String.self, forKey: .photoID)
         createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
         modifiedAt = try c.decodeIfPresent(Date.self, forKey: .modifiedAt) ?? createdAt
         rinsedAt = try c.decodeIfPresent(Date.self, forKey: .rinsedAt)
@@ -458,6 +450,8 @@ struct Purchase: Identifiable, Codable, Equatable {
     var date = Date()
     var warrantyUntil: Date?
     var notes = ""
+    /// The receipt. A file name, not the picture itself.
+    var photoID: String?
     var createdAt = Date()
     var modifiedAt = Date()
     var rinsedAt: Date?
@@ -482,6 +476,7 @@ struct Purchase: Identifiable, Codable, Equatable {
         date = try c.decodeIfPresent(Date.self, forKey: .date) ?? Date()
         warrantyUntil = try c.decodeIfPresent(Date.self, forKey: .warrantyUntil)
         notes = try c.decodeIfPresent(String.self, forKey: .notes) ?? ""
+        photoID = try c.decodeIfPresent(String.self, forKey: .photoID)
         createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? date
         modifiedAt = try c.decodeIfPresent(Date.self, forKey: .modifiedAt) ?? createdAt
         rinsedAt = try c.decodeIfPresent(Date.self, forKey: .rinsedAt)

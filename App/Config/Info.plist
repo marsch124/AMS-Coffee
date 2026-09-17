@@ -26,6 +26,10 @@
 	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.lifestyle</string>
+	<key>NSCameraUsageDescription</key>
+	<string>AMS Coffee uses the camera when you photograph a bag of beans or a receipt.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AMS Coffee needs your photo library when you choose an existing picture for a bag or a receipt.</string>
 	<key>NSUbiquitousContainers</key>
 	<dict>
 		<key>iCloud.com.schabbauer.AMSCoffee</key>

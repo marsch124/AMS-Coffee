@@ -12,7 +12,7 @@ struct ShotsView: View {
                 newMethod = .espresso
             } label: {
                 HStack(spacing: 10) {
-                    Image(systemName: "cup.and.saucer.fill").font(.system(size: 24, weight: .black))
+                    Text("☕️").font(.system(size: 32))
                     Text("Pull a shot")
                     Spacer()
                 }
@@ -30,11 +30,11 @@ struct ShotsView: View {
                             Button {
                                 newMethod = method
                             } label: {
-                                HStack(spacing: 5) {
-                                    Text(method.emoji)
+                                HStack(spacing: 7) {
+                                    Text(method.emoji).font(.system(size: 22))
                                     Text(method.title)
                                 }
-                                .font(.system(size: 14, weight: .heavy, design: .rounded))
+                                .font(.system(size: 16, weight: .heavy, design: .rounded))
                                 .foregroundStyle(.white)
                                 .padding(.vertical, 9)
                                 .padding(.horizontal, 13)
@@ -271,7 +271,7 @@ struct ShotEditor: View {
                 if !isNew {
                     Button { confirmRinse = true } label: {
                         HStack {
-                            Image(systemName: "drop.circle.fill").font(.system(size: 22, weight: .black))
+                            Text("🚰").font(.system(size: 28))
                             Text("Rinse it into the Sink")
                             Spacer()
                         }

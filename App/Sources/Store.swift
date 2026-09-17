@@ -12,6 +12,7 @@ final class CoffeeStore: ObservableObject {
     @Published var syncPlace = "This device"
 
     private let cupboard: CupCupboard
+    private let photos: PhotoStore
     private let dataURL: URL
     private let coordinator = NSFileCoordinator()
     private var saveWork: Task<Void, Never>?
@@ -24,7 +25,10 @@ final class CoffeeStore: ObservableObject {
         let home = root ?? CoffeeStore.defaultRoot(freshForTests: isTestRun)
         try? FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
         dataURL = home.appendingPathComponent("coffee.json")
-        cupboard = CupCupboard(folder: home.appendingPathComponent("Cups"))
+        let photoFolder = home.appendingPathComponent("Photos")
+        cupboard = CupCupboard(folder: home.appendingPathComponent("Cups"),
+                               photoFolder: photoFolder)
+        photos = PhotoStore(folder: photoFolder)
         load()
     }
 
@@ -96,6 +100,33 @@ final class CoffeeStore: ObservableObject {
             shelf = cupboard.loadShelf()
         }
     }
+
+    // MARK: Photos
+
+    func photo(_ id: String) -> Data? { photos.load(id) }
+
+    /// Shrinks the picture first — a bag photo is a reminder, not a print —
+    /// then keeps it as a file and hands back its name.
+    func keepPhoto(_ raw: Data) -> String? {
+        let small = PhotoStore.downscaled(raw) ?? raw
+        let id = photos.save(small)
+        if id != nil { scheduleSave() }
+        return id
+    }
+
+    /// A photo is only deleted when NOTHING refers to it any more: not the
+    /// live data, not the Sink, and not a single cup on the shelf. A cup you
+    /// pour back from a month ago must still find its pictures.
+    @discardableResult
+    func tidyPhotos() -> Int {
+        var referenced = data.photoIDs
+        for cup in cupboard.loadShelf().cups {
+            if let inside = cupboard.read(cup) { referenced.formUnion(inside.photoIDs) }
+        }
+        return photos.purgeOrphans(keeping: referenced)
+    }
+
+    var photoCount: Int { photos.allIDs.count }
 
     // MARK: Cups
 
@@ -295,6 +326,8 @@ final class CoffeeStore: ObservableObject {
         data.purchases.removeAll { ($0.rinsedAt ?? .distantFuture) < cutoff }
         if before != (data.beans.count, data.shots.count, data.purchases.count) {
             saveNow(pourCup: false)
+            // Something left for good, so a photo may now be unspoken for.
+            tidyPhotos()
         }
     }
 }

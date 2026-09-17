@@ -334,7 +334,7 @@ final class CupPurchaseTests: XCTestCase {
         let cup = try XCTUnwrap(cupboard.pour(data, kind: .daily))
         XCTAssertEqual(cup.purchaseCount, 2)
         XCTAssertTrue(cup.tested)
-        XCTAssertTrue(cup.contentsLine.contains("2 purchases"))
+        XCTAssertTrue(cup.contentsLine.contains("2 things"))
     }
 
     /// Losing every purchase must trip the same guard that losing bags does.

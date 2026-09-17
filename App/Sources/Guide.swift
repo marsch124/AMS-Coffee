@@ -13,10 +13,22 @@ struct Release: Identifiable {
 
 enum Guide {
 
-    static let appVersion = "1.1"
+    static let appVersion = "2.0"
 
     /// Newest first. Every release adds an entry — never edits an old one.
     static let releases: [Release] = [
+        Release(version: "2.0", date: "2026-09-17",
+                headline: "Tidied up", emoji: "🧹",
+                lines: [
+                    "🧹 Four places instead of five, and only four: Today, Beans, Brews, Settings.",
+                    "💸 The Money screen is gone. No totals, no cost per cup. This app is about drinking coffee, not accounting.",
+                    "🧰 Your machine, grinder and the rest are now Your kit, in Settings, where you set them up once.",
+                    "⚙️ How this works, the version history, your cups, the Sink and export all moved into Settings, off the morning screen.",
+                    "📷 Photos: of a bag, and of a receipt. Taken with the camera or chosen from your pictures.",
+                    "🏺 A cup now counts its photos and proves they are still there — a cup missing a picture is not a whole cup.",
+                    "🎨 Every stock symbol is gone. Every mark in the app is drawn here, and everything is bigger.",
+                    "🌬 The steam at the top of every screen is gone.",
+                ]),
         Release(version: "1.1", date: "2026-09-17",
                 headline: "Every way of making it", emoji: "🌀",
                 lines: [
@@ -105,19 +117,32 @@ enum Guide {
 
                 One change at a time. That is the whole trick.
                 """),
-        Chapter(emoji: "🛒", title: "Money",
+        Chapter(emoji: "🧰", title: "Your kit",
                 body: """
-                Machines, grinders, scales, tampers, filters, subscriptions — \
-                what it was, where from, what it cost, and when the warranty \
-                runs out. The app warns you when a warranty has under two \
-                months left.
+                Machines, grinders, scales, tampers, filters. What it is, where \
+                it came from, a photo of the receipt, and when the warranty runs \
+                out — the app tells you when one has under two months left.
 
-                Your bags of beans are counted automatically from the bags \
-                themselves, so you never enter a bag twice.
+                It lives in Settings because you set your kit up once and then \
+                get on with the coffee. Nothing here is added up: there are no \
+                totals and no cost per cup. If you want to note what something \
+                cost you can, on one quiet line, and the app will never mention \
+                it again.
+                """),
+        Chapter(emoji: "📷", title: "Photos",
+                body: """
+                A bag can have a photo, and so can a receipt. Take one with the \
+                camera — that is the useful one, standing at the machine — or \
+                choose a picture you already have. Tap a photo to fill the screen \
+                with it.
 
-                Spent this year is split into beans and gear. Cost per cup comes \
-                two ways: beans only, which is what this morning actually cost, \
-                and with the gear folded in, which is the number that stings.
+                Photos are kept as files beside your coffee, not inside it, and \
+                shrunk so a year of bags still syncs in a moment.
+
+                A photo is only ever deleted when nothing refers to it at all: \
+                not a bag, not something in the Sink, and not a single cup on the \
+                shelf. Pour back a cup from a month ago and its pictures are \
+                still there.
                 """),
         Chapter(emoji: "🏺", title: "The Cup System",
                 body: """
@@ -131,7 +156,7 @@ enum Guide {
                 Three rules make it safe:
 
                 1. Each cup proves itself. The app opens the cup again, reads \
-                what is inside and counts it — bags, brews and purchases. Only \
+                what is inside and counts it — bags, brews, kit and photos. Only \
                 then does it get a green ✓. A cup that cannot be opened says so, \
                 in orange.
 
@@ -173,17 +198,20 @@ enum Guide {
                 No iCloud account signed in? The app quietly keeps everything on \
                 that device and says so at the bottom of the main screen.
                 """),
-        Chapter(emoji: "📜", title: "Version history",
+        Chapter(emoji: "⚙️", title: "Settings",
                 body: """
-                The pill on the main screen. Tap it and the whole story unfolds, \
-                newest at the top, one line per thing that changed. It is never \
-                tidied up or shortened.
+                Everything you touch once lives here, off the morning screen: \
+                where your coffee is kept, your cups, your kit, the Sink, a copy \
+                of everything to export, this guide, and the version history.
+
+                The version history is the whole story of the app, newest at the \
+                top, one line per thing that changed. It is never tidied up or \
+                shortened.
                 """),
         Chapter(emoji: "🌱", title: "Coming next",
                 body: """
-                Photos of the bags and of receipts. A brew timer that counts \
-                while you pour. Charts of how a bag's scores moved as you dialled \
-                it in.
+                A brew timer that counts while you pour. Charts of how a bag's \
+                scores moved as you dialled it in. The Mac app.
                 """),
     ]
 }

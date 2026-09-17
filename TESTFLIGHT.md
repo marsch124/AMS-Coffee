@@ -92,7 +92,21 @@ app. That is expected — see step 3.
 Same link as step 2. About ten minutes. When it is green, Apple processes the
 build for a few more minutes and then emails you.
 
-### 6. Open TestFlight on the phone
+### 6. There must be a tester group, or nothing reaches you
+
+**A successful upload does not put the app on your phone by itself.** The build
+sits in App Store Connect until it is released to a group of testers, and until
+then TestFlight stays silent and sends no email. A brand-new app has no groups,
+so this bites once per app.
+
+This is already set up for AMS Coffee: an internal group called **Martin**,
+with you in it, receiving every build. Nothing to do.
+
+For the next app, it is three API calls or two minutes in App Store Connect ›
+TestFlight › Internal Testing › **+** › name the group › add yourself › tick
+the build.
+
+### 7. Open TestFlight on the phone
 
 Sign in with the same Apple ID and AMS Coffee is waiting. Tap Install.
 

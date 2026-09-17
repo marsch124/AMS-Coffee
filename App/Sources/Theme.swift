@@ -53,9 +53,9 @@ struct SquashyButton: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 18, weight: .heavy, design: .rounded))
+            .font(.system(size: 20, weight: .heavy, design: .rounded))
             .foregroundStyle(.white)
-            .padding(.vertical, 16)
+            .padding(.vertical, 18)
             .padding(.horizontal, 22)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
@@ -112,40 +112,6 @@ private struct PoppyAppear: ViewModifier {
                     shown = true
                 }
             }
-    }
-}
-
-// MARK: - Steam
-
-/// Three ribbons of steam curling off the top of the screen.
-struct Steam: View {
-    var tint: Color = Candy.cocoa
-
-    var body: some View {
-        TimelineView(.animation) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
-            Canvas { context, size in
-                for i in 0..<3 {
-                    var path = Path()
-                    let x = size.width * (0.28 + 0.22 * Double(i))
-                    path.move(to: CGPoint(x: x, y: size.height))
-                    var y = size.height
-                    while y > 0 {
-                        let phase = t * 1.5 + Double(i) * 1.1
-                        let wiggle = sin(y / 14 + phase) * 7
-                        path.addLine(to: CGPoint(x: x + wiggle, y: y))
-                        y -= 3
-                    }
-                    let fade = 0.30 + 0.12 * sin(t * 1.2 + Double(i))
-                    context.stroke(path,
-                                   with: .color(tint.opacity(fade)),
-                                   style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                }
-            }
-        }
-        .frame(height: 46)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
     }
 }
 
@@ -214,20 +180,129 @@ struct Confetti: View {
     }
 }
 
+// MARK: - Hand-drawn marks
+//
+// No stock symbol sets. Every mark in the app is drawn here, with the same
+// slightly-off-true line as the app icon, and sized to be read at a glance.
+
+/// A plus, drawn rather than borrowed.
+struct PlusMark: View {
+    var size: Double = 26
+    var weight: Double = 5
+
+    var body: some View {
+        ZStack {
+            Capsule().frame(width: size, height: weight)
+            Capsule().frame(width: weight, height: size)
+        }
+        .rotationEffect(.degrees(-2))
+        .frame(width: size, height: size)
+    }
+}
+
+/// A tick with an honest wobble.
+struct TickMark: View {
+    var size: Double = 26
+    var weight: Double = 5
+
+    var body: some View {
+        Path { p in
+            p.move(to: CGPoint(x: size * 0.16, y: size * 0.55))
+            p.addLine(to: CGPoint(x: size * 0.42, y: size * 0.78))
+            p.addLine(to: CGPoint(x: size * 0.86, y: size * 0.22))
+        }
+        .stroke(style: StrokeStyle(lineWidth: weight, lineCap: .round, lineJoin: .round))
+        .rotationEffect(.degrees(-3))
+        .frame(width: size, height: size)
+    }
+}
+
+/// A cross, for closing things.
+struct CrossMark: View {
+    var size: Double = 22
+    var weight: Double = 5
+
+    var body: some View {
+        ZStack {
+            Capsule().frame(width: size, height: weight).rotationEffect(.degrees(44))
+            Capsule().frame(width: size, height: weight).rotationEffect(.degrees(-44))
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+/// A minus, for the dials.
+struct MinusMark: View {
+    var size: Double = 26
+    var weight: Double = 5
+
+    var body: some View {
+        Capsule()
+            .frame(width: size, height: weight)
+            .rotationEffect(.degrees(-2))
+            .frame(width: size, height: size)
+    }
+}
+
+/// An arrow head that points wherever it is turned.
+struct ChevronMark: View {
+    var size: Double = 22
+    var weight: Double = 5
+
+    var body: some View {
+        Path { p in
+            p.move(to: CGPoint(x: size * 0.22, y: size * 0.34))
+            p.addLine(to: CGPoint(x: size * 0.5, y: size * 0.68))
+            p.addLine(to: CGPoint(x: size * 0.78, y: size * 0.34))
+        }
+        .stroke(style: StrokeStyle(lineWidth: weight, lineCap: .round, lineJoin: .round))
+        .frame(width: size, height: size)
+    }
+}
+
+/// A star you can fill, for rating a bag.
+struct StarMark: View {
+    var size: Double = 34
+    var filled: Bool
+
+    var body: some View {
+        let path = Path { p in
+            let r = size / 2
+            let c = CGPoint(x: r, y: r)
+            for i in 0..<10 {
+                let angle = Double(i) * .pi / 5 - .pi / 2
+                let radius = i.isMultiple(of: 2) ? r : r * 0.44
+                let pt = CGPoint(x: c.x + cos(angle) * radius, y: c.y + sin(angle) * radius)
+                if i == 0 { p.move(to: pt) } else { p.addLine(to: pt) }
+            }
+            p.closeSubpath()
+        }
+        Group {
+            if filled {
+                path.fill()
+            } else {
+                path.stroke(style: StrokeStyle(lineWidth: 3, lineJoin: .round))
+            }
+        }
+        .rotationEffect(.degrees(-4))
+        .frame(width: size, height: size)
+    }
+}
+
 // MARK: - Little shared pieces
 
 /// A fat pill used everywhere for counts and labels.
 struct Chip: View {
     let text: String
     var tint: Color = Candy.blueberry
-    var symbol: String?
+    var symbol: String?   // an emoji, never a stock glyph
 
     var body: some View {
         HStack(spacing: 5) {
-            if let symbol { Image(systemName: symbol) }
+            if let symbol { Text(symbol).font(.system(size: 17)) }
             Text(text)
         }
-        .font(.system(size: 14, weight: .heavy, design: .rounded))
+        .font(.system(size: 16, weight: .heavy, design: .rounded))
         .lineLimit(1)
         .fixedSize(horizontal: true, vertical: false)
         .foregroundStyle(tint)
@@ -263,12 +338,12 @@ struct BigNumber: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: 30, weight: .black, design: .rounded))
+                .font(.system(size: 36, weight: .black, design: .rounded))
                 .foregroundStyle(tint)
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
             Text(caption)
-                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .font(.system(size: 13, weight: .bold, design: .rounded))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
@@ -281,14 +356,13 @@ struct StarRating: View {
     var identifierPrefix = "star"
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 10) {
             ForEach(1...5, id: \.self) { i in
                 Button {
                     rating = (rating == i) ? 0 : i
                 } label: {
-                    Image(systemName: i <= rating ? "star.fill" : "star")
-                        .font(.system(size: 26, weight: .bold))
-                        .foregroundStyle(i <= rating ? Candy.mango : Color.secondary.opacity(0.4))
+                    StarMark(size: 38, filled: i <= rating)
+                        .foregroundStyle(i <= rating ? Candy.mango : Color.secondary.opacity(0.35))
                         .scaleEffect(i <= rating ? 1.06 : 1)
                 }
                 .buttonStyle(.plain)

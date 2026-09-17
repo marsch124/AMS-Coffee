@@ -11,8 +11,8 @@ settings:
     DEVELOPMENT_TEAM: D24ENP83QQ
     CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "1.1"
-    CURRENT_PROJECT_VERSION: "2"
+    MARKETING_VERSION: "2.0"
+    CURRENT_PROJECT_VERSION: "3"
 targets:
   AMSCoffee:
     type: application
@@ -50,6 +50,8 @@ targets:
         CFBundleIconName: AppIcon
         LSApplicationCategoryType: public.app-category.lifestyle
         ITSAppUsesNonExemptEncryption: false
+        NSCameraUsageDescription: AMS Coffee uses the camera when you photograph a bag of beans or a receipt.
+        NSPhotoLibraryUsageDescription: AMS Coffee needs your photo library when you choose an existing picture for a bag or a receipt.
         UILaunchScreen:
           UIColorName: ""
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]

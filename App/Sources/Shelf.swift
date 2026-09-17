@@ -30,6 +30,15 @@ struct CoffeeData: Codable, Equatable {
         savedAt = try c.decodeIfPresent(Date.self, forKey: .savedAt) ?? Date()
     }
 
+    /// Every photo this data refers to — including rinsed records, because
+    /// the Sink can give them back.
+    var photoIDs: Set<String> {
+        var ids = Set<String>()
+        for b in beans { if let id = b.photoID { ids.insert(id) } }
+        for p in purchases { if let id = p.photoID { ids.insert(id) } }
+        return ids
+    }
+
     func bean(_ id: UUID?) -> Bean? {
         guard let id else { return nil }
         return beans.first { $0.id == id }

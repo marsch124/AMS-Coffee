@@ -102,7 +102,8 @@ final class AMSCoffeeUITests: XCTestCase {
         let app = launch()
         XCTAssertTrue(waitFor(app, "home-pull-shot"))
 
-        tap(app, "tab-cups")
+        tap(app, "tab-settings")
+        tap(app, "settings-cups")
         tap(app, "cups-save-keepsake")
         tap(app, "cups-keepsake-confirm")
 
@@ -136,21 +137,39 @@ final class AMSCoffeeUITests: XCTestCase {
         XCTAssertTrue(waitFor(app, "shot-row-0"), "the pour-over should be on the list")
     }
 
-    /// Test 4 (added in 1.1) — a purchase is saved and reaches the totals.
-    func testAddingAPurchaseReachesTheTotals() {
+    /// Test 4 — your kit now lives in Settings, and carries a receipt photo.
+    func testAddingSomethingToYourKit() {
         let app = launch()
         XCTAssertTrue(waitFor(app, "home-pull-shot"))
 
-        tap(app, "tab-money")
-        XCTAssertTrue(waitFor(app, "money-empty"), "a fresh app has no gear")
+        tap(app, "tab-settings")
+        tap(app, "settings-kit")
+        XCTAssertTrue(waitFor(app, "kit-empty"), "a fresh app owns no kit")
 
-        tap(app, "money-add")
-        tap(app, "purchase-kind-grinder")
-        tap(app, "purchase-price-plus")        // 0 kr -> 50 kr
-        tap(app, "purchase-save")
+        tap(app, "kit-add")
+        XCTAssertTrue(waitFor(app, "kit-photo-empty"), "a kit item can hold a receipt")
+        tap(app, "kit-kind-grinder")
+        tap(app, "kit-price-plus")
+        tap(app, "kit-save")
 
-        XCTAssertTrue(waitFor(app, "purchase-row-0"), "the purchase should be on the list")
-        XCTAssertTrue(absent(app, "money-empty"), "and the empty note should be gone")
-        XCTAssertTrue(waitFor(app, "money-year"), "the year totals should still be there")
+        XCTAssertTrue(waitFor(app, "kit-row-0"), "it should be listed")
+        XCTAssertTrue(absent(app, "kit-empty"), "and the empty note should be gone")
+    }
+
+    /// Test 5 (added in 2.0) — the restructure itself. The guide and the
+    /// version history belong in Settings, and Money is gone for good.
+    func testSettingsHoldsTheGuideAndTheHistory() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+        XCTAssertTrue(absent(app, "tab-money"), "there is no Money tab any more")
+
+        tap(app, "tab-settings")
+        XCTAssertTrue(waitFor(app, "settings-where"), "Settings says where the data lives")
+
+        tap(app, "settings-version-toggle")
+        XCTAssertTrue(waitFor(app, "settings-version-list"), "the history unfolds here")
+
+        tap(app, "settings-guide-toggle")
+        XCTAssertTrue(waitFor(app, "settings-guide-list"), "and so does the guide")
     }
 }

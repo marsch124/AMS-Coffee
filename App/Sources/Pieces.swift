@@ -48,7 +48,7 @@ struct NumberDial: View {
 
     private func dialButton(_ symbol: String, identifier: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
+            Text(symbol)
                 .font(.system(size: 18, weight: .black))
                 .foregroundStyle(.white)
                 .frame(width: 42, height: 42)
@@ -212,5 +212,57 @@ struct FatField: View {
                     .strokeBorder(tint.opacity(0.45), lineWidth: 2))
                 .accessibilityIdentifier(identifier)
         }
+    }
+}
+
+/// A folded pill that unfolds in place. Used for the guide and the history.
+struct FoldPill<Content: View>: View {
+    let emoji: String
+    let title: String
+    let subtitle: String
+    let tint: Color
+    @Binding var isOpen: Bool
+    let identifier: String
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.spring(response: 0.42, dampingFraction: 0.72)) { isOpen.toggle() }
+            } label: {
+                HStack(spacing: 15) {
+                    Text(emoji).font(.system(size: 38))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .font(.system(size: 21, weight: .black, design: .rounded))
+                            .foregroundStyle(tint)
+                        Text(subtitle)
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    ChevronMark(size: 26, weight: 5)
+                        .foregroundStyle(tint)
+                        .rotationEffect(.degrees(isOpen ? 180 : 0))
+                }
+                .padding(18)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("\(identifier)-toggle")
+
+            if isOpen {
+                content
+                    .padding(.horizontal, 18)
+                    .padding(.bottom, 20)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(Color.white.opacity(0.62))
+                .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .strokeBorder(tint.opacity(0.55), lineWidth: 3))
+                .shadow(color: tint.opacity(0.28), radius: 0, x: 0, y: 5)
+        )
     }
 }

@@ -49,6 +49,7 @@ struct Cup: Identifiable, Codable, Equatable {
     var beanCount = 0
     var shotCount = 0
     var purchaseCount = 0
+    var photoCount = 0
     /// Set only after the cup has been read back and its contents counted.
     var tested = false
     var testedNote = ""
@@ -60,7 +61,10 @@ struct Cup: Identifiable, Codable, Equatable {
         var parts = ["\(beanCount) bag\(beanCount == 1 ? "" : "s")",
                      "\(shotCount) brew\(shotCount == 1 ? "" : "s")"]
         if purchaseCount > 0 {
-            parts.append("\(purchaseCount) purchase\(purchaseCount == 1 ? "" : "s")")
+            parts.append("\(purchaseCount) thing\(purchaseCount == 1 ? "" : "s")")
+        }
+        if photoCount > 0 {
+            parts.append("\(photoCount) photo\(photoCount == 1 ? "" : "s")")
         }
         return parts.joined(separator: " · ")
     }
@@ -76,6 +80,7 @@ struct Cup: Identifiable, Codable, Equatable {
         beanCount = try c.decodeIfPresent(Int.self, forKey: .beanCount) ?? 0
         shotCount = try c.decodeIfPresent(Int.self, forKey: .shotCount) ?? 0
         purchaseCount = try c.decodeIfPresent(Int.self, forKey: .purchaseCount) ?? 0
+        photoCount = try c.decodeIfPresent(Int.self, forKey: .photoCount) ?? 0
         tested = try c.decodeIfPresent(Bool.self, forKey: .tested) ?? false
         testedNote = try c.decodeIfPresent(String.self, forKey: .testedNote) ?? ""
         filename = try c.decodeIfPresent(String.self, forKey: .filename) ?? ""
@@ -83,12 +88,12 @@ struct Cup: Identifiable, Codable, Equatable {
 
     init(id: UUID = UUID(), kind: CupKind = .quick, name: String = "",
          pouredAt: Date = Date(), beanCount: Int = 0, shotCount: Int = 0,
-         purchaseCount: Int = 0, tested: Bool = false, testedNote: String = "",
-         filename: String = "") {
+         purchaseCount: Int = 0, photoCount: Int = 0, tested: Bool = false,
+         testedNote: String = "", filename: String = "") {
         self.id = id; self.kind = kind; self.name = name; self.pouredAt = pouredAt
         self.beanCount = beanCount; self.shotCount = shotCount
-        self.purchaseCount = purchaseCount; self.tested = tested
-        self.testedNote = testedNote; self.filename = filename
+        self.purchaseCount = purchaseCount; self.photoCount = photoCount
+        self.tested = tested; self.testedNote = testedNote; self.filename = filename
     }
 }
 
@@ -154,11 +159,14 @@ enum CupPolicy {
 
 final class CupCupboard {
     private let folder: URL
+    /// Where the photo files are, so a cup can check its pictures survived.
+    private let photoFolder: URL?
     private let fm = FileManager.default
     private var indexURL: URL { folder.appendingPathComponent("shelf.json") }
 
-    init(folder: URL) {
+    init(folder: URL, photoFolder: URL? = nil) {
         self.folder = folder
+        self.photoFolder = photoFolder
         try? fm.createDirectory(at: folder, withIntermediateDirectories: true)
     }
 
@@ -185,7 +193,8 @@ final class CupCupboard {
                       name: name,
                       beanCount: data.liveBeans.count,
                       shotCount: data.liveShots.count,
-                      purchaseCount: data.livePurchases.count)
+                      purchaseCount: data.livePurchases.count,
+                      photoCount: data.photoIDs.count)
         cup.filename = "cup-\(Int(cup.pouredAt.timeIntervalSince1970))-\(cup.id.uuidString.prefix(8)).json"
 
         // Keepsakes are always allowed — you asked for them by hand.
@@ -236,8 +245,17 @@ final class CupCupboard {
         let buys = restored.livePurchases.count
         guard beans == cup.beanCount, shots == cup.shotCount,
               buys == cup.purchaseCount else {
-            return (false, "This cup came back as \(beans) bags · \(shots) brews · \(buys) purchases "
+            return (false, "This cup came back as \(beans) bags · \(shots) brews · \(buys) things "
                     + "instead of \(cup.contentsLine).")
+        }
+        // A cup that remembers a photo whose file has gone is not whole.
+        if let photoFolder {
+            let missing = restored.photoIDs.filter {
+                !fm.fileExists(atPath: photoFolder.appendingPathComponent("\($0).jpg").path)
+            }
+            if !missing.isEmpty {
+                return (false, "This cup opened, but \(missing.count) of its photos are missing.")
+            }
         }
         return (true, "Opened and counted: \(cup.contentsLine).")
     }
