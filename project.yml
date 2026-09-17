@@ -29,6 +29,12 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.schabbauer.AMSCoffee
+        # iPhone only on iOS. Apple demands all four orientations from any app
+        # that supports iPad multitasking, and this one is portrait by design —
+        # it is used with glasses off, one thumb, next to a coffee machine.
+        # Saying "iPhone" is honest and keeps it portrait. The Mac app is a
+        # separate destination and unaffected.
+        TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         INFOPLIST_FILE: App/Config/Info.plist
