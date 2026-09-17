@@ -14,9 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use the newest Xcode on the runner
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer || true
-
       - name: Show what we are building with
         run: |
           xcodebuild -version
@@ -26,7 +23,6 @@ jobs:
         run: brew install xcodegen
 
       - name: Generate the project
-        working-directory: .
         run: xcodegen generate
 
       - name: Unit tests and UI tests
@@ -39,8 +35,7 @@ jobs:
             -resultBundlePath TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
-            DEVELOPMENT_TEAM="" \
-            | xcbeautify || exit 1
+            DEVELOPMENT_TEAM=""
 
       - name: Keep the results when it goes red
         if: failure()
