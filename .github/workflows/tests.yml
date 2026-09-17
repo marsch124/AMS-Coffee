@@ -27,19 +27,19 @@ jobs:
 
       - name: Pick a simulator the runner actually has
         run: |
-          # Hardcoding "iPhone 16" broke the moment GitHub rotated the runner
-          # image. Ask the machine what it has instead, and use its UDID.
-          UDID=$(xcrun simctl list devices available -j | python3 -c '
-import json, sys
-devices = json.load(sys.stdin)["devices"]
-found = [d for rt in devices for d in devices[rt]
-         if d.get("isAvailable") and d["name"].startswith("iPhone")]
-if not found:
-    sys.exit("no iPhone simulator on this runner")
-print(found[-1]["udid"], found[-1]["name"], sep="\t")
-')
-          echo "SIM_UDID=$(echo "$UDID" | cut -f1)" >> $GITHUB_ENV
-          echo "Using simulator: $(echo "$UDID" | cut -f2)"
+          # Naming "iPhone 16" broke the moment GitHub rotated the runner
+          # image, so ask the machine what it has and use that UDID.
+          UDID=$(xcrun simctl list devices available \
+            | grep -E "^ +iPhone" | tail -1 \
+            | sed -E 's/.*\(([0-9A-Fa-f-]{36})\).*/\1/')
+          if [ -z "$UDID" ]; then
+            echo "::error::no iPhone simulator on this runner"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "SIM_UDID=$UDID" >> $GITHUB_ENV
+          echo "Using simulator:"
+          xcrun simctl list devices available | grep "$UDID"
 
       - name: Unit tests and UI tests
         run: |
