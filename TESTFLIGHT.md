@@ -110,6 +110,24 @@ the build.
 
 Sign in with the same Apple ID and AMS Coffee is waiting. Tap Install.
 
+## If the archive says the certificate limit is reached
+
+Every run signs in the cloud on a fresh machine, so Apple mints a new
+development certificate each time, and an account can only hold so many. After
+a lot of runs in one day the archive stops with:
+
+> Choose a certificate to revoke. Your account has reached the maximum number
+> of certificates.
+
+It is harmless housekeeping. Revoke the ones called **"Created via API"** —
+they are machine-made and nothing depends on them — at
+<https://developer.apple.com/account/resources/certificates/list>. **Never
+revoke the one with your own name on it**; that is the certificate your Mac
+holds the private key for, and Xcode needs it.
+
+One release a day never comes close to the limit. Today it took eleven runs to
+get the first build out, which is what filled it.
+
 ## Which build is which
 
 The workflow reads the version straight out of `Guide.appVersion`, the same
