@@ -45,7 +45,25 @@ The Issuer ID is at the top of <https://appstoreconnect.apple.com> ›
 file is in `Apple Developer/AMS PARA/p8 file - Admin/` — open it in TextEdit and
 copy everything.
 
-### 2. Send the first build
+### 2. Make the iCloud container — once
+
+AMS Coffee keeps one file in iCloud Drive so the phone and the Mac read the
+same shelf. That needs an **iCloud container** registered to your account, and
+**this is the one thing no build and no API can do for you** — Apple only
+allows it in the web portal.
+
+<https://developer.apple.com/account/resources/identifiers/list/cloudContainer> ›
+**+**
+
+- Description: `AMS Coffee`
+- Identifier: `iCloud.com.schabbauer.AMSCoffee`
+- Continue › Register
+
+Without this, the archive fails with *"Authentication failed: Make sure a
+bearer token was provided"* — which sounds like a broken key and is nothing of
+the sort. That message cost an afternoon.
+
+### 3. Send the first build
 
 <https://github.com/marsch124/AMS-Coffee/actions/workflows/testflight.yml> ›
 **Run workflow**
@@ -57,23 +75,24 @@ test fails. Then it archives, and Apple registers the bundle identifier
 The upload itself will fail the first time, with Apple saying there is no such
 app. That is expected — see step 3.
 
-### 3. Create the app record
+### 4. Create the app record
 
 <https://appstoreconnect.apple.com> › **Apps** › **+** › **New App**
 
 - Platform: **iOS**
 - Name: `AMS Coffee`
 - Primary language: English
-- Bundle ID: pick `com.schabbauer.AMSCoffee` from the list — step 2 put it there
+- Bundle ID: pick `com.schabbauer.AMSCoffee` from the list — it is already
+  registered
 - SKU: `ams-coffee`
 - User access: Full Access
 
-### 4. Run the workflow again
+### 5. Run the workflow again
 
 Same link as step 2. About ten minutes. When it is green, Apple processes the
 build for a few more minutes and then emails you.
 
-### 5. Open TestFlight on the phone
+### 6. Open TestFlight on the phone
 
 Sign in with the same Apple ID and AMS Coffee is waiting. Tap Install.
 

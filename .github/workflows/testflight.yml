@@ -107,7 +107,12 @@ jobs:
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
         run: |
           mkdir -p "$HOME/private_keys"
-          printf '%s\n' "$KEY" > "$HOME/private_keys/AuthKey_$KEY_ID.p8"
+          # The secret's value already ends with a newline, so a plain
+          # printf '%s\n' left a trailing BLANK line in the key file — six
+          # lines where the .p8 has five. openssl tolerates that; Apple's
+          # signer may not. awk 'NF' drops empty lines, so the file written
+          # here is byte-for-byte the PEM and nothing else.
+          printf '%s\n' "$KEY" | awk 'NF' > "$HOME/private_keys/AuthKey_$KEY_ID.p8"
           chmod 600 "$HOME/private_keys/AuthKey_$KEY_ID.p8"
 
       - name: Check the key is actually a key
@@ -131,7 +136,13 @@ jobs:
             echo "into the secret."
             exit 1
           fi
-          echo "The key parses. $(wc -l < "$F" | tr -d " ") lines."
+          LINES=$(wc -l < "$F" | tr -d " ")
+          if [ "$LINES" -ne 5 ]; then
+            echo "::error::The key file came out $LINES lines; a .p8 is 5."
+            echo "Something in ASC_KEY_P8 is not just the key."
+            exit 1
+          fi
+          echo "The key parses, and is exactly 5 lines."
 
       - name: Archive the app
         env:
