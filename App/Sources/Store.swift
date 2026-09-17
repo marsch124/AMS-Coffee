@@ -225,36 +225,75 @@ final class CoffeeStore: ObservableObject {
         scheduleSave()
     }
 
-    /// A new shot, pre-filled from the last good one on this bag.
-    func draftShot(beanID: UUID?) -> Shot {
-        var draft = Shot()
+    /// A new brew, pre-filled from the last good one on this bag *with this
+    /// method* — a pour-over recipe is no use when you are pulling a shot.
+    /// Nothing to copy? The method's own sensible starting point.
+    func draftShot(beanID: UUID?, method: BrewMethod = .espresso) -> Shot {
+        var draft = method.starter()
         draft.beanID = beanID ?? data.liveBeans.first?.id
-        if let id = draft.beanID, let best = data.bestShot(beanID: id) {
+        if let id = draft.beanID, let best = data.bestShot(beanID: id, method: method) {
             draft.grind = best.grind
             draft.doseGrams = best.doseGrams
             draft.yieldGrams = best.yieldGrams
+            draft.waterGrams = best.waterGrams
             draft.seconds = best.seconds
             draft.tempC = best.tempC
             draft.preInfusionSeconds = best.preInfusionSeconds
             draft.basket = best.basket
+            draft.bloomGrams = best.bloomGrams
+            draft.bloomSeconds = best.bloomSeconds
+            draft.pours = best.pours
+            draft.steepMinutes = best.steepMinutes
+            draft.steepHours = best.steepHours
+            draft.plungeSeconds = best.plungeSeconds
+            draft.inverted = best.inverted
         }
         draft.date = Date()
         return draft
+    }
+
+    // MARK: Purchases
+
+    func upsert(_ purchase: Purchase) {
+        var p = purchase
+        p.modifiedAt = Date()
+        if let i = data.purchases.firstIndex(where: { $0.id == p.id }) {
+            data.purchases[i] = p
+        } else {
+            data.purchases.append(p)
+        }
+        scheduleSave()
+    }
+
+    func rinse(_ purchase: Purchase) {
+        guard let i = data.purchases.firstIndex(where: { $0.id == purchase.id }) else { return }
+        data.purchases[i].rinsedAt = Date()
+        data.purchases[i].modifiedAt = Date()
+        scheduleSave()
+    }
+
+    func unrinse(_ purchase: Purchase) {
+        guard let i = data.purchases.firstIndex(where: { $0.id == purchase.id }) else { return }
+        data.purchases[i].rinsedAt = nil
+        data.purchases[i].modifiedAt = Date()
+        scheduleSave()
     }
 
     // MARK: The Sink
 
     var sinkBeans: [Bean] { data.beans.filter { $0.rinsedAt != nil } }
     var sinkShots: [Shot] { data.shots.filter { $0.rinsedAt != nil } }
+    var sinkPurchases: [Purchase] { data.purchases.filter { $0.rinsedAt != nil } }
+    var sinkCount: Int { sinkBeans.count + sinkShots.count + sinkPurchases.count }
 
     /// Rinsed things wait 30 days before they actually go.
     private func emptyTheSink() {
         let cutoff = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? .distantPast
-        let beansBefore = data.beans.count
-        let shotsBefore = data.shots.count
+        let before = (data.beans.count, data.shots.count, data.purchases.count)
         data.beans.removeAll { ($0.rinsedAt ?? .distantFuture) < cutoff }
         data.shots.removeAll { ($0.rinsedAt ?? .distantFuture) < cutoff }
-        if data.beans.count != beansBefore || data.shots.count != shotsBefore {
+        data.purchases.removeAll { ($0.rinsedAt ?? .distantFuture) < cutoff }
+        if before != (data.beans.count, data.shots.count, data.purchases.count) {
             saveNow(pourCup: false)
         }
     }

@@ -16,7 +16,9 @@ struct AMSCoffeeApp: App {
 }
 
 enum Tab: String, CaseIterable, Identifiable {
-    case today, bags, shots, cups
+    // The raw values are the test identifiers, so they stay put even when the
+    // words on screen change — `shots` is now labelled "Brews".
+    case today, bags, shots, money, cups
 
     var id: String { rawValue }
 
@@ -25,6 +27,7 @@ enum Tab: String, CaseIterable, Identifiable {
         case .today: return "☕️"
         case .bags:  return "🫘"
         case .shots: return "🎛"
+        case .money: return "🛒"
         case .cups:  return "🏺"
         }
     }
@@ -33,7 +36,8 @@ enum Tab: String, CaseIterable, Identifiable {
         switch self {
         case .today: return "Today"
         case .bags:  return "Bags"
-        case .shots: return "Shots"
+        case .shots: return "Brews"
+        case .money: return "Money"
         case .cups:  return "Cups"
         }
     }
@@ -43,6 +47,7 @@ enum Tab: String, CaseIterable, Identifiable {
         case .today: return Candy.bubblegum
         case .bags:  return Candy.mint
         case .shots: return Candy.blueberry
+        case .money: return Candy.apricot
         case .cups:  return Candy.grape
         }
     }
@@ -62,6 +67,7 @@ struct RootView: View {
                     case .today: HomeView(tab: $tab)
                     case .bags:  BagsView()
                     case .shots: ShotsView()
+                    case .money: MoneyView()
                     case .cups:  CupsView()
                     }
                 }
@@ -82,7 +88,7 @@ struct CandyTabBar: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 3) {
             ForEach(Tab.allCases) { item in
                 let on = tab == item
                 Button {
@@ -94,6 +100,8 @@ struct CandyTabBar: View {
                             .font(.system(size: 11, weight: .heavy, design: .rounded))
                     }
                     .foregroundStyle(on ? .white : item.tint)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 9)
                     .background(

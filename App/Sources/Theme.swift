@@ -298,3 +298,55 @@ struct StarRating: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.5), value: rating)
     }
 }
+
+// MARK: - A colour per method
+
+extension BrewMethod {
+    /// Chosen by hand, not hashed — colour is how you tell them apart at a
+    /// glance, so no two may land on the same one.
+    var tint: Color {
+        switch self {
+        case .espresso:    return Candy.bubblegum
+        case .v60:         return Candy.sky
+        case .aeropress:   return Candy.grape
+        case .frenchPress: return Candy.mint
+        case .moka:        return Candy.apricot
+        case .coldBrew:    return Candy.blueberry
+        case .filter:      return Candy.mango
+        }
+    }
+}
+
+extension PurchaseKind {
+    var tint: Color {
+        switch self {
+        case .machine:      return Candy.bubblegum
+        case .grinder:      return Candy.blueberry
+        case .accessory:    return Candy.mint
+        case .subscription: return Candy.grape
+        case .other:        return Candy.apricot
+        }
+    }
+}
+
+extension BrewField {
+    /// Picked by hand so that neighbouring dials never share a colour in any
+    /// method's list — hashing put two oranges side by side on a pour-over.
+    var tint: Color {
+        switch self {
+        case .grind:         return Candy.bubblegum
+        case .dose:          return Candy.apricot
+        case .yield:         return Candy.mango
+        case .water:         return Candy.sky
+        case .temp:          return Candy.grape
+        case .seconds:       return Candy.blueberry
+        case .preInfusion:   return Candy.mint
+        case .bloomWater:    return Candy.mint
+        case .bloomSeconds:  return Candy.mango
+        case .pours:         return Candy.apricot
+        case .steepMinutes:  return Candy.mint
+        case .steepHours:    return Candy.mint
+        case .plungeSeconds: return Candy.mango
+        }
+    }
+}

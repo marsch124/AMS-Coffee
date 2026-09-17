@@ -51,7 +51,7 @@ struct HomeView: View {
             WobbleCard(tint: Candy.mint, tilt: -0.8) {
                 HStack(spacing: 4) {
                     BigNumber(value: "\(todaysShots.count)", caption: "today", tint: Candy.mint)
-                    BigNumber(value: "\(store.data.liveShots.count)", caption: "shots ever", tint: Candy.blueberry)
+                    BigNumber(value: "\(store.data.liveShots.count)", caption: "brews ever", tint: Candy.blueberry)
                     BigNumber(value: "\(store.data.liveBeans.count)", caption: "bags", tint: Candy.bubblegum)
                     BigNumber(value: store.data.costPerCup.map { String(format: "%.0f", $0) } ?? "—",
                               caption: "kr / cup", tint: Candy.mango)

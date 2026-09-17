@@ -41,9 +41,9 @@ struct BagsView: View {
                 .poppyAppear(Double(index) * 0.04)
             }
 
-            if !store.sinkBeans.isEmpty || !store.sinkShots.isEmpty {
+            if store.sinkCount > 0 {
                 NavigationLinkless(label: "🚰 The Sink",
-                                   subtitle: "\(store.sinkBeans.count) bags · \(store.sinkShots.count) shots waiting 30 days",
+                                   subtitle: "\(store.sinkCount) rinsed, waiting 30 days",
                                    tint: Candy.sky,
                                    identifier: "bags-sink") {
                     SinkView()
@@ -119,6 +119,13 @@ struct BagCard: View {
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                 }
 
+                let methods = store.data.methodsUsed(beanID: bean.id)
+                if !methods.isEmpty {
+                    Text(methods.map { "\($0.emoji) \($0.title)" }.joined(separator: "  "))
+                        .font(.system(size: 13, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+
                 // Stickers.
                 HStack(spacing: 6) {
                     if left > 0 && left <= 50 { Text("🔥 nearly gone") }
@@ -126,7 +133,9 @@ struct BagCard: View {
                        Calendar.current.dateComponents([.day], from: roast, to: Date()).day ?? 99 <= 7 {
                         Text("🎂 fresh roast")
                     }
-                    if store.data.bestShot(beanID: bean.id)?.light == .green { Text("🏆 dialled in") }
+                    if store.data.methodsUsed(beanID: bean.id).contains(where: {
+                        store.data.bestShot(beanID: bean.id, method: $0)?.light == .green
+                    }) { Text("🏆 dialled in") }
                 }
                 .font(.system(size: 12, weight: .heavy, design: .rounded))
                 .foregroundStyle(.secondary)
@@ -270,12 +279,23 @@ struct SinkView: View {
 
                 ForEach(Array(store.sinkShots.enumerated()), id: \.element.id) { i, shot in
                     HStack {
-                        Text("\(shot.light.emoji) shot · \(shot.ratioText)")
+                        Text("\(shot.light.emoji) \(shot.method.emoji) \(shot.ratioText)")
                             .font(.system(size: 17, weight: .bold, design: .rounded))
                         Spacer()
                         Button("Put back") { store.unrinse(shot) }
                             .buttonStyle(SquashyButton(tint: Candy.mint))
                             .accessibilityIdentifier("sink-shot-restore-\(i)")
+                    }
+                }
+
+                ForEach(Array(store.sinkPurchases.enumerated()), id: \.element.id) { i, purchase in
+                    HStack {
+                        Text("\(purchase.kind.emoji) \(purchase.displayName)")
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                        Spacer()
+                        Button("Put back") { store.unrinse(purchase) }
+                            .buttonStyle(SquashyButton(tint: Candy.mint))
+                            .accessibilityIdentifier("sink-purchase-restore-\(i)")
                     }
                 }
 

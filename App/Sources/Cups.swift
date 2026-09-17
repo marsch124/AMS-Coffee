@@ -48,15 +48,47 @@ struct Cup: Identifiable, Codable, Equatable {
     var pouredAt = Date()
     var beanCount = 0
     var shotCount = 0
+    var purchaseCount = 0
     /// Set only after the cup has been read back and its contents counted.
     var tested = false
     var testedNote = ""
     var filename = ""
 
-    var isEmpty: Bool { beanCount == 0 && shotCount == 0 }
+    var isEmpty: Bool { beanCount == 0 && shotCount == 0 && purchaseCount == 0 }
 
     var contentsLine: String {
-        "\(beanCount) bag\(beanCount == 1 ? "" : "s") · \(shotCount) shot\(shotCount == 1 ? "" : "s")"
+        var parts = ["\(beanCount) bag\(beanCount == 1 ? "" : "s")",
+                     "\(shotCount) brew\(shotCount == 1 ? "" : "s")"]
+        if purchaseCount > 0 {
+            parts.append("\(purchaseCount) purchase\(purchaseCount == 1 ? "" : "s")")
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    /// Tolerant: a cup poured by 1.0 has no purchase count, and must still
+    /// open and still be restorable.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        kind = try c.decodeIfPresent(CupKind.self, forKey: .kind) ?? .quick
+        name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
+        pouredAt = try c.decodeIfPresent(Date.self, forKey: .pouredAt) ?? Date()
+        beanCount = try c.decodeIfPresent(Int.self, forKey: .beanCount) ?? 0
+        shotCount = try c.decodeIfPresent(Int.self, forKey: .shotCount) ?? 0
+        purchaseCount = try c.decodeIfPresent(Int.self, forKey: .purchaseCount) ?? 0
+        tested = try c.decodeIfPresent(Bool.self, forKey: .tested) ?? false
+        testedNote = try c.decodeIfPresent(String.self, forKey: .testedNote) ?? ""
+        filename = try c.decodeIfPresent(String.self, forKey: .filename) ?? ""
+    }
+
+    init(id: UUID = UUID(), kind: CupKind = .quick, name: String = "",
+         pouredAt: Date = Date(), beanCount: Int = 0, shotCount: Int = 0,
+         purchaseCount: Int = 0, tested: Bool = false, testedNote: String = "",
+         filename: String = "") {
+        self.id = id; self.kind = kind; self.name = name; self.pouredAt = pouredAt
+        self.beanCount = beanCount; self.shotCount = shotCount
+        self.purchaseCount = purchaseCount; self.tested = tested
+        self.testedNote = testedNote; self.filename = filename
     }
 }
 
@@ -64,6 +96,17 @@ struct CupShelf: Codable, Equatable {
     var cups: [Cup] = []
     /// Raised when a cup was refused for holding less than the last one.
     var warning: String?
+
+    init(cups: [Cup] = [], warning: String? = nil) {
+        self.cups = cups
+        self.warning = warning
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        cups = try c.decodeIfPresent([Cup].self, forKey: .cups) ?? []
+        warning = try c.decodeIfPresent(String.self, forKey: .warning)
+    }
 
     var newest: Cup? { cups.sorted { $0.pouredAt > $1.pouredAt }.first }
 
@@ -83,6 +126,7 @@ enum CupPolicy {
         guard let last = shelf.newest else { return true }
         if candidate.beanCount < last.beanCount { return false }
         if candidate.shotCount < last.shotCount { return false }
+        if candidate.purchaseCount < last.purchaseCount { return false }
         return true
     }
 
@@ -140,7 +184,8 @@ final class CupCupboard {
         var cup = Cup(kind: kind,
                       name: name,
                       beanCount: data.liveBeans.count,
-                      shotCount: data.liveShots.count)
+                      shotCount: data.liveShots.count,
+                      purchaseCount: data.livePurchases.count)
         cup.filename = "cup-\(Int(cup.pouredAt.timeIntervalSince1970))-\(cup.id.uuidString.prefix(8)).json"
 
         // Keepsakes are always allowed — you asked for them by hand.
@@ -188,8 +233,11 @@ final class CupCupboard {
         }
         let beans = restored.liveBeans.count
         let shots = restored.liveShots.count
-        guard beans == cup.beanCount, shots == cup.shotCount else {
-            return (false, "This cup came back as \(beans) bags · \(shots) shots instead of \(cup.contentsLine).")
+        let buys = restored.livePurchases.count
+        guard beans == cup.beanCount, shots == cup.shotCount,
+              buys == cup.purchaseCount else {
+            return (false, "This cup came back as \(beans) bags · \(shots) brews · \(buys) purchases "
+                    + "instead of \(cup.contentsLine).")
         }
         return (true, "Opened and counted: \(cup.contentsLine).")
     }

@@ -99,4 +99,47 @@ final class AMSCoffeeUITests: XCTestCase {
         XCTAssertTrue(waitFor(app, "cup-tested-0"),
                       "and it should carry its tested stamp")
     }
+
+    /// Test 3 (added in 1.1) — each method shows its own dials and no others.
+    /// This is the one that would catch a pour-over asking for grams out.
+    func testEachMethodShowsOnlyItsOwnDials() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+
+        tap(app, "tab-shots")
+
+        // Espresso is weighed out of the cup: yield, no water in.
+        tap(app, "shots-add")
+        XCTAssertTrue(waitFor(app, "shot-yield"), "espresso should ask for grams out")
+        XCTAssertTrue(absent(app, "shot-water"), "espresso should not ask for water in")
+        tap(app, "shot-close")
+
+        // A pour-over is weighed in: water and bloom, no yield.
+        tap(app, "method-v60")
+        XCTAssertTrue(waitFor(app, "shot-water"), "a pour-over should ask for water in")
+        XCTAssertTrue(waitFor(app, "shot-bloomwater"), "a pour-over should ask about the bloom")
+        XCTAssertTrue(absent(app, "shot-yield"), "a pour-over should not ask for grams out")
+
+        tap(app, "light-green")
+        tap(app, "shot-save")
+        XCTAssertTrue(waitFor(app, "shot-row-0"), "the pour-over should be on the list")
+    }
+
+    /// Test 4 (added in 1.1) — a purchase is saved and reaches the totals.
+    func testAddingAPurchaseReachesTheTotals() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+
+        tap(app, "tab-money")
+        XCTAssertTrue(waitFor(app, "money-empty"), "a fresh app has no gear")
+
+        tap(app, "money-add")
+        tap(app, "purchase-kind-grinder")
+        tap(app, "purchase-price-plus")        // 0 kr -> 50 kr
+        tap(app, "purchase-save")
+
+        XCTAssertTrue(waitFor(app, "purchase-row-0"), "the purchase should be on the list")
+        XCTAssertTrue(absent(app, "money-empty"), "and the empty note should be gone")
+        XCTAssertTrue(waitFor(app, "money-year"), "the year totals should still be there")
+    }
 }
