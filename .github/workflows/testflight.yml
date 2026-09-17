@@ -8,6 +8,10 @@ name: TestFlight
 #   ASC_ISSUER_ID  the issuer ID shown above the key list
 #   ASC_KEY_P8     the whole contents of the AuthKey_XXXXXXXXXX.p8 file
 #   ASC_TEAM_ID    the ten-character Team ID from App Store Connect > Membership
+#
+# 🚨 The key must have the ADMIN role. An App Manager key uploads fine but
+# cannot do the cloud signing in "Send it to TestFlight" below, and fails there
+# with "Cloud signing permission error". This already cost a round on AMS PARA.
 on:
   workflow_dispatch:
     inputs:

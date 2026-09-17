@@ -7,6 +7,20 @@ You already did the hard parts for AMS PARA — the Developer Program membership
 and the App Store Connect key. You do **not** need to make a new key. You only
 need to give the same key to this repo, and tell Apple this app exists.
 
+## 🚨 It must be the Admin key
+
+You have two key files saved:
+
+```
+Apple Developer/AMS PARA/p8 file - App Manager/AuthKey_GSZY82U3ML.p8   ← does NOT work
+Apple Developer/AMS PARA/p8 file - Admin/AuthKey_63M2792NNV.p8         ← use this one
+```
+
+**Use the Admin one.** An App Manager key can upload a build but cannot do the
+cloud signing that `-exportArchive` performs, and fails with *"Cloud signing
+permission error"* at the very last step. This already cost a round of
+head-scratching on AMS PARA; the two folder names are the scar.
+
 ## What you do, once — about five minutes
 
 ### 1. Give this repo the same four secrets
@@ -19,15 +33,17 @@ four values you used there:
 
 | Name | Value |
 | --- | --- |
-| `ASC_KEY_ID` | the Key ID, ten characters |
+| `ASC_KEY_ID` | `63M2792NNV` — the Admin key. Already set for you. |
 | `ASC_ISSUER_ID` | the Issuer ID, a long code with dashes |
-| `ASC_KEY_P8` | the whole contents of your `AuthKey_XXXXXXXXXX.p8` file, including the `-----BEGIN PRIVATE KEY-----` and `-----END PRIVATE KEY-----` lines |
-| `ASC_TEAM_ID` | `D24ENP83QQ` |
+| `ASC_KEY_P8` | the whole contents of `p8 file - Admin/AuthKey_63M2792NNV.p8`, including the `-----BEGIN PRIVATE KEY-----` and `-----END PRIVATE KEY-----` lines |
+| `ASC_TEAM_ID` | `D24ENP83QQ` — already set for you. |
 
-The first three are on the same page you made them:
-<https://appstoreconnect.apple.com> › **Users and Access** › **Integrations** ›
-**App Store Connect API**. The Key ID and Issuer ID are shown there. The `.p8`
-file itself is the one Apple let you download only once — wherever you saved it.
+So there are really only **two** left to paste: the Issuer ID and the key itself.
+
+The Issuer ID is at the top of <https://appstoreconnect.apple.com> ›
+**Users and Access** › **Integrations** › **App Store Connect API**. The `.p8`
+file is in `Apple Developer/AMS PARA/p8 file - Admin/` — open it in TextEdit and
+copy everything.
 
 ### 2. Send the first build
 
