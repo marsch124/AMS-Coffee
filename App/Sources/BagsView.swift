@@ -6,7 +6,7 @@ struct BagsView: View {
     @State private var adding = false
 
     var body: some View {
-        Screen(emoji: "🫘", title: "Bags") {
+        Screen(emoji: "🫘", title: "Beans") {
             Button {
                 adding = true
             } label: {
@@ -152,7 +152,7 @@ struct BagEditor: View {
     var body: some View {
         ZStack {
             CoffeeBackground()
-            Screen(emoji: "🫘", title: isNew ? "New bag" : "The bag") {
+            Screen(emoji: "🫘", title: isNew ? "A new bag" : "The bag") {
                 WobbleCard(tint: Candy.bubblegum, tilt: -0.6) {
                     PhotoRow(title: "📷 The bag",
                              hint: "A photo of the label beats any description",
