@@ -23,8 +23,6 @@ targets:
     entitlements:
       path: App/Config/AMSCoffee.entitlements
       properties:
-        com.apple.security.app-sandbox: true
-        com.apple.security.files.user-selected.read-write: true
         com.apple.developer.icloud-container-identifiers: [iCloud.com.schabbauer.AMSCoffee]
         com.apple.developer.ubiquity-container-identifiers: [iCloud.com.schabbauer.AMSCoffee]
         com.apple.developer.icloud-services: [CloudDocuments]
