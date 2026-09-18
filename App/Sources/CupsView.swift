@@ -10,19 +10,20 @@ struct CupsView: View {
     @State private var importing = false
 
     var body: some View {
-        Screen(emoji: "🏺", title: "Cups") {
+        Screen(title: "Cups") { JarMark(size: 38) } content: {
 
-            WobbleCard(tint: Candy.mint, tilt: -0.6) {
+            WobbleCard(tint: Candy.mint) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Everything is kept safe in cups")
                         .font(.system(size: 18, weight: .black, design: .rounded))
                     Text("Every save is poured into a cup, and every cup proves itself by being opened again and counted. A cup holding less than the last one is refused, not written over.")
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .font(.system(size: 17, weight: .medium, design: .rounded))
                     HStack(spacing: 8) {
-                        Chip(text: "\(tested) proved", tint: Candy.mint, symbol: "✅")
+                        Chip(text: "\(tested) proved", tint: Candy.mint) { TickMark(size: 18) }
                         if untested > 0 {
-                            Chip(text: "\(untested) unproven", tint: Candy.apricot,
-                                 symbol: "⚠️")
+                            Chip(text: "\(untested) unproven", tint: Candy.apricot) {
+                                WarningMark(size: 18)
+                            }
                         }
                     }
                 }
@@ -31,10 +32,10 @@ struct CupsView: View {
         .accessibilityIdentifier("cups-intro")
 
             if let warning = store.shelf.warning {
-                WobbleCard(tint: Candy.apricot, tilt: 0.5) {
+                WobbleCard(tint: Candy.apricot) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("🛟 \(warning)")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                        Text(warning)
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
                         Button("Got it") { store.dismissWarning() }
                             .buttonStyle(SquashyButton(tint: Candy.apricot))
                             .accessibilityIdentifier("cups-dismiss-warning")
@@ -48,7 +49,7 @@ struct CupsView: View {
                 naming = true
             } label: {
                 HStack(spacing: 10) {
-                    Text("🏺").font(.system(size: 28))
+                    JarMark(size: 30)
                     Text("Save a cup")
                     Spacer()
                 }
@@ -60,7 +61,7 @@ struct CupsView: View {
                 Button {
                     exportURL = store.exportFile()
                 } label: {
-                    Text("📤 Export")
+                    HStack(spacing: 10) { TrayArrowMark(size: 24, out: true); Text("Export") }
                 }
                 .buttonStyle(SquashyButton(tint: Candy.sky))
                 .accessibilityIdentifier("cups-export")
@@ -68,7 +69,7 @@ struct CupsView: View {
                 Button {
                     importing = true
                 } label: {
-                    Text("📥 Import")
+                    HStack(spacing: 10) { TrayArrowMark(size: 24, out: false); Text("Import") }
                 }
                 .buttonStyle(SquashyButton(tint: Candy.blueberry))
                 .accessibilityIdentifier("cups-import")
@@ -76,8 +77,8 @@ struct CupsView: View {
 
             if let url = exportURL {
                 ShareLink(item: url) {
-                    Text("🫗 Share the file you just made")
-                        .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    Text("Share the file you just made")
+                        .font(.system(size: 18, weight: .heavy, design: .rounded))
                 }
                 .accessibilityIdentifier("cups-share")
             }
@@ -88,9 +89,9 @@ struct CupsView: View {
             }
 
             if cups.isEmpty {
-                WobbleCard(tint: Candy.mango, tilt: 0.6) {
-                    Text("🏺 The shelf fills itself the moment you save anything.")
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                WobbleCard(tint: Candy.mango) {
+                    Text("The shelf fills itself the moment you save anything.")
+                        .font(.system(size: 18, weight: .medium, design: .rounded))
                 }
                 .accessibilityElement(children: .contain)
         .accessibilityIdentifier("cups-empty")
@@ -134,34 +135,34 @@ struct CupRow: View {
     }
 
     var body: some View {
-        WobbleCard(tint: tint, tilt: index.isMultiple(of: 2) ? -0.7 : 0.7) {
+        WobbleCard(tint: tint, ) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text(cup.kind.emoji).font(.system(size: 28))
+                    CupKindMark(kind: cup.kind, size: 34).foregroundStyle(tint)
                     VStack(alignment: .leading, spacing: 0) {
                         Text(cup.name.isEmpty ? cup.kind.title : cup.name)
                             .font(.system(size: 18, weight: .black, design: .rounded))
-                            .foregroundStyle(Candy.cocoa)
+                            .foregroundStyle(Candy.ink)
                         Text(cup.pouredAt.formatted(date: .abbreviated, time: .shortened))
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
                     }
                     Spacer()
                     Group {
                         if cup.tested {
                             TickMark(size: 30, weight: 6).foregroundStyle(Candy.mint)
                         } else {
-                            Text("⚠️").font(.system(size: 28))
+                            WarningMark(size: 28).font(.system(size: 28))
                         }
                     }
                         .accessibilityIdentifier("cup-tested-\(index)")
                 }
 
-                Chip(text: cup.contentsLine, tint: tint, symbol: "📦")
+                Chip(text: cup.contentsLine, tint: tint) { BoxMark(size: 18) }
 
                 Text(cup.testedNote)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(cup.tested ? .secondary : Candy.apricot)
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundStyle(cup.tested ? Candy.inkSoft : Candy.apricot)
 
                 HStack(spacing: 10) {
                     Button("Pour it back", action: restore)
@@ -171,7 +172,7 @@ struct CupRow: View {
                         .buttonStyle(SquashyButton(tint: Candy.sky))
                         .accessibilityIdentifier("cup-retest-\(index)")
                 }
-                .font(.system(size: 14))
+                .font(.system(size: 17))
             }
         }
         .accessibilityElement(children: .contain)
@@ -189,16 +190,16 @@ struct KeepsakeSheet: View {
     var body: some View {
         ZStack {
             CoffeeBackground()
-            Screen(emoji: "🏺", title: "Name this cup") {
-                WobbleCard(tint: Candy.grape, tilt: -0.6) {
+            Screen(title: "Name this cup") { JarMark(size: 38) } content: {
+                WobbleCard(tint: Candy.grape) {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Keepsake cups are kept forever — the shelf never tips one out.")
-                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .font(.system(size: 18, weight: .medium, design: .rounded))
                         FatField(label: "Call it something", text: $name,
                                  tint: Candy.grape, identifier: "cups-keepsake-name")
                         Text("Leave it blank and it will just be called Keepsake.")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
                     }
                 }
             } bar: {
@@ -222,24 +223,24 @@ struct RestoreSheet: View {
     var body: some View {
         ZStack {
             CoffeeBackground()
-            Screen(emoji: "🫗", title: "Pour it back?") {
-                WobbleCard(tint: Candy.grape, tilt: 0.6) {
+            Screen(title: "Pour it back?") { CupMark(size: 38) } content: {
+                WobbleCard(tint: Candy.grape) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("\(cup.kind.emoji) \(cup.name.isEmpty ? cup.kind.title : cup.name)")
+                        Text(cup.name.isEmpty ? cup.kind.title : cup.name)
                             .font(.system(size: 22, weight: .black, design: .rounded))
-                            .foregroundStyle(Candy.cocoa)
+                            .foregroundStyle(Candy.ink)
                         Text(cup.pouredAt.formatted(date: .complete, time: .shortened))
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(.secondary)
-                        Chip(text: cup.contentsLine, tint: Candy.grape, symbol: "📦")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
+                        Chip(text: cup.contentsLine, tint: Candy.grape) { BoxMark(size: 18) }
                     }
                 }
 
-                WobbleCard(tint: Candy.sky, tilt: -0.5) {
+                WobbleCard(tint: Candy.sky) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("What changes")
-                            .font(.system(size: 13, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .font(.system(size: 16, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
                         Text(preview)
                             .font(.system(size: 24, weight: .black, design: .rounded))
                             .foregroundStyle(Candy.sky)
@@ -247,9 +248,9 @@ struct RestoreSheet: View {
                     }
                 }
 
-                WobbleCard(tint: Candy.mint, tilt: 0.5) {
-                    Text("🛟 Where you are now is saved first, as a keepsake cup called “Before restore”. Nothing is lost either way.")
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                WobbleCard(tint: Candy.mint) {
+                    Text("Where you are now is saved first, as a keepsake cup called “Before restore”. Nothing is lost either way.")
+                        .font(.system(size: 18, weight: .medium, design: .rounded))
                 }
             } bar: {
                 StickyBar(saveTitle: "Pour it back", tint: Candy.grape,

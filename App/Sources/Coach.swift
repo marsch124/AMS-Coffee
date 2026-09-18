@@ -5,7 +5,6 @@ import Foundation
 struct Advice: Equatable {
     var headline: String
     var detail: String
-    var emoji: String
 }
 
 extension BrewMethod {
@@ -80,8 +79,7 @@ enum Coach {
                 + "\(trim(shot.waterGrams)) g water, \(shot.timeText)."
         }
         return Advice(headline: "Keep it exactly here",
-                      detail: "\(recipe) Saved as this bag's \(shot.method.title.lowercased()) recipe.",
-                      emoji: "🎉")
+                      detail: "\(recipe) Saved as this bag's \(shot.method.title.lowercased()) recipe.")
     }
 
     // MARK: Espresso
@@ -96,48 +94,39 @@ enum Coach {
 
         if sour && fast {
             return Advice(headline: "Grind finer",
-                          detail: "About 2 clicks. It ran through in \(trim(shot.seconds)) s — too quick to taste sweet.",
-                          emoji: "🔧")
+                          detail: "About 2 clicks. It ran through in \(trim(shot.seconds)) s — too quick to taste sweet.")
         }
         if bitter && slow {
             return Advice(headline: "Grind coarser",
-                          detail: "About 2 clicks. \(trim(shot.seconds)) s is choking it and pulling out the harsh bits.",
-                          emoji: "🔧")
+                          detail: "About 2 clicks. \(trim(shot.seconds)) s is choking it and pulling out the harsh bits.")
         }
         if sour && ratio < 1.7 {
             return Advice(headline: "Let it run longer",
-                          detail: "Aim for about \(trim(shot.doseGrams * 2)) g out. A short shot tastes sour before it tastes sweet.",
-                          emoji: "⏱")
+                          detail: "Aim for about \(trim(shot.doseGrams * 2)) g out. A short shot tastes sour before it tastes sweet.")
         }
         if bitter && ratio > 2.6 {
             return Advice(headline: "Stop it earlier",
-                          detail: "Aim for about \(trim(shot.doseGrams * 2)) g out. Past 1 : 2.6 you are mostly rinsing the puck.",
-                          emoji: "⏱")
+                          detail: "Aim for about \(trim(shot.doseGrams * 2)) g out. Past 1 : 2.6 you are mostly rinsing the puck.")
         }
         if thin && ratio > 2.4 {
             return Advice(headline: "Less water",
-                          detail: "Thin and long. Try \(trim(shot.doseGrams * 2)) g out and a click finer.",
-                          emoji: "💧")
+                          detail: "Thin and long. Try \(trim(shot.doseGrams * 2)) g out and a click finer.")
         }
         if sour {
             return Advice(headline: "A touch finer, a touch hotter",
-                          detail: "Try grind \(trim(shot.grind - 1)) and \(trim(min(96, shot.tempC + 1)))°C.",
-                          emoji: "🔧")
+                          detail: "Try grind \(trim(shot.grind - 1)) and \(trim(min(96, shot.tempC + 1)))°C.")
         }
         if bitter {
             return Advice(headline: "A touch coarser, a touch cooler",
-                          detail: "Try grind \(trim(shot.grind + 1)) and \(trim(max(88, shot.tempC - 1)))°C.",
-                          emoji: "🔧")
+                          detail: "Try grind \(trim(shot.grind + 1)) and \(trim(max(88, shot.tempC - 1)))°C.")
         }
         if fast {
             return Advice(headline: "Finer",
-                          detail: "\(trim(shot.seconds)) s is fast for espresso. Two clicks finer and taste again.",
-                          emoji: "🔧")
+                          detail: "\(trim(shot.seconds)) s is fast for espresso. Two clicks finer and taste again.")
         }
         if slow {
             return Advice(headline: "Coarser",
-                          detail: "\(trim(shot.seconds)) s is slow. Two clicks coarser and taste again.",
-                          emoji: "🔧")
+                          detail: "\(trim(shot.seconds)) s is slow. Two clicks coarser and taste again.")
         }
         return oneThing()
     }
@@ -159,52 +148,44 @@ enum Coach {
         if bitter {
             let why = draggy ? " It also took \(shot.timeText), which is long for \(method.title.lowercased())." : ""
             return Advice(headline: method.fasterWord.capitalizedFirst,
-                          detail: "Bitter means it gave up too much.\(why) Change only this and taste again.",
-                          emoji: "🔧")
+                          detail: "Bitter means it gave up too much.\(why) Change only this and taste again.")
         }
         if sour {
             let why = quick ? " It was through in \(shot.timeText), which is quick for \(method.title.lowercased())." : ""
             return Advice(headline: method.slowerWord.capitalizedFirst,
-                          detail: "Sour means it did not give up enough yet.\(why) Change only this and taste again.",
-                          emoji: "🔧")
+                          detail: "Sour means it did not give up enough yet.\(why) Change only this and taste again.")
         }
         if thin && ratio > method.idealRatio.upperBound {
             let target = shot.doseGrams * method.idealRatio.upperBound
             return Advice(headline: "Less water",
                           detail: "1 : \(String(format: "%.0f", ratio)) is a lot of water for \(method.title.lowercased()). "
-                              + "Try about \(trim(target.rounded())) g on \(trim(shot.doseGrams)) g of coffee.",
-                          emoji: "💧")
+                              + "Try about \(trim(target.rounded())) g on \(trim(shot.doseGrams)) g of coffee.")
         }
         if thin {
             let target = shot.doseGrams + 2
             return Advice(headline: "More coffee",
-                          detail: "Thin but not over-watered. Try \(trim(target)) g of coffee with the same water.",
-                          emoji: "🫘")
+                          detail: "Thin but not over-watered. Try \(trim(target)) g of coffee with the same water.")
         }
         if strong && ratio < method.idealRatio.lowerBound {
             let target = shot.doseGrams * method.idealRatio.lowerBound
             return Advice(headline: "More water",
-                          detail: "Try about \(trim(target.rounded())) g of water on \(trim(shot.doseGrams)) g of coffee.",
-                          emoji: "💧")
+                          detail: "Try about \(trim(target.rounded())) g of water on \(trim(shot.doseGrams)) g of coffee.")
         }
         if draggy {
             return Advice(headline: method.fasterWord.capitalizedFirst,
                           detail: "\(shot.timeText) is slow for \(method.title.lowercased()) — usually \(window(method)). "
-                              + "Nothing tasted wrong, so change this one thing only if you want it brighter.",
-                          emoji: "⏱")
+                              + "Nothing tasted wrong, so change this one thing only if you want it brighter.")
         }
         if quick {
             return Advice(headline: method.slowerWord.capitalizedFirst,
-                          detail: "\(shot.timeText) is quick for \(method.title.lowercased()) — usually \(window(method)).",
-                          emoji: "⏱")
+                          detail: "\(shot.timeText) is quick for \(method.title.lowercased()) — usually \(window(method)).")
         }
         return oneThing()
     }
 
     private static func oneThing() -> Advice {
         Advice(headline: "Change one thing only",
-               detail: "Nothing is obviously off. Nudge the grind by one click and see which way it moves.",
-               emoji: "🤏")
+               detail: "Nothing is obviously off. Nudge the grind by one click and see which way it moves.")
     }
 
     private static func window(_ method: BrewMethod) -> String {

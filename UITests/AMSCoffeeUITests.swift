@@ -42,6 +42,14 @@ final class AMSCoffeeUITests: XCTestCase {
             }
             usleep(200_000)
         }
+
+        // A control pinned in a bottom inset — the add bars — exists but can
+        // report itself as not hittable, and no amount of scrolling changes
+        // that. If it is there, tap where it is.
+        for candidate in [app.buttons[id], app.otherElements[id]] where candidate.exists {
+            candidate.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            return
+        }
         XCTFail("nothing hittable with identifier \(id)", line: line)
     }
 

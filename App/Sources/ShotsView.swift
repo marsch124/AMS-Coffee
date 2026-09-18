@@ -7,34 +7,22 @@ struct ShotsView: View {
     @State private var filter: BrewMethod?
 
     var body: some View {
-        Screen(emoji: "🎛", title: "Brews") {
-            Button {
-                newMethod = .espresso
-            } label: {
-                HStack(spacing: 10) {
-                    Text("☕️").font(.system(size: 32))
-                    Text("Pull a shot")
-                    Spacer()
-                }
-            }
-            .buttonStyle(SquashyButton(tint: Candy.bubblegum))
-            .accessibilityIdentifier("shots-add")
-
+        Screen(title: "Brews") { DialMark(size: 38) } content: {
             // Every method, and every one of them works now.
-            WobbleCard(tint: Candy.grape, tilt: 0.6) {
+            WobbleCard(tint: Candy.grape) {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("🌀 Or make it another way")
-                        .font(.system(size: 17, weight: .black, design: .rounded))
+                    Text("Or make it another way")
+                        .font(.system(size: 19, weight: .black, design: .rounded))
                     FlowRow(spacing: 8) {
                         ForEach(BrewMethod.allCases.filter { $0 != .espresso }) { method in
                             Button {
                                 newMethod = method
                             } label: {
-                                HStack(spacing: 7) {
-                                    Text(method.emoji).font(.system(size: 22))
+                                HStack(spacing: 8) {
+                                    MethodMark(method: method, size: 24)
                                     Text(method.title)
                                 }
-                                .font(.system(size: 16, weight: .heavy, design: .rounded))
+                                .font(.system(size: 18, weight: .heavy, design: .rounded))
                                 .foregroundStyle(.white)
                                 .padding(.vertical, 9)
                                 .padding(.horizontal, 13)
@@ -52,15 +40,17 @@ struct ShotsView: View {
             if !usedMethods.isEmpty {
                 FlowRow(spacing: 8) {
                     Button { filter = nil } label: {
-                        Chip(text: "All", tint: filter == nil ? Candy.cocoa : Candy.blueberry)
+                        Chip(text: "All", tint: filter == nil ? Candy.ink : Candy.blueberry)
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("filter-all")
 
                     ForEach(usedMethods) { method in
                         Button { filter = (filter == method) ? nil : method } label: {
-                            Chip(text: "\(method.emoji) \(count(method))",
-                                 tint: filter == method ? Candy.cocoa : method.tint)
+                            Chip(text: "\(count(method))",
+                                 tint: filter == method ? Candy.ink : method.tint) {
+                                MethodMark(method: method, size: 20)
+                            }
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("filter-\(method.rawValue)")
@@ -69,12 +59,12 @@ struct ShotsView: View {
             }
 
             if store.data.liveShots.isEmpty {
-                WobbleCard(tint: Candy.mango, tilt: -0.6) {
+                WobbleCard(tint: Candy.mango) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("🎛 Nothing brewed yet")
+                        Text("Nothing brewed yet")
                             .font(.system(size: 20, weight: .black, design: .rounded))
                         Text("Log the next one you make. The numbers for each method arrive already filled in, so most days you change nothing and press save.")
-                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .font(.system(size: 18, weight: .medium, design: .rounded))
                     }
                 }
                 .accessibilityElement(children: .contain)
@@ -83,11 +73,15 @@ struct ShotsView: View {
 
             ForEach(Array(shown.enumerated()), id: \.element.id) { index, shot in
                 Button { editing = shot } label: {
-                    ShotCard(shot: shot, tilt: index.isMultiple(of: 2) ? 0.8 : -0.8)
+                    ShotCard(shot: shot, )
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("shot-row-\(index)")
                 .poppyAppear(Double(index) * 0.03)
+            }
+        } bar: {
+            AddBar(title: "Pull a shot", tint: Candy.bubblegum, identifier: "shots-add") {
+                newMethod = .espresso
             }
         }
         .sheet(item: $newMethod) { method in
@@ -113,7 +107,6 @@ struct ShotsView: View {
 struct ShotCard: View {
     @EnvironmentObject private var store: CoffeeStore
     let shot: Shot
-    var tilt: Double
 
     private var tint: Color {
         switch shot.light {
@@ -124,17 +117,23 @@ struct ShotCard: View {
     }
 
     var body: some View {
-        WobbleCard(tint: tint, tilt: tilt) {
-            VStack(alignment: .leading, spacing: 8) {
+        WobbleCard(tint: tint) {
+            VStack(alignment: .leading, spacing: 10) {
+                if let photoID = shot.photoID {
+                    PhotoImage(data: store.photo(photoID), corner: 18)
+                        .frame(height: 150)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                }
                 HStack {
-                    Text(shot.light.emoji).font(.system(size: 26))
+                    LightMark(light: shot.light, size: 30)
                     VStack(alignment: .leading, spacing: 0) {
                         Text(store.data.bean(shot.beanID)?.displayName ?? "No bag")
                             .font(.system(size: 18, weight: .black, design: .rounded))
-                            .foregroundStyle(Candy.cocoa)
-                        Text("\(shot.method.emoji) \(shot.method.title) · \(shot.date.formatted(date: .abbreviated, time: .shortened))")
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Candy.ink)
+                        Text("\(shot.method.title) · \(shot.date.formatted(date: .abbreviated, time: .shortened))")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
                     }
                     Spacer()
                     Text(shot.ratioText)
@@ -151,7 +150,7 @@ struct ShotCard: View {
                 }
                 if !shot.note.isEmpty {
                     Text(shot.note)
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .font(.system(size: 17, weight: .medium, design: .rounded))
                 }
             }
         }
@@ -173,17 +172,19 @@ struct ShotEditor: View {
     var body: some View {
         ZStack {
             CoffeeBackground()
-            Screen(emoji: shot.method.emoji,
-                   title: isNew ? shot.method.title : "The \(shot.method.title.lowercased())") {
+            Screen(title: isNew ? shot.method.title
+                                : "The \(shot.method.title.lowercased())") {
+                MethodMark(method: shot.method, size: 38)
+            } content: {
 
-                WobbleCard(tint: Candy.mint, tilt: -0.5) {
+                WobbleCard(tint: Candy.mint) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("🫘 Which bag?")
-                            .font(.system(size: 15, weight: .black, design: .rounded))
+                        Text("Which bag?")
+                            .font(.system(size: 18, weight: .black, design: .rounded))
                         if store.data.liveBeans.isEmpty {
                             Text("No bags yet — log the brew anyway and attach a bag later.")
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundStyle(.secondary)
+                                .font(.system(size: 17, weight: .medium, design: .rounded))
+                                .foregroundStyle(Candy.inkSoft)
                         } else {
                             Picker("", selection: $shot.beanID) {
                                 Text("No bag").tag(UUID?.none)
@@ -199,7 +200,7 @@ struct ShotEditor: View {
                 }
 
                 // Only the dials this method actually uses.
-                WobbleCard(tint: tint, tilt: 0.5) {
+                WobbleCard(tint: tint) {
                     VStack(alignment: .leading, spacing: 2) {
                         ForEach(shot.method.fields) { field in
                             NumberDial(label: field.label,
@@ -213,7 +214,7 @@ struct ShotEditor: View {
                         if shot.method.hasInvertedSwitch {
                             Toggle(isOn: $shot.inverted) {
                                 Text("Upside down")
-                                    .font(.system(size: 15, weight: .heavy, design: .rounded))
+                                    .font(.system(size: 18, weight: .heavy, design: .rounded))
                             }
                             .tint(tint)
                             .accessibilityIdentifier("shot-inverted")
@@ -221,7 +222,7 @@ struct ShotEditor: View {
                     }
                 }
 
-                WobbleCard(tint: Candy.mango, tilt: -0.7) {
+                WobbleCard(tint: Candy.mango) {
                     HStack {
                         BigNumber(value: shot.ratioText, caption: "ratio", tint: Candy.mango)
                         if shot.method == .espresso {
@@ -235,16 +236,21 @@ struct ShotEditor: View {
                     .accessibilityIdentifier("shot-computed")
                 }
 
-                WobbleCard(tint: Candy.bubblegum, tilt: 0.6) {
+                WobbleCard(tint: Candy.grape) {
+                    PhotoRow(title: "A photo of it",
+                             hint: "The crema, the bed, the cup",
+                             photoID: $shot.photoID,
+                             identifier: "shot-photo")
+                }
+
+                WobbleCard(tint: Candy.bubblegum) {
                     VStack(alignment: .leading, spacing: 14) {
-                        Text("👅 How was it?")
-                            .font(.system(size: 17, weight: .black, design: .rounded))
-                        TasteSlider(leftEmoji: "🍋", leftWord: "Sour",
-                                    rightEmoji: "🫒", rightWord: "Bitter",
+                        Text("How was it?")
+                            .font(.system(size: 19, weight: .black, design: .rounded))
+                        TasteSlider(leftWord: "Sour", rightWord: "Bitter",
                                     value: $shot.sourBitter, tint: Candy.bubblegum,
                                     identifier: "shot-sourbitter")
-                        TasteSlider(leftEmoji: "💧", leftWord: "Thin",
-                                    rightEmoji: "🍯", rightWord: "Syrupy",
+                        TasteSlider(leftWord: "Thin", rightWord: "Syrupy",
                                     value: $shot.thinSyrupy, tint: Candy.grape,
                                     identifier: "shot-thinsyrupy")
                         LightPicker(light: $shot.light)
@@ -253,31 +259,25 @@ struct ShotEditor: View {
                     }
                 }
 
-                WobbleCard(tint: Candy.sky, tilt: -0.5) {
+                WobbleCard(tint: Candy.sky) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("🧑‍🏫 Next time")
-                            .font(.system(size: 13, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.secondary)
-                        Text("\(advice.emoji) \(advice.headline)")
+                        Text("Next time")
+                            .font(.system(size: 16, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
+                        Text(advice.headline)
                             .font(.system(size: 20, weight: .black, design: .rounded))
                             .foregroundStyle(Candy.sky)
                         Text(advice.detail)
-                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .font(.system(size: 18, weight: .medium, design: .rounded))
                     }
                     .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("shot-advice")
                 }
 
                 if !isNew {
-                    Button { confirmRinse = true } label: {
-                        HStack {
-                            Text("🚰").font(.system(size: 28))
-                            Text("Rinse it into the Sink")
-                            Spacer()
-                        }
+                    DangerButton(title: "Remove", identifier: "shot-rinse") {
+                        confirmRinse = true
                     }
-                    .buttonStyle(SquashyButton(tint: Candy.sky))
-                    .accessibilityIdentifier("shot-rinse")
                 }
             } bar: {
                 StickyBar(saveTitle: isNew ? "Save it" : "Save the changes",
@@ -287,8 +287,8 @@ struct ShotEditor: View {
                           close: { dismiss() })
             }
         }
-        .alert("Rinse this brew?", isPresented: $confirmRinse) {
-            Button("Rinse it", role: .destructive) {
+        .alert("Remove this brew?", isPresented: $confirmRinse) {
+            Button("Remove", role: .destructive) {
                 store.rinse(shot)
                 dismiss()
             }

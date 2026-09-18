@@ -23,14 +23,6 @@ enum CupKind: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    var emoji: String {
-        switch self {
-        case .quick:    return "🥤"
-        case .daily:    return "☕️"
-        case .keepsake: return "🏺"
-        }
-    }
-
     /// How many of this kind the shelf holds. Keepsakes are kept forever.
     var keep: Int? {
         switch self {

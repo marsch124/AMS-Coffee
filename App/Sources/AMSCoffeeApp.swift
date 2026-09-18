@@ -28,15 +28,6 @@ enum Tab: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var emoji: String {
-        switch self {
-        case .today:    return "☕️"
-        case .bags:     return "🫘"
-        case .shots:    return "🎛"
-        case .settings: return "⚙️"
-        }
-    }
-
     var title: String {
         switch self {
         case .today:    return "Today"
@@ -73,7 +64,11 @@ struct RootView: View {
                     case .settings: SettingsView()
                     }
                 }
-                .accessibilityIdentifier("screen-\(tab.rawValue)")
+                // Deliberately NOT named. A control inside a safeAreaInset
+                // inherits its ancestor's identifier rather than keeping its
+                // own, so naming this container stole the name from the add
+                // bar: the tree showed a button labelled "Pull a shot"
+                // answering to "screen-shots". Tests reach for real controls.
 
                 CandyTabBar(tab: $tab)
             }
@@ -98,7 +93,7 @@ struct CandyTabBar: View {
                     VStack(spacing: 4) {
                         TabMark(tab: item, size: on ? 34 : 29)
                         Text(item.title)
-                            .font(.system(size: 13, weight: .heavy, design: .rounded))
+                            .font(.system(size: 16, weight: .heavy, design: .rounded))
                     }
                     .foregroundStyle(on ? .white : item.tint)
                     .lineLimit(1)
@@ -109,7 +104,6 @@ struct CandyTabBar: View {
                         RoundedRectangle(cornerRadius: 21, style: .continuous)
                             .fill(on ? item.tint : Color.clear)
                     )
-                    .rotationEffect(.degrees(on ? -1.5 : 0))
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("tab-\(item.rawValue)")
@@ -118,10 +112,10 @@ struct CandyTabBar: View {
         .padding(7)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(scheme == .dark ? Color.white.opacity(0.10) : Color.white.opacity(0.80))
+                .fill(scheme == .dark ? Candy.card : Candy.card)
                 .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .strokeBorder(Candy.cocoa.opacity(0.18), lineWidth: 2))
-                .shadow(color: Candy.cocoa.opacity(0.18), radius: 0, x: 0, y: 4)
+                    .strokeBorder(Candy.ink.opacity(0.18), lineWidth: 2))
+                .shadow(color: Candy.ink.opacity(0.18), radius: 0, x: 0, y: 4)
         )
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
@@ -130,16 +124,24 @@ struct CandyTabBar: View {
 
 /// Every screen wears the same scrolling jacket, with an optional sticky bar
 /// at the bottom so Save is never off the end of a long form.
-struct Screen<Content: View, Bar: View>: View {
-    let emoji: String
+struct Screen<Mark: View, Content: View, Bar: View>: View {
     let title: String
+    let mark: Mark
     @ViewBuilder var content: Content
     @ViewBuilder var bar: Bar
+
+    init(title: String, @ViewBuilder mark: () -> Mark,
+         @ViewBuilder content: () -> Content, @ViewBuilder bar: () -> Bar) {
+        self.title = title
+        self.mark = mark()
+        self.content = content()
+        self.bar = bar()
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                BigTitle(emoji: emoji, text: title)
+                BigTitle(text: title) { mark }
                     .padding(.top, 8)
                 content
             }
@@ -153,8 +155,9 @@ struct Screen<Content: View, Bar: View>: View {
 }
 
 extension Screen where Bar == EmptyView {
-    init(emoji: String, title: String, @ViewBuilder content: () -> Content) {
-        self.init(emoji: emoji, title: title, content: content, bar: { EmptyView() })
+    init(title: String, @ViewBuilder mark: () -> Mark,
+         @ViewBuilder content: () -> Content) {
+        self.init(title: title, mark: mark, content: content, bar: { EmptyView() })
     }
 }
 
@@ -182,10 +185,44 @@ struct StickyBar: View {
                 CrossMark(size: 22, weight: 5)
                     .foregroundStyle(.white)
                     .frame(width: 58, height: 58)
-                    .background(Circle().fill(Candy.cocoa.opacity(0.55)))
+                    .background(Circle().fill(Candy.ink.opacity(0.55)))
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier(closeIdentifier)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial)
+    }
+}
+
+
+/// The single action a list screen offers, at the bottom where a thumb is.
+/// A list should start with what is in it.
+struct AddBar: View {
+    let title: String
+    let tint: Color
+    let identifier: String
+    let action: () -> Void
+
+    var body: some View {
+        // The button sits INSIDE a container, and the material background goes
+        // on the container. Putting .background directly on the identified
+        // button swallowed it: the control rendered perfectly and then did not
+        // exist in the accessibility tree at all. StickyBar was already built
+        // this way, which is why its button was always findable and this one
+        // was not.
+        HStack {
+            Button(action: action) {
+                HStack(spacing: 12) {
+                    PlusMark(size: 26, weight: 6)
+                    Text(title)
+                    Spacer()
+                }
+            }
+            .buttonStyle(SquashyButton(tint: tint))
+            .accessibilityIdentifier(identifier)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 20)

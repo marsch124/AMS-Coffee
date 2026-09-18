@@ -7,50 +7,59 @@ struct Release: Identifiable {
     let version: String
     let date: String
     let headline: String
-    let emoji: String
     let lines: [String]
 }
 
 enum Guide {
 
-    static let appVersion = "2.0"
+    static let appVersion = "2.1"
 
     /// Newest first. Every release adds an entry — never edits an old one.
     static let releases: [Release] = [
-        Release(version: "2.0", date: "2026-09-17",
-                headline: "Tidied up", emoji: "🧹",
+        Release(version: "2.1", date: "2026-09-18",
+                headline: "Readable, upright, quieter",
                 lines: [
-                    "🧹 Four places instead of five, and only four: Today, Beans, Brews, Settings.",
-                    "💸 The Money screen is gone. No totals, no cost per cup. This app is about drinking coffee, not accounting.",
-                    "🧰 Your machine, grinder and the rest are now Your kit, in Settings, where you set them up once.",
-                    "⚙️ How this works, the version history, your cups, the Sink and export all moved into Settings, off the morning screen.",
-                    "📷 Photos: of a bag, and of a receipt. Taken with the camera or chosen from your pictures.",
-                    "🏺 A cup now counts its photos and proves they are still there — a cup missing a picture is not a whole cup.",
-                    "🎨 Every stock symbol is gone. Every mark in the app is drawn here, and everything is bigger.",
-                    "🌬 The steam at the top of every screen is gone.",
+                    "Every panel stands upright. The slight tilt is gone for good.",
+                    "Nothing in the app is smaller than 15pt, and the faint grey text that was hard to read has been replaced throughout — in dark mode as well as light.",
+                    "Remove is one calm red, sits last on the screen, and never shouts. Keep is always the easy way out.",
+                    "A brew can carry a photo now — the crema, the bed, the cup.",
+                    "Six ways of making coffee, six different marks. Pour-over and filter no longer look identical, and nor do AeroPress and French press.",
+                    "Add a bag and Pull a shot moved to the bottom of their lists, where a thumb is. A list should open with what is in it.",
+                ]),
+        Release(version: "2.0", date: "2026-09-17",
+                headline: "Tidied up",
+                lines: [
+                    "Four places instead of five, and only four: Today, Beans, Brews, Settings.",
+                    "The Money screen is gone. No totals, no cost per cup. This app is about drinking coffee, not accounting.",
+                    "Your machine, grinder and the rest are now Your kit, in Settings, where you set them up once.",
+                    "How this works, the version history, your cups, the Sink and export all moved into Settings, off the morning screen.",
+                    "Photos: of a bag, and of a receipt. Taken with the camera or chosen from your pictures.",
+                    "A cup now counts its photos and proves they are still there — a cup missing a picture is not a whole cup.",
+                    "Every stock symbol is gone. Every mark in the app is drawn here, and everything is bigger.",
+                    "The steam at the top of every screen is gone.",
                 ]),
         Release(version: "1.1", date: "2026-09-17",
-                headline: "Every way of making it", emoji: "🌀",
+                headline: "Every way of making it",
                 lines: [
-                    "🌀 Pour-over, AeroPress, French press, Moka, cold brew and filter all work now — each with only its own dials, its own colour and its own sensible starting numbers.",
-                    "🧑‍🏫 The coach learned every method: it says steep it longer for a French press and grind finer for a pour-over, and it knows the usual time window for each one.",
-                    "🫘 A bag remembers a separate recipe per method, so its pour-over recipe never turns up when you are pulling a shot.",
-                    "🛒 Money: machines, grinders, accessories and subscriptions, with price, shop, date and warranty — plus a warning when a warranty is about to run out.",
-                    "💰 Spent this year, split into beans and gear, and cost per cup both with and without the gear. Your bags are counted automatically — never type a bag in twice.",
-                    "🎛 Filter the brew list by method with one tap.",
-                    "🛟 The data file now opens tolerantly: a file or a cup written by an older version still opens, and always will.",
-                    "🏺 Cups count purchases too, and prove that count like everything else.",
+                    "Pour-over, AeroPress, French press, Moka, cold brew and filter all work now — each with only its own dials, its own colour and its own sensible starting numbers.",
+                    "‍The coach learned every method: it says steep it longer for a French press and grind finer for a pour-over, and it knows the usual time window for each one.",
+                    "A bag remembers a separate recipe per method, so its pour-over recipe never turns up when you are pulling a shot.",
+                    "Money: machines, grinders, accessories and subscriptions, with price, shop, date and warranty — plus a warning when a warranty is about to run out.",
+                    "Spent this year, split into beans and gear, and cost per cup both with and without the gear. Your bags are counted automatically — never type a bag in twice.",
+                    "Filter the brew list by method with one tap.",
+                    "The data file now opens tolerantly: a file or a cup written by an older version still opens, and always will.",
+                    "Cups count purchases too, and prove that count like everything else.",
                 ]),
         Release(version: "1.0", date: "2026-09-17",
-                headline: "First cup", emoji: "🎉",
+                headline: "First cup",
                 lines: [
-                    "🫘 Bags of beans, with grams left counting themselves down as you pull shots.",
-                    "🎛 Espresso dial-in: grind, dose, yield, time, temperature — ratio and flow work themselves out.",
-                    "🧑‍🏫 The coach reads the shot you just rated and tells you the one thing to change.",
-                    "🏺 The Cup System: quick, daily and keepsake cups, each one proved by opening it again.",
-                    "🚰 The Sink — rinsed things wait 30 days instead of vanishing.",
-                    "☁️ The phone and the Mac read the same shelf in iCloud Drive.",
-                    "📜 This version history, right on the main screen.",
+                    "Bags of beans, with grams left counting themselves down as you pull shots.",
+                    "Espresso dial-in: grind, dose, yield, time, temperature — ratio and flow work themselves out.",
+                    "‍The coach reads the shot you just rated and tells you the one thing to change.",
+                    "The Cup System: quick, daily and keepsake cups, each one proved by opening it again.",
+                    "The Sink — rinsed things wait 30 days instead of vanishing.",
+                    "The phone and the Mac read the same shelf in iCloud Drive.",
+                    "This version history, right on the main screen.",
                 ]),
     ]
 
@@ -60,19 +69,18 @@ enum Guide {
 
     struct Chapter: Identifiable {
         var id: String { title }
-        let emoji: String
         let title: String
         let body: String
     }
 
     static let chapters: [Chapter] = [
-        Chapter(emoji: "☕️", title: "The idea",
+        Chapter(title: "The idea",
                 body: """
                 AMS Coffee remembers what you bought, what it tasted like, and \
                 exactly how you made the good ones. Nothing here needs typing a \
                 sentence — it is sliders, stars and big buttons.
                 """),
-        Chapter(emoji: "🫘", title: "Bags of beans",
+        Chapter(title: "Bags of beans",
                 body: """
                 Add a bag when you buy it: roaster, name, weight, price. Tap the \
                 flavours you taste, give it stars, and stamp it Buy again or \
@@ -81,14 +89,14 @@ enum Guide {
                 Every brew you log takes its dose off the bag, so the bag always \
                 shows how many grams are left. No weighing the whole bag again.
 
-                The bag also shows which ways you have made it — ☕️ 🌀 🫙 — and \
+                The bag also shows which ways you have made it — — and \
                 keeps a separate recipe for each one.
                 """),
-        Chapter(emoji: "🎛", title: "Making coffee",
+        Chapter(title: "Making coffee",
                 body: """
                 Press Pull a shot for espresso, or pick another way underneath: \
-                🌀 pour-over · 🪗 AeroPress · 🫙 French press · 🔥 Moka · \
-                🧊 cold brew · 🫗 filter.
+                pour-over · AeroPress · French press · Moka · \
+                cold brew · filter.
 
                 Each one shows only its own dials. Espresso asks for grams out \
                 and seconds; a pour-over asks for water in, bloom and pours; a \
@@ -99,9 +107,9 @@ enum Guide {
                 press save.
 
                 Then say how it tasted with two sliders — sour ↔ bitter and \
-                thin ↔ syrupy — and pick a light: 🔴 🟡 🟢.
+                thin ↔ syrupy — and pick a light: .
                 """),
-        Chapter(emoji: "🧑‍🏫", title: "The coach",
+        Chapter(title: "The coach",
                 body: """
                 As soon as you change anything, the coach tells you one thing to \
                 change next time.
@@ -117,7 +125,7 @@ enum Guide {
 
                 One change at a time. That is the whole trick.
                 """),
-        Chapter(emoji: "🧰", title: "Your kit",
+        Chapter(title: "Your kit",
                 body: """
                 Machines, grinders, scales, tampers, filters. What it is, where \
                 it came from, a photo of the receipt, and when the warranty runs \
@@ -129,7 +137,7 @@ enum Guide {
                 cost you can, on one quiet line, and the app will never mention \
                 it again.
                 """),
-        Chapter(emoji: "📷", title: "Photos",
+        Chapter(title: "Photos",
                 body: """
                 A bag can have a photo, and so can a receipt. Take one with the \
                 camera — that is the useful one, standing at the machine — or \
@@ -144,20 +152,20 @@ enum Guide {
                 shelf. Pour back a cup from a month ago and its pictures are \
                 still there.
                 """),
-        Chapter(emoji: "🏺", title: "The Cup System",
+        Chapter(title: "The Cup System",
                 body: """
                 Every save is poured into a cup, and the cups sit on a shelf you \
                 can look at.
 
-                🥤 Quick cup — after every change, silently. Last 10 kept.
-                ☕️ Daily cup — once a day. Last 7 kept.
-                🏺 Keepsake cup — when you press Save a cup and name it. Kept forever.
+                Quick cup — after every change, silently. Last 10 kept.
+                Daily cup — once a day. Last 7 kept.
+                Keepsake cup — when you press Save a cup and name it. Kept forever.
 
                 Three rules make it safe:
 
                 1. Each cup proves itself. The app opens the cup again, reads \
                 what is inside and counts it — bags, brews, kit and photos. Only \
-                then does it get a green ✓. A cup that cannot be opened says so, \
+                then does it get a green . A cup that cannot be opened says so, \
                 in orange.
 
                 2. A cup never shrinks silently. If a new cup would hold less \
@@ -169,7 +177,7 @@ enum Guide {
                 you what will change before it does anything, and saves where \
                 you are now as Before restore.
                 """),
-        Chapter(emoji: "🛟", title: "Why old cups still open",
+        Chapter(title: "Why old cups still open",
                 body: """
                 The app reads its own files forgivingly. Anything it does not \
                 recognise is simply left at its normal value, and anything \
@@ -180,14 +188,14 @@ enum Guide {
                 written yet. New features can never lock you out of your own \
                 history.
                 """),
-        Chapter(emoji: "🚰", title: "The Sink",
+        Chapter(title: "The Sink",
                 body: """
                 Nothing is deleted. Rinsed bags, brews and purchases go to the \
                 Sink and sit there for 30 days. One tap puts them back. After 30 \
                 days they are gone for good — and by then they are in a dozen \
                 cups anyway.
                 """),
-        Chapter(emoji: "☁️", title: "Phone and Mac",
+        Chapter(title: "Phone and Mac",
                 body: """
                 Both read one file in your iCloud Drive, so there is no syncing \
                 to think about. When both devices changed something, the newer \
@@ -198,7 +206,7 @@ enum Guide {
                 No iCloud account signed in? The app quietly keeps everything on \
                 that device and says so at the bottom of the main screen.
                 """),
-        Chapter(emoji: "⚙️", title: "Settings",
+        Chapter(title: "Settings",
                 body: """
                 Everything you touch once lives here, off the morning screen: \
                 where your coffee is kept, your cups, your kit, the Sink, a copy \
@@ -208,7 +216,7 @@ enum Guide {
                 top, one line per thing that changed. It is never tidied up or \
                 shortened.
                 """),
-        Chapter(emoji: "🌱", title: "Coming next",
+        Chapter(title: "Coming next",
                 body: """
                 A brew timer that counts while you pour. Charts of how a bag's \
                 scores moved as you dialled it in. The Mac app.

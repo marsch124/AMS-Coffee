@@ -15,8 +15,8 @@ struct NumberDial: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 0) {
                 Text(label)
-                    .font(.system(size: 13, weight: .heavy, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Candy.inkSoft)
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     TextField(label, value: $value, format: .number.precision(.fractionLength(0...1)))
                         .font(.system(size: 26, weight: .black, design: .rounded))
@@ -29,29 +29,34 @@ struct NumberDial: View {
                         #endif
                         .accessibilityIdentifier(identifier)
                     Text(unit)
-                        .font(.system(size: 14, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .font(.system(size: 17, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Candy.inkSoft)
                 }
             }
             Spacer()
             HStack(spacing: 8) {
-                dialButton("minus", identifier: "\(identifier)-minus") {
+                dialButton(identifier: "\(identifier)-minus") {
                     value = max(range.lowerBound, value - step)
+                } mark: {
+                    MinusMark(size: 22, weight: 5)
                 }
-                dialButton("plus", identifier: "\(identifier)-plus") {
+                dialButton(identifier: "\(identifier)-plus") {
                     value = min(range.upperBound, value + step)
+                } mark: {
+                    PlusMark(size: 22, weight: 5)
                 }
             }
         }
         .padding(.vertical, 4)
     }
 
-    private func dialButton(_ symbol: String, identifier: String, action: @escaping () -> Void) -> some View {
+    private func dialButton<M: View>(identifier: String,
+                                     action: @escaping () -> Void,
+                                     @ViewBuilder mark: () -> M) -> some View {
         Button(action: action) {
-            Text(symbol)
-                .font(.system(size: 18, weight: .black))
+            mark()
                 .foregroundStyle(.white)
-                .frame(width: 42, height: 42)
+                .frame(width: 48, height: 48)
                 .background(Circle().fill(tint))
         }
         .buttonStyle(.plain)
@@ -61,9 +66,7 @@ struct NumberDial: View {
 
 /// The taste slider: a word at each end, a fat handle in the middle.
 struct TasteSlider: View {
-    let leftEmoji: String
     let leftWord: String
-    let rightEmoji: String
     let rightWord: String
     @Binding var value: Double
     var tint: Color = Candy.bubblegum
@@ -72,12 +75,12 @@ struct TasteSlider: View {
     var body: some View {
         VStack(spacing: 4) {
             HStack {
-                Text("\(leftEmoji) \(leftWord)")
+                Text(leftWord)
                 Spacer()
-                Text("\(rightWord) \(rightEmoji)")
+                Text(rightWord)
             }
-            .font(.system(size: 14, weight: .heavy, design: .rounded))
-            .foregroundStyle(.secondary)
+            .font(.system(size: 17, weight: .heavy, design: .rounded))
+            .foregroundStyle(Candy.inkSoft)
 
             Slider(value: $value, in: -1...1)
                 .tint(tint)
@@ -96,12 +99,11 @@ struct LightPicker: View {
                 Button {
                     light = option
                 } label: {
-                    VStack(spacing: 2) {
-                        Text(option.emoji)
-                            .font(.system(size: light == option ? 44 : 34))
+                    VStack(spacing: 4) {
+                        LightMark(light: option, size: light == option ? 46 : 36)
                         Text(option.title)
-                            .font(.system(size: 11, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .font(.system(size: 15, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
@@ -109,7 +111,7 @@ struct LightPicker: View {
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .fill(light == option ? Candy.mint.opacity(0.22) : Color.clear)
                             .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                .strokeBorder(light == option ? Candy.mint : Color.secondary.opacity(0.25),
+                                .strokeBorder(light == option ? Candy.mint : Candy.inkSoft.opacity(0.40),
                                               lineWidth: light == option ? 3 : 2))
                     )
                 }
@@ -132,15 +134,12 @@ struct FlavourWheel: View {
                 Button {
                     if on { picked.removeAll { $0 == flavour } } else { picked.append(flavour) }
                 } label: {
-                    HStack(spacing: 4) {
-                        Text(flavour.emoji)
-                        Text(flavour.title)
-                    }
-                    .font(.system(size: 14, weight: .heavy, design: .rounded))
-                    .foregroundStyle(on ? .white : Candy.cocoa)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
-                    .background(Capsule().fill(on ? Candy.forSeed(flavour.rawValue) : Color.white.opacity(0.7)))
+                    Text(flavour.title)
+                    .font(.system(size: 19, weight: .heavy, design: .rounded))
+                    .foregroundStyle(on ? .white : Candy.ink)
+                    .padding(.vertical, 11)
+                    .padding(.horizontal, 15)
+                    .background(Capsule().fill(on ? Candy.forSeed(flavour.rawValue) : Candy.field))
                     .overlay(Capsule().strokeBorder(Candy.forSeed(flavour.rawValue).opacity(0.6), lineWidth: 2))
                     .scaleEffect(on ? 1.04 : 1)
                 }
@@ -199,15 +198,15 @@ struct FatField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.system(size: 13, weight: .heavy, design: .rounded))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 16, weight: .heavy, design: .rounded))
+                .foregroundStyle(Candy.inkSoft)
             TextField(label, text: $text)
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .textFieldStyle(.plain)
                 .padding(.vertical, 10)
                 .padding(.horizontal, 12)
                 .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color.white.opacity(0.75)))
+                    .fill(Candy.field))
                 .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(tint.opacity(0.45), lineWidth: 2))
                 .accessibilityIdentifier(identifier)
@@ -216,8 +215,8 @@ struct FatField: View {
 }
 
 /// A folded pill that unfolds in place. Used for the guide and the history.
-struct FoldPill<Content: View>: View {
-    let emoji: String
+struct FoldPill<Mark: View, Content: View>: View {
+    let mark: Mark
     let title: String
     let subtitle: String
     let tint: Color
@@ -225,20 +224,32 @@ struct FoldPill<Content: View>: View {
     let identifier: String
     @ViewBuilder var content: Content
 
+    init(title: String, subtitle: String, tint: Color, isOpen: Binding<Bool>,
+         identifier: String, @ViewBuilder mark: () -> Mark,
+         @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.subtitle = subtitle
+        self.tint = tint
+        self._isOpen = isOpen
+        self.identifier = identifier
+        self.mark = mark()
+        self.content = content()
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button {
                 withAnimation(.spring(response: 0.42, dampingFraction: 0.72)) { isOpen.toggle() }
             } label: {
                 HStack(spacing: 15) {
-                    Text(emoji).font(.system(size: 38))
+                    mark
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
                             .font(.system(size: 21, weight: .black, design: .rounded))
                             .foregroundStyle(tint)
                         Text(subtitle)
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
                     }
                     Spacer()
                     ChevronMark(size: 26, weight: 5)
@@ -259,7 +270,7 @@ struct FoldPill<Content: View>: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(Color.white.opacity(0.62))
+                .fill(Candy.card)
                 .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous)
                     .strokeBorder(tint.opacity(0.55), lineWidth: 3))
                 .shadow(color: tint.opacity(0.28), radius: 0, x: 0, y: 5)

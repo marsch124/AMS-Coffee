@@ -6,26 +6,14 @@ struct BagsView: View {
     @State private var adding = false
 
     var body: some View {
-        Screen(emoji: "🫘", title: "Beans") {
-            Button {
-                adding = true
-            } label: {
-                HStack(spacing: 10) {
-                    PlusMark(size: 28, weight: 6)
-                    Text("Add a bag")
-                    Spacer()
-                }
-            }
-            .buttonStyle(SquashyButton(tint: Candy.mint))
-            .accessibilityIdentifier("bags-add")
-
+        Screen(title: "Beans") { BeanMark(size: 38) } content: {
             if store.data.liveBeans.isEmpty {
-                WobbleCard(tint: Candy.mango, tilt: 0.6) {
+                WobbleCard(tint: Candy.mango) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("🫘 No bags yet")
+                        Text("No bags yet")
                             .font(.system(size: 20, weight: .black, design: .rounded))
                         Text("Add the bag sitting next to your machine. Roaster, name, weight, price — that is enough to start.")
-                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .font(.system(size: 18, weight: .medium, design: .rounded))
                     }
                 }
                 .accessibilityElement(children: .contain)
@@ -34,13 +22,17 @@ struct BagsView: View {
 
             ForEach(Array(sortedBeans.enumerated()), id: \.element.id) { index, bean in
                 Button { editing = bean } label: {
-                    BagCard(bean: bean, tilt: index.isMultiple(of: 2) ? -0.8 : 0.8)
+                    BagCard(bean: bean, )
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("bag-row-\(index)")
                 .poppyAppear(Double(index) * 0.04)
             }
 
+        } bar: {
+            AddBar(title: "Add a bag", tint: Candy.mint, identifier: "bags-add") {
+                adding = true
+            }
         }
         .sheet(isPresented: $adding) { BagEditor(bean: Bean()) }
         .sheet(item: $editing) { BagEditor(bean: $0) }
@@ -58,12 +50,11 @@ struct BagsView: View {
 struct BagCard: View {
     @EnvironmentObject private var store: CoffeeStore
     let bean: Bean
-    var tilt: Double
 
     private var tint: Color { Candy.forSeed(bean.id.uuidString) }
 
     var body: some View {
-        WobbleCard(tint: tint, tilt: tilt) {
+        WobbleCard(tint: tint) {
             VStack(alignment: .leading, spacing: 10) {
                 if let photoID = bean.photoID {
                     PhotoImage(data: store.photo(photoID), corner: 18)
@@ -75,17 +66,18 @@ struct BagCard: View {
                     VStack(alignment: .leading, spacing: 1) {
                         if !bean.roaster.isEmpty {
                             Text(bean.roaster.uppercased())
-                                .font(.system(size: 14, weight: .heavy, design: .rounded))
+                                .font(.system(size: 17, weight: .heavy, design: .rounded))
                                 .foregroundStyle(tint)
                         }
                         Text(bean.displayName)
                             .font(.system(size: 25, weight: .black, design: .rounded))
-                            .foregroundStyle(Candy.cocoa)
+                            .foregroundStyle(Candy.ink)
                     }
                     Spacer()
-                    Text(bean.verdict.emoji)
-                        .font(.system(size: 30))
-                        .opacity(bean.verdict == .undecided ? 0.35 : 1)
+                    VerdictMark(verdict: bean.verdict, size: 32)
+                        .foregroundStyle(bean.verdict == .buyAgain ? Candy.mango
+                                         : bean.verdict == .never ? Candy.bubblegum
+                                         : Candy.ink.opacity(0.35))
                 }
 
                 // Grams left, as a bar you can read across the kitchen.
@@ -101,37 +93,42 @@ struct BagCard: View {
                 .frame(height: 14)
 
                 HStack(spacing: 8) {
-                    Chip(text: "\(Int(left)) g left", tint: tint, symbol: "⚖️")
+                    Chip(text: "\(Int(left)) g left", tint: tint) { BalanceMark(size: 18) }
                     if bean.rating > 0 {
-                        Chip(text: String(repeating: "★", count: bean.rating), tint: Candy.mango)
+                        HStack(spacing: 3) {
+                            ForEach(0..<max(bean.rating, 0), id: \.self) { _ in
+                                StarMark(size: 17, filled: true)
+                            }
+                        }
+                        .foregroundStyle(Candy.mango)
                     }
                 }
 
                 if !bean.flavours.isEmpty {
-                    Text(bean.flavours.map { "\($0.emoji) \($0.title)" }.joined(separator: "  "))
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                    Text(bean.flavours.map(\.title).joined(separator: " · "))
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
                 }
 
                 let methods = store.data.methodsUsed(beanID: bean.id)
                 if !methods.isEmpty {
-                    Text(methods.map { "\($0.emoji) \($0.title)" }.joined(separator: "  "))
-                        .font(.system(size: 13, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.secondary)
+                    Text(methods.map(\.title).joined(separator: " · "))
+                        .font(.system(size: 16, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Candy.inkSoft)
                 }
 
                 // Stickers.
                 HStack(spacing: 6) {
-                    if left > 0 && left <= 50 { Text("🔥 nearly gone") }
+                    if left > 0 && left <= 50 { Text("nearly gone") }
                     if let roast = bean.roastDate,
                        Calendar.current.dateComponents([.day], from: roast, to: Date()).day ?? 99 <= 7 {
-                        Text("🎂 fresh roast")
+                        Text("fresh roast")
                     }
                     if store.data.methodsUsed(beanID: bean.id).contains(where: {
                         store.data.bestShot(beanID: bean.id, method: $0)?.light == .green
-                    }) { Text("🏆 dialled in") }
+                    }) { Text("dialled in") }
                 }
-                .font(.system(size: 12, weight: .heavy, design: .rounded))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 16, weight: .heavy, design: .rounded))
+                .foregroundStyle(Candy.inkSoft)
             }
         }
     }
@@ -152,15 +149,15 @@ struct BagEditor: View {
     var body: some View {
         ZStack {
             CoffeeBackground()
-            Screen(emoji: "🫘", title: isNew ? "A new bag" : "The bag") {
-                WobbleCard(tint: Candy.bubblegum, tilt: -0.6) {
-                    PhotoRow(title: "📷 The bag",
+            Screen(title: isNew ? "A new bag" : "The bag") { BeanMark(size: 38) } content: {
+                WobbleCard(tint: Candy.bubblegum) {
+                    PhotoRow(title: "The bag",
                              hint: "A photo of the label beats any description",
                              photoID: $bean.photoID,
                              identifier: "bag-photo")
                 }
 
-                WobbleCard(tint: Candy.mint, tilt: -0.5) {
+                WobbleCard(tint: Candy.mint) {
                     VStack(alignment: .leading, spacing: 12) {
                         FatField(label: "Roaster", text: $bean.roaster,
                                  tint: Candy.mint, identifier: "bag-roaster")
@@ -173,7 +170,7 @@ struct BagEditor: View {
                     }
                 }
 
-                WobbleCard(tint: Candy.blueberry, tilt: 0.5) {
+                WobbleCard(tint: Candy.blueberry) {
                     VStack(alignment: .leading, spacing: 4) {
                         NumberDial(label: "Bag weight", unit: "g", value: $bean.bagWeightGrams,
                                    step: 50, range: 0...5000, tint: Candy.blueberry,
@@ -184,7 +181,7 @@ struct BagEditor: View {
                                    identifier: "bag-price")
                         Toggle(isOn: $hasRoastDate) {
                             Text("Roasted on")
-                                .font(.system(size: 15, weight: .heavy, design: .rounded))
+                                .font(.system(size: 18, weight: .heavy, design: .rounded))
                         }
                         .tint(Candy.blueberry)
                         .accessibilityIdentifier("bag-has-roastdate")
@@ -196,10 +193,10 @@ struct BagEditor: View {
                     }
                 }
 
-                WobbleCard(tint: Candy.bubblegum, tilt: -0.6) {
+                WobbleCard(tint: Candy.bubblegum) {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("👃 What does it taste like?")
-                            .font(.system(size: 17, weight: .black, design: .rounded))
+                        Text("What does it taste like?")
+                            .font(.system(size: 19, weight: .black, design: .rounded))
                         FlavourWheel(picked: $bean.flavours)
                         StarRating(rating: $bean.rating, identifierPrefix: "bag-star")
                         Picker("", selection: $bean.verdict) {
@@ -215,15 +212,9 @@ struct BagEditor: View {
                 }
 
                 if !isNew {
-                    Button { confirmRinse = true } label: {
-                        HStack {
-                            Text("🚰").font(.system(size: 28))
-                            Text("Rinse it into the Sink")
-                            Spacer()
-                        }
+                    DangerButton(title: "Remove", identifier: "bag-rinse") {
+                        confirmRinse = true
                     }
-                    .buttonStyle(SquashyButton(tint: Candy.sky))
-                    .accessibilityIdentifier("bag-rinse")
                 }
             } bar: {
                 StickyBar(saveTitle: "Save the bag", tint: Candy.mint,
@@ -239,15 +230,15 @@ struct BagEditor: View {
         .onAppear {
             if let d = bean.roastDate { hasRoastDate = true; roastDate = d }
         }
-        .alert("Rinse this bag?", isPresented: $confirmRinse) {
-            Button("Rinse it", role: .destructive) {
+        .alert("Remove this bag?", isPresented: $confirmRinse) {
+            Button("Remove", role: .destructive) {
                 store.rinse(bean)
                 dismiss()
             }
             .accessibilityIdentifier("bag-rinse-confirm")
             Button("Keep it", role: .cancel) { }
         } message: {
-            Text("It waits 30 days in the Sink. One tap brings it back.")
+            Text("It waits 30 days in the Sink, where one tap brings it back.")
         }
     }
 }
@@ -261,16 +252,16 @@ struct SinkView: View {
     var body: some View {
         ZStack {
             CoffeeBackground()
-            Screen(emoji: "🚰", title: "The Sink") {
-                WobbleCard(tint: Candy.sky, tilt: -0.5) {
+            Screen(title: "The Sink") { TapMark(size: 38) } content: {
+                WobbleCard(tint: Candy.sky) {
                     Text("Rinsed things sit here for 30 days. One tap puts them back where they were.")
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .font(.system(size: 18, weight: .medium, design: .rounded))
                 }
 
                 ForEach(Array(store.sinkBeans.enumerated()), id: \.element.id) { i, bean in
                     HStack {
-                        Text("🫘 \(bean.displayName)")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                        Text(bean.displayName)
+                            .font(.system(size: 19, weight: .bold, design: .rounded))
                         Spacer()
                         Button("Put back") { store.unrinse(bean) }
                             .buttonStyle(SquashyButton(tint: Candy.mint))
@@ -280,8 +271,12 @@ struct SinkView: View {
 
                 ForEach(Array(store.sinkShots.enumerated()), id: \.element.id) { i, shot in
                     HStack {
-                        Text("\(shot.light.emoji) \(shot.method.emoji) \(shot.ratioText)")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                        HStack(spacing: 8) {
+                            LightMark(light: shot.light, size: 22)
+                            MethodMark(method: shot.method, size: 22)
+                            Text(shot.ratioText)
+                                .font(.system(size: 19, weight: .bold, design: .rounded))
+                        }
                         Spacer()
                         Button("Put back") { store.unrinse(shot) }
                             .buttonStyle(SquashyButton(tint: Candy.mint))
@@ -291,8 +286,8 @@ struct SinkView: View {
 
                 ForEach(Array(store.sinkPurchases.enumerated()), id: \.element.id) { i, purchase in
                     HStack {
-                        Text("\(purchase.kind.emoji) \(purchase.displayName)")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                        Text(purchase.displayName)
+                            .font(.system(size: 19, weight: .bold, design: .rounded))
                         Spacer()
                         Button("Put back") { store.unrinse(purchase) }
                             .buttonStyle(SquashyButton(tint: Candy.mint))
@@ -326,8 +321,8 @@ struct NavigationLinkless<Content: View>: View {
                         .font(.system(size: 18, weight: .black, design: .rounded))
                         .foregroundStyle(tint)
                     Text(subtitle)
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(Candy.inkSoft)
                 }
                 Spacer()
                 ChevronMark(size: 26, weight: 5)
@@ -336,7 +331,7 @@ struct NavigationLinkless<Content: View>: View {
             }
             .padding(16)
             .background(RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(Color.white.opacity(0.55))
+                .fill(Candy.card)
                 .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous)
                     .strokeBorder(tint.opacity(0.55), lineWidth: 3)))
         }

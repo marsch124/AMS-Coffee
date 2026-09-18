@@ -35,6 +35,7 @@ struct CoffeeData: Codable, Equatable {
     var photoIDs: Set<String> {
         var ids = Set<String>()
         for b in beans { if let id = b.photoID { ids.insert(id) } }
+        for s in shots { if let id = s.photoID { ids.insert(id) } }
         for p in purchases { if let id = p.photoID { ids.insert(id) } }
         return ids
     }

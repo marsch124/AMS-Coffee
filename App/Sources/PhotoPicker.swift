@@ -26,7 +26,7 @@ struct PhotoRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.system(size: 15, weight: .black, design: .rounded))
+                .font(.system(size: 18, weight: .black, design: .rounded))
 
             if photoID != nil {
                 Button { viewing = true } label: {
@@ -43,8 +43,8 @@ struct PhotoRow: View {
                     .frame(maxWidth: .infinity)
                     .overlay(alignment: .bottom) {
                         Text(hint)
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
                             .padding(.bottom, 12)
                     }
                     .accessibilityElement(children: .contain)
@@ -54,14 +54,17 @@ struct PhotoRow: View {
             FlowRow(spacing: 8) {
                 #if os(iOS)
                 Button { showCamera = true } label: {
-                    Text("📷  Take one")
+                    HStack(spacing: 10) { CameraMark(size: 24); Text("Take one") }
                 }
                 .buttonStyle(SquashyButton(tint: Candy.bubblegum))
                 .accessibilityIdentifier("\(identifier)-camera")
                 #endif
 
                 PhotosPicker(selection: $picked, matching: .images) {
-                    Text("🖼  Choose one")
+                    HStack(spacing: 10) {
+                        PictureMark(size: 24)
+                        Text("Choose one")
+                    }
                         .font(.system(size: 20, weight: .heavy, design: .rounded))
                         .foregroundStyle(.white)
                         .padding(.vertical, 14)
@@ -71,13 +74,16 @@ struct PhotoRow: View {
                 }
                 .accessibilityIdentifier("\(identifier)-choose")
 
-                if photoID != nil {
-                    Button { photoID = nil } label: {
-                        Text("✕  Remove")
-                    }
-                    .buttonStyle(SquashyButton(tint: Candy.sky))
-                    .accessibilityIdentifier("\(identifier)-remove")
+            }
+
+            if photoID != nil {
+                Button { photoID = nil } label: {
+                    Text("Remove this photo")
+                        .font(.system(size: 17, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Candy.danger)
                 }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("\(identifier)-remove")
             }
         }
         .onChange(of: picked) { _, item in

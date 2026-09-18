@@ -17,6 +17,18 @@ enum Candy {
 
     static let all: [Color] = [mango, apricot, bubblegum, mint, blueberry, sky, grape]
 
+    /// Text, cards and fields come from the asset catalogue so that each has a
+    /// light AND a dark value. Hardcoding cocoa text on a white card made half
+    /// the app unreadable in dark mode, which is how he actually runs it.
+    static let ink = Color("Ink")
+    /// Secondary text. SwiftUI's .secondary is far too faint on these cards —
+    /// it is what made half the app unreadable.
+    static let inkSoft = Color("InkSoft")
+    /// One red, for everything that removes something.
+    static let danger = Color("Danger")
+    static let card = Color("Card")
+    static let field = Color("Field")
+
     /// A stable colour for a thing, so a bag keeps its colour forever.
     static func forSeed(_ seed: String) -> Color {
         let hash = seed.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) & 0xFFFFFF }
@@ -62,16 +74,15 @@ struct SquashyButton: ButtonStyle {
                     .fill(tint)
                     .shadow(color: tint.opacity(0.45), radius: 0, x: 0, y: configuration.isPressed ? 2 : 6)
             )
-            .scaleEffect(configuration.isPressed ? 0.93 : 1)
-            .rotationEffect(.degrees(configuration.isPressed ? -1.2 : 0))
+            .scaleEffect(configuration.isPressed ? 0.95 : 1)
             .animation(.spring(response: 0.28, dampingFraction: 0.45), value: configuration.isPressed)
     }
 }
 
-/// A chunky card that tilts a hair, so nothing looks like a spreadsheet.
+/// A chunky card, upright. It used to tilt a degree either way, which was
+/// cute for about a minute and then just looked knocked askew.
 struct WobbleCard<Content: View>: View {
     var tint: Color = Candy.mint
-    var tilt: Double = -0.7
     @ViewBuilder var content: Content
     @Environment(\.colorScheme) private var scheme
 
@@ -81,14 +92,13 @@ struct WobbleCard<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(scheme == .dark ? Color.white.opacity(0.08) : Color.white.opacity(0.85))
+                    .fill(Candy.card)
                     .overlay(
                         RoundedRectangle(cornerRadius: 26, style: .continuous)
                             .strokeBorder(tint.opacity(0.55), lineWidth: 3)
                     )
                     .shadow(color: tint.opacity(0.30), radius: 0, x: 0, y: 5)
             )
-            .rotationEffect(.degrees(tilt))
     }
 }
 
@@ -195,7 +205,6 @@ struct PlusMark: View {
             Capsule().frame(width: size, height: weight)
             Capsule().frame(width: weight, height: size)
         }
-        .rotationEffect(.degrees(-2))
         .frame(width: size, height: size)
     }
 }
@@ -212,7 +221,6 @@ struct TickMark: View {
             p.addLine(to: CGPoint(x: size * 0.86, y: size * 0.22))
         }
         .stroke(style: StrokeStyle(lineWidth: weight, lineCap: .round, lineJoin: .round))
-        .rotationEffect(.degrees(-3))
         .frame(width: size, height: size)
     }
 }
@@ -239,7 +247,6 @@ struct MinusMark: View {
     var body: some View {
         Capsule()
             .frame(width: size, height: weight)
-            .rotationEffect(.degrees(-2))
             .frame(width: size, height: size)
     }
 }
@@ -284,38 +291,47 @@ struct StarMark: View {
                 path.stroke(style: StrokeStyle(lineWidth: 3, lineJoin: .round))
             }
         }
-        .rotationEffect(.degrees(-4))
         .frame(width: size, height: size)
     }
 }
 
 // MARK: - Little shared pieces
 
-/// A fat pill used everywhere for counts and labels.
-struct Chip: View {
+/// A fat pill used everywhere for counts and labels, with an optional drawn
+/// mark in front of it.
+struct Chip<Mark: View>: View {
     let text: String
     var tint: Color = Candy.blueberry
-    var symbol: String?   // an emoji, never a stock glyph
+    let mark: Mark
+
+    init(text: String, tint: Color = Candy.blueberry, @ViewBuilder mark: () -> Mark) {
+        self.text = text
+        self.tint = tint
+        self.mark = mark()
+    }
 
     var body: some View {
-        HStack(spacing: 5) {
-            if let symbol { Text(symbol).font(.system(size: 17)) }
+        HStack(spacing: 6) {
+            mark
             Text(text)
         }
-        .font(.system(size: 16, weight: .heavy, design: .rounded))
+        .font(.system(size: 18, weight: .heavy, design: .rounded))
         .lineLimit(1)
         .fixedSize(horizontal: true, vertical: false)
-        .foregroundStyle(tint)
-        .padding(.vertical, 6)
-        .padding(.horizontal, 12)
-        .background(Capsule().fill(tint.opacity(0.18)))
-        .overlay(Capsule().strokeBorder(tint.opacity(0.45), lineWidth: 2))
+        .foregroundStyle(.white)
+        .padding(.vertical, 9)
+        .padding(.horizontal, 15)
+        .background(Capsule().fill(tint))
     }
 }
 
-/// Big rounded headline used at the top of every screen. Takes either an
-/// emoji — fine for content, a bag or a brew method — or one of the drawn
-/// marks, for the four places the tab bar names.
+extension Chip where Mark == EmptyView {
+    init(text: String, tint: Color = Candy.blueberry) {
+        self.init(text: text, tint: tint) { EmptyView() }
+    }
+}
+
+/// Big rounded headline used at the top of every screen, with a drawn mark.
 struct BigTitle<Mark: View>: View {
     let mark: Mark
     let text: String
@@ -330,17 +346,13 @@ struct BigTitle<Mark: View>: View {
             mark
             Text(text)
                 .font(.system(size: 34, weight: .black, design: .rounded))
-                .foregroundStyle(Candy.cocoa)
+                .foregroundStyle(Candy.ink)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-extension BigTitle where Mark == Text {
-    init(emoji: String, text: String) {
-        self.init(text: text) { Text(emoji).font(.system(size: 38)) }
-    }
-}
+
 
 /// A number you can actually read with your glasses off.
 struct BigNumber: View {
@@ -356,8 +368,8 @@ struct BigNumber: View {
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
             Text(caption)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(Candy.inkSoft)
         }
         .frame(maxWidth: .infinity)
     }
@@ -375,7 +387,7 @@ struct StarRating: View {
                     rating = (rating == i) ? 0 : i
                 } label: {
                     StarMark(size: 38, filled: i <= rating)
-                        .foregroundStyle(i <= rating ? Candy.mango : Color.secondary.opacity(0.35))
+                        .foregroundStyle(i <= rating ? Candy.mango : Candy.inkSoft.opacity(0.45))
                         .scaleEffect(i <= rating ? 1.06 : 1)
                 }
                 .buttonStyle(.plain)
@@ -435,5 +447,31 @@ extension BrewField {
         case .steepHours:    return Candy.mint
         case .plungeSeconds: return Candy.mango
         }
+    }
+}
+
+
+/// Anything that removes something. Red, quiet, and last on the screen — it
+/// should be findable, not in the way.
+struct DangerButton: View {
+    let title: String
+    let identifier: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 18, weight: .heavy, design: .rounded))
+                .foregroundStyle(Candy.danger)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Candy.danger.opacity(0.55), lineWidth: 2)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(identifier)
+        .padding(.top, 10)
     }
 }

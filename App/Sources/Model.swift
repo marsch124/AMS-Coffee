@@ -19,18 +19,6 @@ enum BrewMethod: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    var emoji: String {
-        switch self {
-        case .espresso:    return "☕️"
-        case .v60:         return "🌀"
-        case .aeropress:   return "🪗"
-        case .frenchPress: return "🫙"
-        case .moka:        return "🔥"
-        case .coldBrew:    return "🧊"
-        case .filter:      return "🫗"
-        }
-    }
-
     /// Espresso is weighed out of the cup; everything else is weighed in.
     var isWeighedByWaterIn: Bool { self != .espresso }
 
@@ -166,17 +154,11 @@ enum Verdict: String, Codable, CaseIterable {
         case .never:     return "Never again"
         }
     }
-
-    /// An emoji, never a stock glyph.
-    var emoji: String {
-        switch self {
-        case .undecided: return "🤔"
-        case .buyAgain:  return "⭐️"
-        case .never:     return "👎"
-        }
-    }
 }
 
+/// The taste wheel, kept short on purpose — pick, don't type. No pictures:
+/// twelve tiny drawn fruits would read worse than twelve clear words, and
+/// each one already has its own colour.
 enum Flavour: String, Codable, CaseIterable, Identifiable {
     case chocolate, caramel, nutty, berry, citrus, stoneFruit
     case floral, spice, earthy, wine, honey, bread
@@ -187,23 +169,6 @@ enum Flavour: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .stoneFruit: return "Stone fruit"
         default:          return rawValue.capitalized
-        }
-    }
-
-    var emoji: String {
-        switch self {
-        case .chocolate:  return "🍫"
-        case .caramel:    return "🍮"
-        case .nutty:      return "🥜"
-        case .berry:      return "🫐"
-        case .citrus:     return "🍋"
-        case .stoneFruit: return "🍑"
-        case .floral:     return "🌸"
-        case .spice:      return "🌶"
-        case .earthy:     return "🌿"
-        case .wine:       return "🍷"
-        case .honey:      return "🍯"
-        case .bread:      return "🍞"
         }
     }
 }
@@ -285,14 +250,6 @@ enum TrafficLight: String, Codable, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var emoji: String {
-        switch self {
-        case .red:   return "🔴"
-        case .amber: return "🟡"
-        case .green: return "🟢"
-        }
-    }
-
     var title: String {
         switch self {
         case .red:   return "Tipped it out"
@@ -333,6 +290,8 @@ struct Shot: Identifiable, Codable, Equatable {
     var thinSyrupy: Double = 0
     var light: TrafficLight = .amber
     var note = ""
+    /// A photo of the brew — the crema, the bed, the cup. A file name only.
+    var photoID: String?
 
     var createdAt = Date()
     var modifiedAt = Date()
@@ -399,6 +358,7 @@ struct Shot: Identifiable, Codable, Equatable {
         thinSyrupy = try c.decodeIfPresent(Double.self, forKey: .thinSyrupy) ?? 0
         light = try c.decodeIfPresent(TrafficLight.self, forKey: .light) ?? .amber
         note = try c.decodeIfPresent(String.self, forKey: .note) ?? ""
+        photoID = try c.decodeIfPresent(String.self, forKey: .photoID)
         createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? date
         modifiedAt = try c.decodeIfPresent(Date.self, forKey: .modifiedAt) ?? createdAt
         rinsedAt = try c.decodeIfPresent(Date.self, forKey: .rinsedAt)
@@ -428,15 +388,6 @@ enum PurchaseKind: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    var emoji: String {
-        switch self {
-        case .machine:      return "⚙️"
-        case .grinder:      return "🪨"
-        case .accessory:    return "🥄"
-        case .subscription: return "🔁"
-        case .other:        return "📦"
-        }
-    }
 }
 
 /// Gear, not beans. Bags carry their own price and are counted automatically,

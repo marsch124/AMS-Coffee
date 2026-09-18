@@ -16,15 +16,15 @@ struct HomeView: View {
     }
 
     var body: some View {
-        Screen(emoji: "☕️", title: "AMS Coffee") {
+        Screen(title: "AMS Coffee") { CupMark(size: 38) } content: {
 
             if let warning = store.shelf.warning {
-                WobbleCard(tint: Candy.apricot, tilt: 0.6) {
+                WobbleCard(tint: Candy.apricot) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("🛟 The shelf stopped something")
+                        Text("The shelf stopped something")
                             .font(.system(size: 19, weight: .black, design: .rounded))
                         Text(warning)
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .font(.system(size: 18, weight: .medium, design: .rounded))
                         Button("Got it") { store.dismissWarning() }
                             .buttonStyle(SquashyButton(tint: Candy.apricot))
                             .accessibilityIdentifier("home-dismiss-warning")
@@ -40,7 +40,7 @@ struct HomeView: View {
                 pulling = true
             } label: {
                 HStack(spacing: 14) {
-                    Text("☕️").font(.system(size: 34))
+                    CupMark(size: 34, weight: 0.085)
                     Text("Pull a shot")
                     Spacer()
                 }
@@ -50,12 +50,12 @@ struct HomeView: View {
             .poppyAppear(0.05)
 
             // What you have drunk. Nothing here is about money.
-            WobbleCard(tint: Candy.mint, tilt: -0.8) {
+            WobbleCard(tint: Candy.mint) {
                 HStack(spacing: 4) {
                     BigNumber(value: "\(todaysBrews.count)", caption: "today", tint: Candy.mint)
-                    BigNumber(value: "\(store.data.liveShots.count)", caption: "brews ever", tint: Candy.blueberry)
+                    BigNumber(value: "\(store.data.liveShots.count)", caption: "brews", tint: Candy.blueberry)
                     BigNumber(value: "\(store.data.liveBeans.count)", caption: "bags", tint: Candy.bubblegum)
-                    BigNumber(value: "\(lovely)", caption: "🟢 lovely", tint: Candy.mango)
+                    BigNumber(value: "\(lovely)", caption: "lovely", tint: Candy.mango)
                 }
             }
             .accessibilityElement(children: .contain)
@@ -64,13 +64,13 @@ struct HomeView: View {
 
             // What the coach said about the last one.
             if let advice = store.lastAdvice {
-                WobbleCard(tint: Candy.sky, tilt: 0.7) {
+                WobbleCard(tint: Candy.sky) {
                     VStack(alignment: .leading, spacing: 7) {
-                        Text("\(advice.emoji) \(advice.headline)")
+                        Text(advice.headline)
                             .font(.system(size: 23, weight: .black, design: .rounded))
                             .foregroundStyle(Candy.sky)
                         Text(advice.detail)
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .font(.system(size: 18, weight: .medium, design: .rounded))
                     }
                 }
                 .accessibilityElement(children: .contain)
@@ -81,7 +81,7 @@ struct HomeView: View {
             // The bag you are drinking now.
             if let bean = currentBag {
                 Button { tab = .bags } label: {
-                    WobbleCard(tint: Candy.forSeed(bean.id.uuidString), tilt: -0.5) {
+                    WobbleCard(tint: Candy.forSeed(bean.id.uuidString)) {
                         HStack(spacing: 14) {
                             if let id = bean.photoID {
                                 PhotoImage(data: store.photo(id), corner: 16)
@@ -89,14 +89,14 @@ struct HomeView: View {
                                     .clipped()
                             }
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("🫘 In the hopper")
-                                    .font(.system(size: 14, weight: .heavy, design: .rounded))
-                                    .foregroundStyle(.secondary)
+                                Text("In the hopper")
+                                    .font(.system(size: 17, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(Candy.inkSoft)
                                 Text(bean.displayName)
                                     .font(.system(size: 24, weight: .black, design: .rounded))
-                                    .foregroundStyle(Candy.cocoa)
+                                    .foregroundStyle(Candy.ink)
                                 Chip(text: "\(Int(store.data.gramsLeft(for: bean))) g left",
-                                     tint: Candy.mint, symbol: "⚖️")
+                                     tint: Candy.mint) { BalanceMark(size: 18) }
                             }
                             Spacer()
                         }

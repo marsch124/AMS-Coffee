@@ -36,7 +36,6 @@ struct CupMark: View {
             p.addLine(to: pt(0.83, 0.755))
         }
         .stroke(style: StrokeStyle(lineWidth: w, lineCap: .round, lineJoin: .round))
-        .rotationEffect(.degrees(-1.5))
         .frame(width: size, height: size)
     }
 }
@@ -64,7 +63,6 @@ struct BeanMark: View {
             }
             .stroke(style: StrokeStyle(lineWidth: w * 0.92, lineCap: .round))
         }
-        .rotationEffect(.degrees(-15))
         .frame(width: size, height: size)
     }
 }
@@ -95,7 +93,6 @@ struct DialMark: View {
             }
             .stroke(style: StrokeStyle(lineWidth: w * 0.85, lineCap: .round))
         }
-        .rotationEffect(.degrees(-3))
         .frame(width: size, height: size)
     }
 }
@@ -127,7 +124,6 @@ struct CogMark: View {
             }
             .stroke(style: StrokeStyle(lineWidth: w, lineCap: .round))
         }
-        .rotationEffect(.degrees(-4))
         .frame(width: size, height: size)
     }
 }

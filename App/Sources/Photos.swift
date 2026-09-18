@@ -120,11 +120,10 @@ struct PhotoImage: View {
                 .clipShape(RoundedRectangle(cornerRadius: corner, style: .continuous))
         } else {
             RoundedRectangle(cornerRadius: corner, style: .continuous)
-                .fill(Candy.cocoa.opacity(0.08))
+                .fill(Candy.ink.opacity(0.08))
                 .overlay(
-                    Text("📷")
-                        .font(.system(size: 28))
-                        .opacity(0.45)
+                    CameraMark(size: 34)
+                        .foregroundStyle(Candy.ink.opacity(0.35))
                 )
         }
     }
