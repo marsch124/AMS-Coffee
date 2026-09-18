@@ -26,6 +26,7 @@
 		B12AA23BE5E67176AEE342BC /* TabMarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6523A657F5C4E496E534721A /* TabMarks.swift */; };
 		B49C71A829777FE672352853 /* Cups.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5EBFF79F626018D21A200F /* Cups.swift */; };
 		BEDCB1A5ED16B0573DA8C254 /* Marks.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE68AF2997D50A9F613978AC /* Marks.swift */; };
+		D0F580A6800586C4165238B7 /* BrewTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C76F9EAD397D9C678BA6C9 /* BrewTimer.swift */; };
 		D10C32CCD6E9232F7AEC3D69 /* AMSCoffeeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 265DC6746DF3207F4360B902 /* AMSCoffeeUITests.swift */; };
 		D5943B15ED4DFF5D723A28DD /* PhotoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0664923D4B913CD78E93F7EC /* PhotoPicker.swift */; };
 		EF271A0A4638931227A41911 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA92EC1B0090B618DF8E482 /* Store.swift */; };
@@ -58,6 +59,7 @@
 		3DF529735D372B3978F641B8 /* Photos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photos.swift; sourceTree = "<group>"; };
 		43EF7078D1C8FA588F071747 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		51F8DE063A7C0199814F093C /* BrewMethodTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewMethodTests.swift; sourceTree = "<group>"; };
+		55C76F9EAD397D9C678BA6C9 /* BrewTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewTimer.swift; sourceTree = "<group>"; };
 		5FA92EC1B0090B618DF8E482 /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		629C542C490591DFBD98F844 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6523A657F5C4E496E534721A /* TabMarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabMarks.swift; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 			children = (
 				85E512105F5F3A506D2E173D /* AMSCoffeeApp.swift */,
 				8644D316E33D62F1805912FA /* BagsView.swift */,
+				55C76F9EAD397D9C678BA6C9 /* BrewTimer.swift */,
 				C8BAFD7A8ACFFF28ABC4B4F9 /* Coach.swift */,
 				3B5EBFF79F626018D21A200F /* Cups.swift */,
 				AF3321F4B8D072A6393464A0 /* CupsView.swift */,
@@ -300,6 +303,7 @@
 			files = (
 				8C08A38A8417A2650BE64269 /* AMSCoffeeApp.swift in Sources */,
 				FC1DE77F3B399395003E54C7 /* BagsView.swift in Sources */,
+				D0F580A6800586C4165238B7 /* BrewTimer.swift in Sources */,
 				57C1F6F78396D3ECE649FAA5 /* Coach.swift in Sources */,
 				B49C71A829777FE672352853 /* Cups.swift in Sources */,
 				50A251BEDF541BE9885EF993 /* CupsView.swift in Sources */,
@@ -371,7 +375,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -392,7 +396,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -550,7 +554,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -565,7 +569,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

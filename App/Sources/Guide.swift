@@ -12,10 +12,20 @@ struct Release: Identifiable {
 
 enum Guide {
 
-    static let appVersion = "2.1"
+    static let appVersion = "2.2"
 
     /// Newest first. Every release adds an entry — never edits an old one.
     static let releases: [Release] = [
+        Release(version: "2.2", date: "2026-09-18",
+                headline: "A stopwatch on the brew",
+                lines: [
+                    "Time it, right on the brew. Start when the water starts, Stop when it stops, and the time writes itself into the log — so the seconds you keep are the seconds that happened, not the ones you remembered afterwards.",
+                    "The clock is worked out from the moment you started, never by counting. Lock the phone mid-pour or take a call: come back and it is still right.",
+                    "On a pour-over or filter there is a Bloom done button, so the bloom is timed separately without you doing arithmetic.",
+                    "On an AeroPress or French press, stopping the clock fills in the steep in minutes, to the nearest half.",
+                    "Cold brew gets no stopwatch. It steeps overnight.",
+                    "Carry on picks up where you left off; Start over is the calm red one, last as always.",
+                ]),
         Release(version: "2.1", date: "2026-09-18",
                 headline: "Readable, upright, quieter",
                 lines: [

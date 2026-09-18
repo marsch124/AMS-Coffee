@@ -346,3 +346,50 @@ final class CupPurchaseTests: XCTestCase {
         XCTAssertNotNil(CupPolicy.refusal(lost, shelf: shelf))
     }
 }
+
+/// The timer's own rules, checked across every method at once — so adding an
+/// eighth way of making coffee cannot quietly leave it without a stopwatch.
+final class BrewTimerRuleTests: XCTestCase {
+
+    func testEverythingButColdBrewIsWorthTiming() {
+        for method in BrewMethod.allCases {
+            XCTAssertEqual(method.worthTiming, method != .coldBrew,
+                           "\(method.rawValue)")
+        }
+    }
+
+    /// A bloom is timed separately only where there is a bloom to time.
+    func testOnlyThePouredMethodsHaveABloom() {
+        XCTAssertTrue(BrewMethod.v60.hasBloom)
+        XCTAssertTrue(BrewMethod.filter.hasBloom)
+        for method in BrewMethod.allCases where method != .v60 && method != .filter {
+            XCTAssertFalse(method.hasBloom, "\(method.rawValue)")
+        }
+    }
+
+    /// Stopping the clock writes minutes only for the methods that steep.
+    func testOnlyTheSteepedMethodsAreCountedInMinutes() {
+        XCTAssertTrue(BrewMethod.aeropress.steepsInMinutes)
+        XCTAssertTrue(BrewMethod.frenchPress.steepsInMinutes)
+        XCTAssertFalse(BrewMethod.coldBrew.steepsInMinutes,
+                       "cold brew steeps in hours, and nobody times it")
+        XCTAssertFalse(BrewMethod.espresso.steepsInMinutes)
+    }
+
+    /// Every method the timer offers itself on must have somewhere VISIBLE for
+    /// the stopped clock to land, or the time you just measured vanishes.
+    ///
+    /// For most methods that is the Total time dial. An AeroPress and a French
+    /// press have no total-time dial on purpose — their brew IS the steep, and
+    /// a second dial saying nearly the same thing would be clutter — so for
+    /// those the clock lands in Steep, in minutes. Either is fine; neither is
+    /// not. This first ran red and caught exactly that.
+    func testEveryTimedMethodHasSomewhereForTheClockToLand() {
+        for method in BrewMethod.allCases where method.worthTiming {
+            let landsInTotalTime = method.fields.contains(.seconds)
+            let landsInTheSteep = method.steepsInMinutes && method.fields.contains(.steepMinutes)
+            XCTAssertTrue(landsInTotalTime || landsInTheSteep,
+                          "\(method.rawValue) is timed but the time has nowhere to go")
+        }
+    }
+}

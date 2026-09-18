@@ -180,4 +180,53 @@ final class AMSCoffeeUITests: XCTestCase {
         tap(app, "settings-guide-toggle")
         XCTAssertTrue(waitFor(app, "settings-guide-list"), "and so does the guide")
     }
+
+    /// Test 6 (added in 2.2) — the brew timer writes the real time into the
+    /// brew. The espresso starter says 28 s; if stopping the clock after two
+    /// seconds leaves 28 s in the dial, the timer is decoration.
+    func testTheTimerWritesTheTimeIntoTheBrew() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+
+        tap(app, "tab-shots")
+        tap(app, "shots-add")
+
+        XCTAssertTrue(waitFor(app, "shot-timer"), "an espresso is worth timing")
+        XCTAssertEqual(seconds(app), 28, "the starter time, before we touch anything")
+
+        tap(app, "timer-start")
+        Thread.sleep(forTimeInterval: 2.5)
+        tap(app, "timer-stop")
+
+        // Two and a half seconds of pouring, not twenty-eight.
+        let logged = seconds(app)
+        XCTAssertGreaterThan(logged, 0, "the timer should have written something")
+        XCTAssertLessThan(logged, 10, "and it should be the time we just timed")
+        XCTAssertTrue(waitFor(app, "timer-reset"), "a stopped clock offers Start over")
+
+        tap(app, "light-green")
+        tap(app, "shot-save")
+        XCTAssertTrue(waitFor(app, "shot-row-0"), "the timed shot should be on the list")
+    }
+
+    /// Test 7 — cold brew steeps overnight, so it is NOT given a stopwatch.
+    /// This guards `worthTiming`, which is easy to widen by accident.
+    func testColdBrewGetsNoStopwatch() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+
+        tap(app, "tab-shots")
+        tap(app, "method-coldBrew")
+        XCTAssertTrue(waitFor(app, "shot-steephours"), "cold brew is counted in hours")
+        XCTAssertTrue(absent(app, "shot-timer"), "and nobody stands there with a stopwatch")
+    }
+
+    /// The number in the Total time dial, read back out of the field.
+    private func seconds(_ app: XCUIApplication) -> Double {
+        let field = app.textFields["shot-seconds"]
+        guard field.waitForExistence(timeout: 10),
+              let shown = field.value as? String else { return -1 }
+        // A Swedish phone writes 2,5 where a British one writes 2.5.
+        return Double(shown.replacingOccurrences(of: ",", with: ".")) ?? -1
+    }
 }

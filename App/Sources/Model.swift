@@ -42,6 +42,16 @@ enum BrewMethod: String, Codable, CaseIterable, Identifiable {
 
     var hasInvertedSwitch: Bool { self == .aeropress }
 
+    /// Cold brew steeps overnight; a stopwatch would be silly. Everything
+    /// else is worth timing.
+    var worthTiming: Bool { self != .coldBrew }
+
+    /// The methods that pour a bloom first, so the timer can split it out.
+    var hasBloom: Bool { fields.contains(.bloomWater) }
+
+    /// The methods whose time is written in minutes of steeping.
+    var steepsInMinutes: Bool { fields.contains(.steepMinutes) }
+
     /// A sensible place to start when there is no previous brew to copy.
     func starter() -> Shot {
         var s = Shot()

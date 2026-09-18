@@ -199,6 +199,25 @@ struct ShotEditor: View {
                     }
                 }
 
+                if shot.method.worthTiming {
+                    WobbleCard(tint: Candy.mint) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Time it")
+                                .font(.system(size: 19, weight: .black, design: .rounded))
+                            BrewTimer(seconds: $shot.seconds,
+                                      bloomSeconds: shot.method.hasBloom ? $shot.bloomSeconds : nil,
+                                      steepMinutes: shot.method.steepsInMinutes ? $shot.steepMinutes : nil)
+                            Text(shot.method.hasBloom
+                                 ? "Start when the water hits, tap Bloom done when you carry on pouring, and Stop at the end. The numbers below fill themselves in."
+                                 : "Start when it starts, Stop when it stops. The time below fills itself in.")
+                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                                .foregroundStyle(Candy.inkSoft)
+                        }
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("shot-timer")
+                    }
+                }
+
                 // Only the dials this method actually uses.
                 WobbleCard(tint: tint) {
                     VStack(alignment: .leading, spacing: 2) {
