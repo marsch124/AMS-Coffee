@@ -443,24 +443,30 @@ struct FlakeMark: View {
     var weight: Double = 0.075
     var body: some View {
         Path { path in
-            let c = CGPoint(x: size * 0.5, y: size * 0.5)
+            let cx: Double = size * 0.5
+            let cy: Double = size * 0.5
+            let arm: Double = size * 0.32
+            let barbAt: Double = size * 0.20
+            let barbLen: Double = size * 0.10
+            let half: Double = Double.pi / 3.0
+            let sixth: Double = (2.0 * Double.pi) / 6.0
+
             for i in 0..<3 {
-                let a = Double(i) / 3 * .pi + 0.1
-                path.move(to: CGPoint(x: c.x + cos(a) * size * 0.32,
-                                      y: c.y + sin(a) * size * 0.32))
-                path.addLine(to: CGPoint(x: c.x - cos(a) * size * 0.32,
-                                         y: c.y - sin(a) * size * 0.32))
+                let a: Double = Double(i) * half + 0.1
+                let dx: Double = cos(a)
+                let dy: Double = sin(a)
+                path.move(to: CGPoint(x: cx + dx * arm, y: cy + dy * arm))
+                path.addLine(to: CGPoint(x: cx - dx * arm, y: cy - dy * arm))
             }
             // little barbs, so it reads as frost rather than an asterisk
             for i in 0..<6 {
-                let a = Double(i) / 6 * 2 * .pi + 0.1
-                let tip = CGPoint(x: c.x + cos(a) * size * 0.32, y: c.y + sin(a) * size * 0.32)
-                let back = CGPoint(x: c.x + cos(a) * size * 0.20, y: c.y + sin(a) * size * 0.20)
-                let side = a + 0.9
-                path.move(to: back)
-                path.addLine(to: CGPoint(x: back.x + cos(side) * size * 0.10,
-                                         y: back.y + sin(side) * size * 0.10))
-                path.move(to: tip)
+                let a: Double = Double(i) * sixth + 0.1
+                let bx: Double = cx + cos(a) * barbAt
+                let by: Double = cy + sin(a) * barbAt
+                let side: Double = a + 0.9
+                path.move(to: CGPoint(x: bx, y: by))
+                path.addLine(to: CGPoint(x: bx + cos(side) * barbLen,
+                                         y: by + sin(side) * barbLen))
             }
         }
         .stroke(style: StrokeStyle(lineWidth: size * weight * 0.85, lineCap: .round, lineJoin: .round))

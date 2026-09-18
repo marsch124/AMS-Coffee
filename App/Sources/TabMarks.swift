@@ -52,11 +52,16 @@ struct BeanMark: View {
                 .stroke(style: StrokeStyle(lineWidth: w, lineCap: .round))
                 .frame(width: size * 0.56, height: size * 0.76)
             Path { p in
-                let n = 24
+                let n: Int = 24
+                let cx: Double = size * 0.5
+                let amp: Double = size * 0.10
+                let top: Double = size * 0.13
+                let span: Double = size * 0.74
+                let turn: Double = 2.0 * Double.pi
                 for i in 0...n {
-                    let t = Double(i) / Double(n)
-                    let x = size * 0.5 + size * 0.10 * sin(t * 2 * .pi)
-                    let y = size * 0.13 + t * size * 0.74
+                    let t: Double = Double(i) / Double(n)
+                    let x: Double = cx + amp * sin(t * turn)
+                    let y: Double = top + t * span
                     if i == 0 { p.move(to: CGPoint(x: x, y: y)) }
                     else { p.addLine(to: CGPoint(x: x, y: y)) }
                 }
@@ -113,13 +118,23 @@ struct CogMark: View {
                 .frame(width: size * 0.17, height: size * 0.17)
             // seven teeth, not eight — an even ring looks stamped out
             Path { p in
-                let c = CGPoint(x: size * 0.5, y: size * 0.5)
+                // Every value is an explicit Double and every constant is
+                // computed on its own line. The one-liner this replaces
+                // (Double(i) / 7 * 2 * .pi - .pi / 2 + 0.07) compiled here but
+                // defeated the older compiler on the CI runner: "unable to
+                // type-check this expression in reasonable time".
+                let cx: Double = size * 0.5
+                let cy: Double = size * 0.5
+                let inner: Double = size * 0.27
+                let outer: Double = size * 0.40
+                let step: Double = (2.0 * Double.pi) / 7.0
+                let start: Double = (Double.pi / -2.0) + 0.07
                 for i in 0..<7 {
-                    let a = Double(i) / 7 * 2 * .pi - .pi / 2 + 0.07
-                    let inner = size * 0.27
-                    let outer = size * 0.40
-                    p.move(to: CGPoint(x: c.x + cos(a) * inner, y: c.y + sin(a) * inner))
-                    p.addLine(to: CGPoint(x: c.x + cos(a) * outer, y: c.y + sin(a) * outer))
+                    let a: Double = start + Double(i) * step
+                    let dx: Double = cos(a)
+                    let dy: Double = sin(a)
+                    p.move(to: CGPoint(x: cx + dx * inner, y: cy + dy * inner))
+                    p.addLine(to: CGPoint(x: cx + dx * outer, y: cy + dy * outer))
                 }
             }
             .stroke(style: StrokeStyle(lineWidth: w, lineCap: .round))

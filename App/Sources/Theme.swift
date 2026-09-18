@@ -274,13 +274,17 @@ struct StarMark: View {
 
     var body: some View {
         let path = Path { p in
-            let r = size / 2
-            let c = CGPoint(x: r, y: r)
+            let r: Double = size / 2.0
+            let inner: Double = r * 0.44
+            let step: Double = Double.pi / 5.0
+            let start: Double = Double.pi / -2.0
             for i in 0..<10 {
-                let angle = Double(i) * .pi / 5 - .pi / 2
-                let radius = i.isMultiple(of: 2) ? r : r * 0.44
-                let pt = CGPoint(x: c.x + cos(angle) * radius, y: c.y + sin(angle) * radius)
-                if i == 0 { p.move(to: pt) } else { p.addLine(to: pt) }
+                let angle: Double = start + Double(i) * step
+                let radius: Double = i.isMultiple(of: 2) ? r : inner
+                let x: Double = r + cos(angle) * radius
+                let y: Double = r + sin(angle) * radius
+                if i == 0 { p.move(to: CGPoint(x: x, y: y)) }
+                else { p.addLine(to: CGPoint(x: x, y: y)) }
             }
             p.closeSubpath()
         }
