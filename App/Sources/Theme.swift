@@ -17,6 +17,26 @@ enum Candy {
 
     static let all: [Color] = [mango, apricot, bubblegum, mint, blueberry, sky, grape]
 
+    /// The running clock, against the window it is aiming at.
+    static func forStanding(_ s: TimerStanding) -> Color {
+        switch s {
+        case .settling: return ink
+        case .nearly:   return mango
+        case .there:    return mint
+        case .past:     return danger
+        }
+    }
+
+    /// A bag drifting from rested to past it. Colour carries the message.
+    static func forFreshness(_ f: Bean.Freshness) -> Color {
+        switch f {
+        case .resting: return sky
+        case .best:    return mint
+        case .fading:  return mango
+        case .old:     return apricot
+        }
+    }
+
     /// Text, cards and fields come from the asset catalogue so that each has a
     /// light AND a dark value. Hardcoding cocoa text on a white card made half
     /// the app unreadable in dark mode, which is how he actually runs it.

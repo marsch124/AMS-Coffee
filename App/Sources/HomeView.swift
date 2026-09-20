@@ -97,6 +97,10 @@ struct HomeView: View {
                                     .foregroundStyle(Candy.ink)
                                 Chip(text: "\(Int(store.data.gramsLeft(for: bean))) g left",
                                      tint: Candy.mint) { BalanceMark(size: 18) }
+                                if let text = bean.freshnessText, let f = bean.freshness {
+                                    Chip(text: text, tint: Candy.forFreshness(f)) { BeanMark(size: 18) }
+                                        .accessibilityIdentifier("home-freshness")
+                                }
                             }
                             Spacer()
                         }

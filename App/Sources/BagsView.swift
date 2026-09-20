@@ -22,7 +22,7 @@ struct BagsView: View {
 
             ForEach(Array(sortedBeans.enumerated()), id: \.element.id) { index, bean in
                 Button { editing = bean } label: {
-                    BagCard(bean: bean, )
+                    BagCard(bean: bean, index: index)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("bag-row-\(index)")
@@ -50,6 +50,8 @@ struct BagsView: View {
 struct BagCard: View {
     @EnvironmentObject private var store: CoffeeStore
     let bean: Bean
+    /// Only so the card's own chips can carry distinct test identifiers.
+    let index: Int
 
     private var tint: Color { Candy.forSeed(bean.id.uuidString) }
 
@@ -94,6 +96,10 @@ struct BagCard: View {
 
                 HStack(spacing: 8) {
                     Chip(text: "\(Int(left)) g left", tint: tint) { BalanceMark(size: 18) }
+                    if let text = bean.freshnessText, let f = bean.freshness {
+                        Chip(text: text, tint: Candy.forFreshness(f)) { BeanMark(size: 18) }
+                            .accessibilityIdentifier("bag-freshness-\(index)")
+                    }
                     if bean.rating > 0 {
                         HStack(spacing: 3) {
                             ForEach(0..<max(bean.rating, 0), id: \.self) { _ in

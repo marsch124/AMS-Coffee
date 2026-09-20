@@ -221,6 +221,18 @@ final class AMSCoffeeUITests: XCTestCase {
         XCTAssertTrue(absent(app, "shot-timer"), "and nobody stands there with a stopwatch")
     }
 
+    /// Test 8 (added in 2.3) — the timer knows where it is going. The aim
+    /// line proves the coach's window reached the timer; without it the
+    /// colours and the buzz would have nothing to measure against.
+    func testTheTimerShowsWhatToAimFor() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+
+        tap(app, "tab-shots")
+        tap(app, "shots-add")
+        XCTAssertTrue(waitFor(app, "timer-aim"), "an espresso should say what to aim for")
+    }
+
     /// The number in the Total time dial, read back out of the field.
     private func seconds(_ app: XCUIApplication) -> Double {
         let field = app.textFields["shot-seconds"]

@@ -206,7 +206,9 @@ struct ShotEditor: View {
                                 .font(.system(size: 19, weight: .black, design: .rounded))
                             BrewTimer(seconds: $shot.seconds,
                                       bloomSeconds: shot.method.hasBloom ? $shot.bloomSeconds : nil,
-                                      steepMinutes: shot.method.steepsInMinutes ? $shot.steepMinutes : nil)
+                                      steepMinutes: shot.method.steepsInMinutes ? $shot.steepMinutes : nil,
+                                      target: shot.method.idealSeconds,
+                                      preInfusion: shot.preInfusionSeconds)
                             Text(shot.method.hasBloom
                                  ? "Start when the water hits, tap Bloom done when you carry on pouring, and Stop at the end. The numbers below fill themselves in."
                                  : "Start when it starts, Stop when it stops. The time below fills itself in.")

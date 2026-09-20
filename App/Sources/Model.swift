@@ -212,6 +212,49 @@ struct Bean: Identifiable, Codable, Equatable {
         return n
     }
 
+    /// How a bag is doing since it was roasted. Coffee needs a few days to
+    /// settle, is at its best for a few weeks, and then quietly fades — so
+    /// the colour drifts rather than switching from good to bad.
+    enum Freshness: String {
+        case resting, best, fading, old
+
+        var word: String {
+            switch self {
+            case .resting: return "resting"
+            case .best:    return "at its best"
+            case .fading:  return "fading"
+            case .old:     return "past it"
+            }
+        }
+    }
+
+    /// Whole days since the roast date, if there is one.
+    var daysOffRoast: Int? {
+        guard let roastDate else { return nil }
+        let from = Calendar.current.startOfDay(for: roastDate)
+        let to = Calendar.current.startOfDay(for: Date())
+        guard let days = Calendar.current.dateComponents([.day], from: from, to: to).day,
+              days >= 0 else { return nil }
+        return days
+    }
+
+    var freshness: Freshness? {
+        guard let days = daysOffRoast else { return nil }
+        switch days {
+        case ..<4:   return .resting
+        case 4...21: return .best
+        case 22...42: return .fading
+        default:     return .old
+        }
+    }
+
+    /// What the chip says: "12 days · at its best".
+    var freshnessText: String? {
+        guard let days = daysOffRoast, let freshness else { return nil }
+        let d = days == 1 ? "1 day" : "\(days) days"
+        return "\(d) · \(freshness.word)"
+    }
+
     var pricePerKilo: Double? {
         guard bagWeightGrams > 0, priceSEK > 0 else { return nil }
         return priceSEK / bagWeightGrams * 1000

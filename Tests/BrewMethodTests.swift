@@ -393,3 +393,104 @@ final class BrewTimerRuleTests: XCTestCase {
         }
     }
 }
+
+/// Days off roast. A bag drifts; it does not flip from good to bad.
+final class FreshnessTests: XCTestCase {
+
+    private func bean(roastedDaysAgo days: Int) -> Bean {
+        var b = Bean()
+        b.roastDate = Calendar.current.date(byAdding: .day, value: -days, to: Date())
+        return b
+    }
+
+    func testABagWithNoRoastDateSaysNothingAtAll() {
+        var b = Bean()
+        b.roastDate = nil
+        XCTAssertNil(b.daysOffRoast)
+        XCTAssertNil(b.freshness)
+        XCTAssertNil(b.freshnessText, "no date means no chip, not a wrong chip")
+    }
+
+    func testTheFourStagesLandOnTheRightDays() {
+        XCTAssertEqual(bean(roastedDaysAgo: 0).freshness, .resting)
+        XCTAssertEqual(bean(roastedDaysAgo: 3).freshness, .resting)
+        XCTAssertEqual(bean(roastedDaysAgo: 4).freshness, .best)
+        XCTAssertEqual(bean(roastedDaysAgo: 21).freshness, .best)
+        XCTAssertEqual(bean(roastedDaysAgo: 22).freshness, .fading)
+        XCTAssertEqual(bean(roastedDaysAgo: 42).freshness, .fading)
+        XCTAssertEqual(bean(roastedDaysAgo: 43).freshness, .old)
+    }
+
+    /// A roast date in the future is somebody mis-tapping the date wheel.
+    /// Saying "-3 days · resting" would be worse than saying nothing.
+    func testARoastDateInTheFutureIsIgnoredRatherThanShown() {
+        var b = Bean()
+        b.roastDate = Calendar.current.date(byAdding: .day, value: 5, to: Date())
+        XCTAssertNil(b.daysOffRoast)
+        XCTAssertNil(b.freshnessText)
+    }
+
+    func testTheChipReadsLikeEnglish() {
+        XCTAssertEqual(bean(roastedDaysAgo: 1).freshnessText, "1 day · resting")
+        XCTAssertEqual(bean(roastedDaysAgo: 12).freshnessText, "12 days · at its best")
+    }
+
+    /// The timer colours itself from the coach's window, so the two can never
+    /// disagree. Every window must at least be a sane one.
+    func testEveryMethodsWindowIsSane() {
+        for method in BrewMethod.allCases {
+            let w = method.idealSeconds
+            XCTAssertLessThan(w.lowerBound, w.upperBound, "\(method.rawValue)")
+            XCTAssertGreaterThan(w.lowerBound, 0, "\(method.rawValue)")
+        }
+    }
+}
+
+/// The running clock's judgement. Four bands, and the boundaries are where
+/// the colour and the buzz both come from — so they are checked here rather
+/// than by staring at a simulator for thirty seconds.
+final class TimerStandingTests: XCTestCase {
+
+    private let espresso = BrewMethod.espresso.idealSeconds      // 25...32
+    private let filter = BrewMethod.filter.idealSeconds          // 240...360
+
+    func testAnEspressoMovesThroughAllFourBands() {
+        XCTAssertEqual(TimerStanding.at(0, target: espresso), .settling)
+        XCTAssertEqual(TimerStanding.at(19.9, target: espresso), .settling)
+        XCTAssertEqual(TimerStanding.at(20, target: espresso), .nearly,
+                       "five seconds of warning before a 25 s window")
+        XCTAssertEqual(TimerStanding.at(24.9, target: espresso), .nearly)
+        XCTAssertEqual(TimerStanding.at(25, target: espresso), .there)
+        XCTAssertEqual(TimerStanding.at(32, target: espresso), .there,
+                       "the upper bound is still inside the window")
+        XCTAssertEqual(TimerStanding.at(32.1, target: espresso), .past)
+    }
+
+    /// The warning is a share of the window, not a fixed five seconds —
+    /// five seconds before a six-minute filter would be no warning at all.
+    func testTheWarningScalesWithTheBrew() {
+        XCTAssertEqual(TimerStanding.lead(for: espresso), 5, accuracy: 0.001)
+        XCTAssertEqual(TimerStanding.lead(for: filter), 36, accuracy: 0.001)
+        XCTAssertEqual(TimerStanding.at(203, target: filter), .settling)
+        XCTAssertEqual(TimerStanding.at(204, target: filter), .nearly)
+        XCTAssertEqual(TimerStanding.at(240, target: filter), .there)
+        XCTAssertEqual(TimerStanding.at(361, target: filter), .past)
+    }
+
+    /// Nothing is said while it settles; the number alone is the message.
+    func testOnlyTheBandsWorthNamingCarryAWord() {
+        XCTAssertNil(TimerStanding.settling.word)
+        XCTAssertEqual(TimerStanding.nearly.word, "nearly")
+        XCTAssertEqual(TimerStanding.there.word, "there")
+        XCTAssertEqual(TimerStanding.past.word, "past it")
+    }
+
+    /// Every method must have a lead that fits inside its own window, or the
+    /// clock would be warning you before the brew had begun.
+    func testTheWarningNeverStartsBeforeZero() {
+        for method in BrewMethod.allCases where method.worthTiming {
+            let w = method.idealSeconds
+            XCTAssertLessThan(TimerStanding.lead(for: w), w.lowerBound, "\(method.rawValue)")
+        }
+    }
+}
