@@ -12,10 +12,26 @@ struct Release: Identifiable {
 
 enum Guide {
 
-    static let appVersion = "2.4"
+    static let appVersion = "2.5"
 
     /// Newest first. Every release adds an entry — never edits an old one.
     static let releases: [Release] = [
+        Release(version: "2.5", date: "2026-11-02",
+                headline: "See where a bag is heading, and find any brew",
+                lines: [
+                    "NEW — How you dialled it in. Open a bag and, once you have made it twice the same way, there is a small chart for each number that matters: grind, dose, time and taste. The oldest brew is on the left, the newest on the right, and every dot is coloured by the light you gave that brew — green, amber or red — so you can see at a glance which way you were walking and where it started tasting good.",
+                    "Each line also says it in words: \"15 → 13.5 · finer\", \"18 g all along\", \"21 s → 28 s · in the window\", \"sour → balanced\". Above the lines: how many brews, how many were green, and how the last one went.",
+                    "The time line has a shaded strip for the coach's own window, and the taste line a strip for balanced, so where you want to be is always on the chart — even if no brew has landed there yet. The time is judged by exactly the same window the coach and the timer use, so the three can never tell different stories.",
+                    "A bag made more than one way shows one chip per method above the chart; it opens on the way you made it most recently. Each method is its own line, because a pour-over and an espresso are dialled in on completely different numbers.",
+                    "With only one brew, the bag says the line starts with the next one, rather than drawing a lonely dot. A bag never brewed shows no chart at all.",
+                    "NEW — Search every brew. At the top of Brews there is now one search box. Type any part of the bag's name, the roaster, the origin, the process, the way you made it, or something you wrote in a note, and the list shows only the brews that match, newest first, with how many were found.",
+                    "Type more than one word to narrow it down: \"kenya pour\" finds pour-overs of a Kenyan bag. Every word has to turn up somewhere. Capitals and accents never matter, so \"cafe\" finds Café.",
+                    "Search works together with the method chips: pick Pour-over and search for a roaster, and you get only that roaster's pour-overs. When nothing matches it says so and tells you what it looked at. The small cross, or Escape on the Mac, clears it.",
+                    "Brews waiting in the Sink are never found — only what is really on your list.",
+                    "FIXED — a bag with its chips and its stars in one row — grams left, days off roast, running out, five stars — was wider than the phone, and pushed the whole Beans screen off both sides — the tabs at the bottom included. The chips now wrap onto a second line. Found by looking at the new chart on a full bag, not by a test.",
+                    "CHANGED — the guide's \"Coming next\" was still promising the brew timer, which arrived in 2.2. It now says what is actually next.",
+                    "Tests: 90 checks of the rules and 12 of the screens — 18 new rule checks for the chart and the search, and two new screen checks that build a bag, brew it twice and find the chart, and that search two brews and find only the right one. Both were seen failing before the features existed.",
+                ]),
         Release(version: "2.4", date: "2026-11-02",
                 headline: "Ask it what to change, and know what you are repeating",
                 lines: [
@@ -134,6 +150,16 @@ enum Guide {
 
                 The bag also shows which ways you have made it, and keeps a \
                 separate recipe for each one.
+
+                Open a bag you have made at least twice the same way and it \
+                shows how you dialled it in: one small line each for grind, \
+                dose, time and taste, oldest brew on the left and newest on the \
+                right, every dot coloured by its light. Each line says where it \
+                went in words — "15 → 13.5 · finer", "sour → balanced". The \
+                time line has a shaded strip for the coach's window and the \
+                taste line one for balanced, so you can see whether you are \
+                walking towards them. Made it more than one way? Tap a method \
+                above the chart to see that one.
                 """),
         Chapter(title: "Making coffee",
                 body: """
@@ -164,6 +190,19 @@ enum Guide {
                 Then say how it tasted with two sliders — sour ↔ bitter and \
                 thin ↔ syrupy — and pick a light: green for lovely, amber for \
                 fine, red for pour it away.
+                """),
+        Chapter(title: "Finding a brew",
+                body: """
+                At the top of Brews there is one search box. Type part of a \
+                bag's name, a roaster, an origin, a process, a way of making \
+                it, or anything you wrote in a note, and the list shows just \
+                the brews that match, newest first.
+
+                Several words narrow it down — each one has to turn up \
+                somewhere, so "kenya pour" finds the pour-overs of a Kenyan \
+                bag. Capitals and accents never matter. It works together \
+                with the method chips underneath, and the cross clears it \
+                (Escape on the Mac). Brews in the Sink are left out.
                 """),
         Chapter(title: "The coach",
                 body: """
@@ -279,8 +318,10 @@ enum Guide {
                 """),
         Chapter(title: "Coming next",
                 body: """
-                A brew timer that counts while you pour. Charts of how a bag's \
-                scores moved as you dialled it in. The Mac app.
+                Read a bag's label from a photo to fill in the roaster, origin \
+                and roast date. Looking after your kit — when the burrs and the \
+                backflush are due. A backup file you name and put wherever you \
+                like.
                 """),
     ]
 }

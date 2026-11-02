@@ -277,3 +277,69 @@ struct FoldPill<Mark: View, Content: View>: View {
         )
     }
 }
+
+/// A magnifying glass, drawn here like every other mark: a ring and a handle.
+struct LensMark: View {
+    var size: Double = 22
+    var weight: Double = 3.5
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            Circle()
+                .stroke(lineWidth: weight)
+                .frame(width: size * 0.66, height: size * 0.66)
+                .offset(x: weight / 2, y: weight / 2)
+            Path { p in
+                p.move(to: CGPoint(x: size * 0.62, y: size * 0.62))
+                p.addLine(to: CGPoint(x: size * 0.92, y: size * 0.92))
+            }
+            .stroke(style: StrokeStyle(lineWidth: weight, lineCap: .round))
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+/// One line to search with: a drawn lens, the words, and a cross to clear.
+/// On the Mac, Escape clears it too.
+struct SearchField: View {
+    @Binding var text: String
+    let prompt: String
+    var tint: Color = Candy.sky
+    let identifier: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            LensMark(size: 20)
+                .foregroundStyle(tint)
+            TextField(prompt, text: $text)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .textFieldStyle(.plain)
+                .autocorrectionDisabled()
+                #if os(iOS)
+                .textInputAutocapitalization(.never)
+                .submitLabel(.search)
+                #endif
+                #if os(macOS)
+                .onExitCommand { text = "" }
+                #endif
+                .accessibilityIdentifier(identifier)
+            if !text.isEmpty {
+                Button { text = "" } label: {
+                    PlusMark(size: 16, weight: 3.5)
+                        .rotationEffect(.degrees(45))
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(Circle().fill(tint))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear the search")
+                .accessibilityIdentifier("\(identifier)-clear")
+            }
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Candy.field))
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .strokeBorder(tint.opacity(0.55), lineWidth: 2))
+    }
+}

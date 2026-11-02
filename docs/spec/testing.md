@@ -5,7 +5,7 @@ identifier, never by the words on it**, and every test is seen failing before
 it is believed. The suite runs in CI on every push, and a red run blocks the
 release.
 
-As of 2.4: **72 checks of the rules** (`Tests/`) and **10 of the screens**
+As of 2.5: **90 checks of the rules** (`Tests/`) and **12 of the screens**
 (`UITests/`).
 
 ## What the rule tests guard
@@ -20,6 +20,8 @@ As of 2.4: **72 checks of the rules** (`Tests/`) and **10 of the screens**
 | The timer | all four bands of `TimerStanding`, both boundaries, and the proportional lead |
 | Freshness | the four stages, the singular "1 day", no date, a date in the future |
 | Running out | the three warnings, silence above them, a weightless bag, and the dose coming from the bag's own recipe |
+| Dial-in chart (2.5) | one bag + one method, oldest first, Sink left out; opens on the last method; grind finer/coarser; nothing moved; time inside, short of and past the window; cold brew's clock is its steep; taste in words; one brew is not a trend |
+| Search (2.5) | empty matches all; bag, roaster, origin, method and note; every word must match; accents and case ignored; a brew with no bag; newest first; the Sink skipped; works with the method filter |
 | Asking outright | sour and bitter disagree; lovely changes nothing; the old taste cannot steer a new question; every method answers every complaint |
 
 ## Tests that have earned their keep

@@ -94,7 +94,10 @@ struct BagCard: View {
                 }
                 .frame(height: 14)
 
-                HStack(spacing: 8) {
+                // A row that wraps: three chips and the stars do not fit on a
+                // phone, and a plain HStack of fixed-width chips pushed the
+                // whole Beans screen off both sides (fixed in 2.5).
+                FlowRow(spacing: 8) {
                     Chip(text: "\(Int(left)) g left", tint: tint) { BalanceMark(size: 18) }
                     if let text = bean.freshnessText, let f = bean.freshness {
                         Chip(text: text, tint: Candy.forFreshness(f)) { BeanMark(size: 18) }
@@ -222,6 +225,10 @@ struct BagEditor: View {
                         FatField(label: "Notes", text: $bean.notes,
                                  tint: Candy.bubblegum, identifier: "bag-notes")
                     }
+                }
+
+                if !isNew {
+                    DialInCard(beanID: bean.id)
                 }
 
                 if !isNew {

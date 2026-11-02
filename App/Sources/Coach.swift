@@ -238,7 +238,7 @@ enum Coach {
                detail: "Nothing is obviously off. Nudge the grind by one click and see which way it moves.")
     }
 
-    private static func window(_ method: BrewMethod) -> String {
+    static func window(_ method: BrewMethod) -> String {
         let r = method.idealSeconds
         if r.lowerBound >= 3600 {
             return "\(trim(r.lowerBound / 3600))–\(trim(r.upperBound / 3600)) h"

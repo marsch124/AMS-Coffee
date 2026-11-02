@@ -13,8 +13,8 @@ these files do not change, the release is wrong.
 | --- | --- |
 | [model.md](model.md) | What is stored: every record, every field, every default |
 | [today.md](today.md) | The Today screen |
-| [beans.md](beans.md) | Bags of beans: the list, the editor, freshness, running out |
-| [brews.md](brews.md) | Brews: the list, the editor, the seven methods, the timer |
+| [beans.md](beans.md) | Bags of beans: the list, the editor, freshness, running out, the dial-in chart |
+| [brews.md](brews.md) | Brews: the list, search, the editor, the seven methods, the timer |
 | [coach.md](coach.md) | The coach: windows, advice, and asking outright |
 | [cups.md](cups.md) | The Cup System, the Sink, and how data is kept safe |
 | [settings.md](settings.md) | Settings, the guide, What's new, export and import |

@@ -7,6 +7,9 @@ Above the list: "Or make it another way" (`shots-methods`) — one button per
 method, `method-<rawValue>` — and a filter row, `filter-all` plus
 `filter-<rawValue>` with a count per method.
 
+Between the two, once there is at least one brew: **the search box**
+(`brews-search`, 2.5) — see *Search* below.
+
 Each row is `shot-row-<index>`: the bag, the method, the date, then pills for
 grind, dose→yield and time, and the coach's note.
 
@@ -104,3 +107,31 @@ yourself get a light knock.
 Two sliders — sour ↔ bitter and thin ↔ syrupy — and a light:
 `light-green`, `light-amber`, `light-red`. Green means keep it exactly here,
 and that brew becomes the recipe the bag offers next time for that method.
+
+## Search (2.5, `BrewSearch` in `DialIn.swift`)
+
+One search box over every live brew (`SearchField`, identifier
+`brews-search`, hidden while there are no brews at all). Prompt: *Search: bag,
+roaster, method, note*. Drawn lens on the left (`LensMark`, no Apple art); a
+round cross appears once something is typed (`brews-search-clear`). On the Mac,
+Escape clears it.
+
+- **What it looks at:** the method's title, the brew's note and basket, and —
+  when the brew has a bag — the bag's display name, roaster, name, origin,
+  process and notes. A brew with no bag is still found by its method and note.
+- **Words:** the query is split on whitespace; **every** word must appear
+  somewhere in that text. An empty or all-space query matches everything.
+- **Case and accents never matter** — both sides are folded with
+  `.caseInsensitive` + `.diacriticInsensitive`, so *cafe alva* finds
+  *Café Älva* and *senor* finds *Señor*.
+- **Together with the method chips:** `BrewSearch.results(in:query:method:)`
+  applies the chip first, then the words. Newest first. The Sink is never
+  searched.
+- While searching, a line says *N brews found* (`brews-search-count`, "1 brew
+  found" for one). With no match a card says *Nothing matches "…"* and what
+  search looks at (`brews-search-empty`).
+- Row identifiers stay `shot-row-<index>` by position in the *filtered* list.
+
+### Why
+
+Idea 18 of the 20, picked 20 Sep 2026: *"Search across every brew."*

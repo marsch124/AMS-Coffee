@@ -5,6 +5,7 @@ struct ShotsView: View {
     @State private var editing: Shot?
     @State private var newMethod: BrewMethod?
     @State private var filter: BrewMethod?
+    @State private var query = ""
 
     var body: some View {
         Screen(title: "Brews") { DialMark(size: 38) } content: {
@@ -35,6 +36,12 @@ struct ShotsView: View {
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("shots-methods")
+            }
+
+            if !store.data.liveShots.isEmpty {
+                SearchField(text: $query,
+                            prompt: "Search: bag, roaster, method, note",
+                            identifier: "brews-search")
             }
 
             if !usedMethods.isEmpty {
@@ -71,6 +78,24 @@ struct ShotsView: View {
                 .accessibilityIdentifier("shots-empty")
             }
 
+            if searching && shown.isEmpty {
+                WobbleCard(tint: Candy.sky) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Nothing matches \u{201C}\(query.trimmingCharacters(in: .whitespaces))\u{201D}")
+                            .font(.system(size: 20, weight: .black, design: .rounded))
+                        Text("Search looks at the bag, its roaster and origin, the way you made it, and your notes. Every word has to turn up somewhere.")
+                            .font(.system(size: 17, weight: .medium, design: .rounded))
+                    }
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("brews-search-empty")
+            } else if searching {
+                Text(shown.count == 1 ? "1 brew found" : "\(shown.count) brews found")
+                    .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Candy.inkSoft)
+                    .accessibilityIdentifier("brews-search-count")
+            }
+
             ForEach(Array(shown.enumerated()), id: \.element.id) { index, shot in
                 Button { editing = shot } label: {
                     ShotCard(shot: shot, )
@@ -90,10 +115,9 @@ struct ShotsView: View {
         .sheet(item: $editing) { ShotEditor(shot: $0) }
     }
 
-    private var sorted: [Shot] { store.data.liveShots.sorted { $0.date > $1.date } }
+    private var searching: Bool { !BrewSearch.words(query).isEmpty }
     private var shown: [Shot] {
-        guard let filter else { return sorted }
-        return sorted.filter { $0.method == filter }
+        BrewSearch.results(in: store.data, query: query, method: filter)
     }
     private var usedMethods: [BrewMethod] {
         let used = Set(store.data.liveShots.map(\.method))

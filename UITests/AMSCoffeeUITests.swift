@@ -266,6 +266,73 @@ final class AMSCoffeeUITests: XCTestCase {
         XCTAssertTrue(waitFor(app, "shot-starting-from"))
     }
 
+    /// Test 11 (added in 2.5) — a bag shows how it was dialled in once it
+    /// has two brews to draw a line between, and not before.
+    func testABagShowsHowItWasDialledIn() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+
+        tap(app, "tab-bags")
+        tap(app, "bags-add")
+        let name = app.textFields["bag-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 10))
+        name.tap()
+        name.typeText("Test bag")
+        dismissKeyboard(app)
+        tap(app, "bag-save")
+        XCTAssertTrue(waitFor(app, "bag-row-0"))
+
+        // One brew is a dot, not a line.
+        tap(app, "tab-shots")
+        tap(app, "shots-add")
+        tap(app, "shot-save")
+        XCTAssertTrue(waitFor(app, "shot-row-0"))
+        tap(app, "tab-bags")
+        tap(app, "bag-row-0")
+        XCTAssertTrue(waitFor(app, "bag-dialin-waiting"), "one brew says the chart is coming")
+        XCTAssertTrue(absent(app, "bag-dialin"), "and draws nothing yet")
+        tap(app, "bag-close")
+
+        // A second brew, a click finer.
+        tap(app, "tab-shots")
+        tap(app, "shots-add")
+        tap(app, "shot-grind-minus")
+        tap(app, "light-green")
+        tap(app, "shot-save")
+        XCTAssertTrue(waitFor(app, "shot-row-1"))
+
+        tap(app, "tab-bags")
+        tap(app, "bag-row-0")
+        XCTAssertTrue(waitFor(app, "bag-dialin"), "two brews make a chart")
+        XCTAssertTrue(waitFor(app, "dialin-grind"), "with the grind line on it")
+    }
+
+    /// Test 12 (added in 2.5) — one search finds a brew by what it is.
+    func testSearchFindsABrewByItsMethod() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+
+        tap(app, "tab-shots")
+        XCTAssertTrue(absent(app, "brews-search"), "nothing to search on a fresh app")
+
+        tap(app, "shots-add")
+        tap(app, "shot-save")
+        tap(app, "method-v60")
+        tap(app, "shot-save")
+        XCTAssertTrue(waitFor(app, "shot-row-1"), "two brews to search through")
+
+        let field = app.textFields["brews-search"]
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+        field.tap()
+        field.typeText("pour")
+        XCTAssertTrue(waitFor(app, "shot-row-0"), "the pour-over is found")
+        XCTAssertTrue(absent(app, "shot-row-1"), "and the espresso is not")
+
+        field.typeText("zzz")
+        XCTAssertTrue(waitFor(app, "brews-search-empty"), "no match says so")
+        XCTAssertTrue(absent(app, "shot-row-0"))
+    }
+
     /// The number in the Total time dial, read back out of the field.
     private func seconds(_ app: XCUIApplication) -> Double {
         let field = app.textFields["shot-seconds"]
