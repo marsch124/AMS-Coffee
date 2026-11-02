@@ -65,6 +65,36 @@ struct CoffeeData: Codable, Equatable {
         return mine.first { $0.light == .green } ?? mine.first
     }
 
+    /// How much one more brew of this bag would take — from the recipe the
+    /// bag itself offers, not a guess.
+    func nextDose(beanID: UUID, method: BrewMethod) -> Double {
+        if let best = bestShot(beanID: beanID, method: method), best.doseGrams > 0 {
+            return best.doseGrams
+        }
+        return method.starter().doseGrams
+    }
+
+    /// How many more brews are in the bag. Nil when the bag has no weight,
+    /// because then there is nothing honest to count down from.
+    func brewsLeft(for bean: Bean, method: BrewMethod = .espresso) -> Int? {
+        guard bean.bagWeightGrams > 0 else { return nil }
+        let dose = nextDose(beanID: bean.id, method: method)
+        guard dose > 0 else { return nil }
+        return Int((gramsLeft(for: bean) / dose).rounded(.down))
+    }
+
+    /// What the chip says when a bag is nearly out. Nothing at all while
+    /// there is plenty — a warning that is always on is not a warning.
+    func runningOutText(for bean: Bean, method: BrewMethod = .espresso) -> String? {
+        guard let left = brewsLeft(for: bean, method: method) else { return nil }
+        switch left {
+        case 0:  return "not enough for another"
+        case 1:  return "1 more brew"
+        case 2:  return "2 more brews"
+        default: return nil
+        }
+    }
+
     /// Which methods this bag has actually been used for.
     func methodsUsed(beanID: UUID) -> [BrewMethod] {
         let used = Set(liveShots.filter { $0.beanID == beanID }.map(\.method))

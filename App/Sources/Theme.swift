@@ -17,6 +17,11 @@ enum Candy {
 
     static let all: [Color] = [mango, apricot, bubblegum, mint, blueberry, sky, grape]
 
+    /// A bag running out. Quiet until it matters.
+    static func forRunningOut(_ brewsLeft: Int) -> Color {
+        brewsLeft <= 0 ? danger : brewsLeft == 1 ? apricot : mango
+    }
+
     /// The running clock, against the window it is aiming at.
     static func forStanding(_ s: TimerStanding) -> Color {
         switch s {

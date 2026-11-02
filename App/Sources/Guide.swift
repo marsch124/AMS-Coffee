@@ -12,10 +12,23 @@ struct Release: Identifiable {
 
 enum Guide {
 
-    static let appVersion = "2.3"
+    static let appVersion = "2.4"
 
     /// Newest first. Every release adds an entry — never edits an old one.
     static let releases: [Release] = [
+        Release(version: "2.4", date: "2026-11-02",
+                headline: "Ask it what to change, and know what you are repeating",
+                lines: [
+                    "NEW — What should I change? On the morning screen, under the coach's line, you can now just say what was wrong: too sour, too bitter, too thin, too strong, or it was lovely. You get one concrete change straight away, worked out from the brew you actually made — no need to fill in a whole new brew first.",
+                    "The answer comes from exactly the same coach as always, so it can never contradict the advice on a logged brew. Tap the same choice again to put the answer away.",
+                    "\"It was lovely\" does not invent a change. It says change nothing, because that is already the recipe the bag offers you next time.",
+                    "NEW — every new brew now says where its numbers came from: \"Same again: your best espresso on this bag, 20 Sep\". The app has always copied your best brew into a new one, but there was no way to tell your own recipe from a generic starting point. Now there is. With no bag chosen, or a bag you have never brewed, it says so plainly instead.",
+                    "NEW — bags warn you before they run out. A bag shows \"2 more brews\", then \"1 more brew\", then \"not enough for another\" — on the bag itself and on the bag in the hopper. It counts using that bag's own recipe, so a 30 g filter recipe empties it twice as fast as an 18 g espresso, and it says nothing at all while there is plenty.",
+                    "A bag with no weight entered is never counted down and never claims to be empty.",
+                    "FIXED — the guide said the bag \"shows which ways you have made it — — and keeps a separate recipe\". A word had been missing there since version 2.0.",
+                    "FIXED — asking \"too bitter\" about a brew you had marked green used to answer \"keep it exactly here\". The coach stops at a green light before it ever looks at the taste, and complaining about a brew plainly means it was not green. Found by using it, not by a test; there is a test for it now.",
+                    "Tests: 72 checks of the rules and 10 of the screens. The new \"where the numbers came from\" line was caught by its own test first: it had been put inside the part of the screen that only appears once you own a bag, so your very first brew would have got no explanation at all.",
+                ]),
         Release(version: "2.3", date: "2026-09-20",
                 headline: "The timer knows where it is going",
                 lines: [
@@ -107,8 +120,20 @@ enum Guide {
                 Every brew you log takes its dose off the bag, so the bag always \
                 shows how many grams are left. No weighing the whole bag again.
 
-                The bag also shows which ways you have made it — — and \
-                keeps a separate recipe for each one.
+                When a bag is nearly finished it says so: 2 more brews, then 1 \
+                more brew, then not enough for another. It works that out from \
+                that bag's own recipe, so a filter bag you use 30 g at a time \
+                runs down twice as fast as an espresso bag at 18 g. While there \
+                is plenty it says nothing — a warning that is always on is not a \
+                warning. A bag with no weight entered is never counted down.
+
+                A bag also shows its days off roast, and the colour drifts as it \
+                ages: resting for the first few days, at its best for about three \
+                weeks, then fading, then past it. A bag with no roast date says \
+                nothing rather than guessing.
+
+                The bag also shows which ways you have made it, and keeps a \
+                separate recipe for each one.
                 """),
         Chapter(title: "Making coffee",
                 body: """
@@ -124,8 +149,21 @@ enum Guide {
                 if there is nothing to copy. Most days you change nothing and \
                 press save.
 
+                A new brew tells you which of the two it did: "Same again: your \
+                best espresso on this bag, 20 Sep", or that nothing is logged for \
+                this bag yet. So you always know whether these are your numbers \
+                or the book's.
+
+                Time it right there. Press Start when the water starts and Stop \
+                when it stops, and the time writes itself in. The number says \
+                what to aim for and changes colour as you pour — plain, then \
+                amber when you are nearly there, green inside the window, calm \
+                red once past it — and buzzes when you reach the window, when you \
+                run past it, and when the pre-infusion ends.
+
                 Then say how it tasted with two sliders — sour ↔ bitter and \
-                thin ↔ syrupy — and pick a light: .
+                thin ↔ syrupy — and pick a light: green for lovely, amber for \
+                fine, red for pour it away.
                 """),
         Chapter(title: "The coach",
                 body: """
@@ -140,6 +178,11 @@ enum Guide {
 
                 Green means keep it exactly here — and that brew becomes the \
                 recipe the bag offers you next time for that method.
+
+                You can also just ask. On the morning screen, say what was \
+                wrong — too sour, too bitter, too thin, too strong — and it \
+                answers on the spot about the brew you just made, without you \
+                filling anything in. "It was lovely" answers change nothing.
 
                 One change at a time. That is the whole trick.
                 """),

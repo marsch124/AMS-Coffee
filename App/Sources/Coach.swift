@@ -131,6 +131,56 @@ enum Coach {
         return oneThing()
     }
 
+    // MARK: Asked outright
+
+    /// What was wrong with it, in his words rather than a slider.
+    ///
+    /// The answer goes through the SAME advice as a logged brew — the taste
+    /// is written onto a copy of the last one and the coach is asked as
+    /// usual. Two sets of rules would be two sets of rules to keep in step.
+    enum Complaint: String, CaseIterable, Identifiable {
+        case sour, bitter, thin, strong, lovely
+
+        var id: String { rawValue }
+
+        var question: String {
+            switch self {
+            case .sour:   return "Too sour"
+            case .bitter: return "Too bitter"
+            case .thin:   return "Too thin"
+            case .strong: return "Too strong"
+            case .lovely: return "It was lovely"
+            }
+        }
+    }
+
+    /// One concrete change, worked out from the brew you actually made.
+    static func fix(_ shot: Shot, _ complaint: Complaint) -> Advice {
+        if complaint == .lovely {
+            return Advice(headline: "Change nothing",
+                          detail: "That is the recipe. It is already what this bag "
+                              + "offers you next time.")
+        }
+        var asked = shot
+        // Only the one thing he complained about is moved; everything else
+        // stays as it was, so the advice still talks about his real numbers.
+        asked.sourBitter = 0
+        asked.thinSyrupy = 0
+        // 🚨 The light has to come off too. The coach answers "keep it exactly
+        // here" for any green brew BEFORE it looks at the taste at all — so
+        // asking "too bitter" about a brew you had marked green used to be
+        // told to change nothing. He is telling us it was not green.
+        asked.light = .amber
+        switch complaint {
+        case .sour:   asked.sourBitter = -0.5
+        case .bitter: asked.sourBitter = 0.5
+        case .thin:   asked.thinSyrupy = -0.5
+        case .strong: asked.thinSyrupy = 0.5
+        case .lovely: break
+        }
+        return advise(for: asked)
+    }
+
     // MARK: Everything poured or steeped
 
     private static func brewed(_ shot: Shot) -> Advice {

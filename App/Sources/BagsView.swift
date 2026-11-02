@@ -100,6 +100,13 @@ struct BagCard: View {
                         Chip(text: text, tint: Candy.forFreshness(f)) { BeanMark(size: 18) }
                             .accessibilityIdentifier("bag-freshness-\(index)")
                     }
+                    if let text = store.data.runningOutText(for: bean) {
+                        Chip(text: text,
+                             tint: Candy.forRunningOut(store.data.brewsLeft(for: bean) ?? 0)) {
+                            BalanceMark(size: 18)
+                        }
+                        .accessibilityIdentifier("bag-running-out-\(index)")
+                    }
                     if bean.rating > 0 {
                         HStack(spacing: 3) {
                             ForEach(0..<max(bean.rating, 0), id: \.self) { _ in

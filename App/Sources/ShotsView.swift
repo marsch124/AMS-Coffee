@@ -167,6 +167,17 @@ struct ShotEditor: View {
 
     private var isNew: Bool { store.data.shots.allSatisfy { $0.id != shot.id } }
     private var advice: Advice { Coach.advise(for: shot) }
+
+    /// Whether these numbers are his own or the book's.
+    private var startingFrom: String {
+        guard let id = shot.beanID,
+              let best = store.data.bestShot(beanID: id, method: shot.method) else {
+            return "Nothing logged for this bag yet — starting from the usual \(shot.method.title.lowercased())."
+        }
+        let when = best.date.formatted(.dateTime.day().month(.abbreviated))
+        let how = best.light == .green ? "best" : "last"
+        return "Same again: your \(how) \(shot.method.title.lowercased()) on this bag, \(when)."
+    }
     private var tint: Color { shot.method.tint }
 
     var body: some View {
@@ -195,6 +206,19 @@ struct ShotEditor: View {
                             .pickerStyle(.menu)
                             .tint(Candy.mint)
                             .accessibilityIdentifier("shot-bean")
+                        }
+
+                        // Idea 2, made visible: the editor has always copied
+                        // the bag's best brew into a new one. Saying so is
+                        // the whole point — otherwise you cannot tell whether
+                        // these are your numbers or a generic starter. It
+                        // belongs OUTSIDE the "has bags" branch: a first brew
+                        // with no bag at all still deserves the explanation.
+                        if isNew {
+                            Text(startingFrom)
+                                .font(.system(size: 16, weight: .heavy, design: .rounded))
+                                .foregroundStyle(Candy.inkSoft)
+                                .accessibilityIdentifier("shot-starting-from")
                         }
                     }
                 }

@@ -494,3 +494,132 @@ final class TimerStandingTests: XCTestCase {
         }
     }
 }
+
+/// Asking outright. The answer must come from the SAME rules as a logged
+/// brew, and must talk about the numbers he actually used.
+final class AskOutrightTests: XCTestCase {
+
+    private func espresso(grind: Double = 15, seconds: Double = 28) -> Shot {
+        var s = BrewMethod.espresso.starter()
+        s.grind = grind
+        s.seconds = seconds
+        return s
+    }
+
+    func testSourAndBitterPullInOppositeDirections() {
+        let sour = Coach.fix(espresso(), .sour).headline
+        let bitter = Coach.fix(espresso(), .bitter).headline
+        XCTAssertNotEqual(sour, bitter, "they cannot both get the same answer")
+        XCTAssertFalse(sour.isEmpty)
+        XCTAssertFalse(bitter.isEmpty)
+    }
+
+    /// "It was lovely" must not invent a change. Nothing to fix is an answer.
+    func testLovelyChangesNothing() {
+        let answer = Coach.fix(espresso(), .lovely)
+        XCTAssertEqual(answer.headline, "Change nothing")
+    }
+
+    /// The complaint he picked is the only taste that moves — otherwise a
+    /// brew logged as bitter would quietly colour the answer to "too thin".
+    func testOnlyTheThingHeComplainedAboutIsConsidered() {
+        var alreadyBitter = espresso()
+        alreadyBitter.sourBitter = 0.9          // logged as very bitter
+        let askedThin = Coach.fix(alreadyBitter, .thin)
+        let freshThin = Coach.fix(espresso(), .thin)
+        XCTAssertEqual(askedThin.headline, freshThin.headline,
+                       "the old bitterness must not steer a question about body")
+    }
+
+    /// 🚨 Found on the screen, not by a test: the coach answers "keep it
+    /// exactly here" for any GREEN brew before it looks at the taste, so
+    /// asking "too bitter" about a brew you had marked green was told to
+    /// change nothing. Complaining about it means it was not green.
+    func testComplainingAboutAGreenBrewStillGetsAChange() {
+        var green = espresso()
+        green.light = .green
+        for complaint in [Coach.Complaint.sour, .bitter, .thin, .strong] {
+            let answer = Coach.fix(green, complaint)
+            XCTAssertNotEqual(answer.headline, "Keep it exactly here",
+                              "\(complaint.rawValue) on a green brew")
+        }
+        // ... and "it was lovely" is still allowed to change nothing.
+        XCTAssertEqual(Coach.fix(green, .lovely).headline, "Change nothing")
+    }
+
+    func testEveryComplaintGetsAnAnswerForEveryMethod() {
+        for method in BrewMethod.allCases {
+            var shot = method.starter()
+            shot.grind = 20
+            for complaint in Coach.Complaint.allCases {
+                let answer = Coach.fix(shot, complaint)
+                XCTAssertFalse(answer.headline.isEmpty, "\(method.rawValue)/\(complaint.rawValue)")
+                XCTAssertFalse(answer.detail.isEmpty, "\(method.rawValue)/\(complaint.rawValue)")
+            }
+        }
+    }
+}
+
+/// A bag running out. The count comes from the recipe the bag offers, not
+/// from a fixed 18 g — a pour-over eats twice as much per brew.
+final class RunningOutTests: XCTestCase {
+
+    private func shelf(bagGrams: Double, used: [Double], dose: Double = 18) -> (CoffeeData, Bean) {
+        var bean = Bean()
+        bean.bagWeightGrams = bagGrams
+        var data = CoffeeData(beans: [bean], shots: [])
+        data.shots = used.map {
+            var s = BrewMethod.espresso.starter()
+            s.beanID = bean.id
+            s.doseGrams = $0
+            s.light = .green
+            return s
+        }
+        return (data, bean)
+    }
+
+    func testItCountsWhatIsActuallyLeft() {
+        let (data, bean) = shelf(bagGrams: 250, used: [18, 18])
+        XCTAssertEqual(data.gramsLeft(for: bean), 214)
+        XCTAssertEqual(data.brewsLeft(for: bean), 11, "214 g at 18 g a time")
+    }
+
+    /// Quiet until it matters: no chip at all while there is plenty.
+    func testItSaysNothingWhileThereIsPlenty() {
+        let (data, bean) = shelf(bagGrams: 250, used: [18])
+        XCTAssertNil(data.runningOutText(for: bean), "a warning that is always on is no warning")
+    }
+
+    func testItWarnsOnTheLastThreeBrews() {
+        let (two, bean2) = shelf(bagGrams: 250, used: Array(repeating: 18, count: 11))
+        XCTAssertEqual(two.runningOutText(for: bean2), "2 more brews")
+
+        let (one, bean1) = shelf(bagGrams: 250, used: Array(repeating: 18, count: 12))
+        XCTAssertEqual(one.runningOutText(for: bean1), "1 more brew")
+
+        let (none, bean0) = shelf(bagGrams: 250, used: Array(repeating: 18, count: 14))
+        XCTAssertEqual(none.runningOutText(for: bean0), "not enough for another")
+    }
+
+    /// A bag with no weight entered cannot be counted down, and must not
+    /// claim to be empty.
+    func testABagWithNoWeightIsNotCountedDown() {
+        let (data, bean) = shelf(bagGrams: 0, used: [18])
+        XCTAssertNil(data.brewsLeft(for: bean))
+        XCTAssertNil(data.runningOutText(for: bean))
+    }
+
+    /// The dose comes from the bag's own best brew, so a 30 g filter recipe
+    /// empties the bag twice as fast as an 18 g espresso.
+    func testTheDoseComesFromTheBagsOwnRecipe() {
+        var bean = Bean()
+        bean.bagWeightGrams = 250
+        var big = BrewMethod.filter.starter()
+        big.beanID = bean.id
+        big.doseGrams = 30
+        big.light = .green
+        let data = CoffeeData(beans: [bean], shots: [big])
+        XCTAssertEqual(data.nextDose(beanID: bean.id, method: .filter), 30)
+        XCTAssertEqual(data.brewsLeft(for: bean, method: .filter), 7, "220 g at 30 g a time")
+    }
+}

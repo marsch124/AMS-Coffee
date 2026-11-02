@@ -233,6 +233,39 @@ final class AMSCoffeeUITests: XCTestCase {
         XCTAssertTrue(waitFor(app, "timer-aim"), "an espresso should say what to aim for")
     }
 
+    /// Test 9 (added in 2.4) — ask outright what to change, without filling
+    /// a whole brew in first. Needs one logged brew to talk about.
+    func testAskingWhatToChangeAnswersOnTheSpot() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+        XCTAssertTrue(absent(app, "home-ask"), "nothing to ask about on a fresh app")
+
+        // Log one brew so there is something to ask about.
+        tap(app, "tab-shots")
+        tap(app, "shots-add")
+        tap(app, "light-green")
+        tap(app, "shot-save")
+        XCTAssertTrue(waitFor(app, "shot-row-0"))
+
+        tap(app, "tab-today")
+        XCTAssertTrue(waitFor(app, "home-ask"), "now it can be asked")
+        XCTAssertTrue(absent(app, "ask-answer"), "it answers only once asked")
+
+        tap(app, "ask-bitter")
+        XCTAssertTrue(waitFor(app, "ask-answer"), "one concrete change")
+    }
+
+    /// Test 10 — a new brew says where its numbers came from, so you can
+    /// tell your own recipe from the book's.
+    func testANewBrewSaysWhereItsNumbersCameFrom() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+
+        tap(app, "tab-shots")
+        tap(app, "shots-add")
+        XCTAssertTrue(waitFor(app, "shot-starting-from"))
+    }
+
     /// The number in the Total time dial, read back out of the field.
     private func seconds(_ app: XCUIApplication) -> Double {
         let field = app.textFields["shot-seconds"]

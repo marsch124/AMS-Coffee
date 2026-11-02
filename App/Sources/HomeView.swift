@@ -6,6 +6,7 @@ struct HomeView: View {
     @EnvironmentObject private var store: CoffeeStore
     @Binding var tab: Tab
     @State private var pulling = false
+    @State private var complaint: Coach.Complaint?
 
     private var todaysBrews: [Shot] {
         store.data.liveShots.filter { Calendar.current.isDateInToday($0.date) }
@@ -78,6 +79,54 @@ struct HomeView: View {
                 .poppyAppear()
             }
 
+            // Ask outright, without filling a whole brew in first.
+            if let last = lastBrew {
+                WobbleCard(tint: Candy.grape) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("What should I change?")
+                            .font(.system(size: 21, weight: .black, design: .rounded))
+                            .foregroundStyle(Candy.grape)
+                        Text("About the \(last.method.title.lowercased()) you just made.")
+                            .font(.system(size: 16, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
+                        FlowRow(spacing: 8) {
+                            ForEach(Coach.Complaint.allCases) { option in
+                                Button {
+                                    complaint = complaint == option ? nil : option
+                                } label: {
+                                    Text(option.question)
+                                        .font(.system(size: 17, weight: .heavy, design: .rounded))
+                                        .foregroundStyle(complaint == option ? .white : Candy.grape)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 9)
+                                        .background(Capsule().fill(complaint == option
+                                                                   ? Candy.grape
+                                                                   : Candy.grape.opacity(0.16)))
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("ask-\(option.rawValue)")
+                            }
+                        }
+                        if let complaint {
+                            let answer = Coach.fix(last, complaint)
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text(answer.headline)
+                                    .font(.system(size: 21, weight: .black, design: .rounded))
+                                    .foregroundStyle(Candy.grape)
+                                Text(answer.detail)
+                                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                                    .foregroundStyle(Candy.ink)
+                            }
+                            .accessibilityElement(children: .contain)
+                            .accessibilityIdentifier("ask-answer")
+                        }
+                    }
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("home-ask")
+                .poppyAppear(0.12)
+            }
+
             // The bag you are drinking now.
             if let bean = currentBag {
                 Button { tab = .bags } label: {
@@ -101,6 +150,13 @@ struct HomeView: View {
                                     Chip(text: text, tint: Candy.forFreshness(f)) { BeanMark(size: 18) }
                                         .accessibilityIdentifier("home-freshness")
                                 }
+                                if let text = store.data.runningOutText(for: bean) {
+                                    Chip(text: text, tint: Candy.forRunningOut(
+                                        store.data.brewsLeft(for: bean) ?? 0)) {
+                                        BalanceMark(size: 18)
+                                    }
+                                    .accessibilityIdentifier("home-running-out")
+                                }
                             }
                             Spacer()
                         }
@@ -114,6 +170,11 @@ struct HomeView: View {
         .sheet(isPresented: $pulling) {
             ShotEditor(shot: store.draftShot(beanID: currentBag?.id))
         }
+    }
+
+    /// The brew the advice and the question are both about.
+    private var lastBrew: Shot? {
+        store.data.liveShots.sorted { $0.date > $1.date }.first
     }
 
     /// The bag of the most recent brew, else the newest bag.
