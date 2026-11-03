@@ -44,6 +44,16 @@ jobs:
           echo "SIM_UDID=$UDID" >> $GITHUB_ENV
           echo "Using simulator:$(echo "$LINE" | sed -E 's/ *\(.*//')"
 
+      - name: Start the simulator before the tests
+        timeout-minutes: 8
+        run: |
+          # Twice on 2-3 Nov 2026 the run built fine, then sat for 29 minutes
+          # without starting a single test, until the job timed out: the
+          # simulator never came up. Boot it here and wait until it is really
+          # up, so a stuck boot fails in minutes and says so.
+          xcrun simctl boot "$SIM_UDID" || true
+          xcrun simctl bootstatus "$SIM_UDID" -b
+
       - name: Unit tests and UI tests
         run: |
           xcodebuild test \
