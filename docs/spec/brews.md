@@ -112,13 +112,19 @@ and that brew becomes the recipe the bag offers next time for that method.
 
 One search box over every live brew (`SearchField`, identifier
 `brews-search`, hidden while there are no brews at all). Prompt: *Search: bag,
-roaster, method, note*. Drawn lens on the left (`LensMark`, no Apple art); a
+note, green, Oct* (short enough not to be cut off on a phone). Drawn lens on the left (`LensMark`, no Apple art); a
 round cross appears once something is typed (`brews-search-clear`). On the Mac,
 Escape clears it.
 
 - **What it looks at:** the method's title, the brew's note and basket, and —
   when the brew has a bag — the bag's display name, roaster, name, origin,
   process and notes. A brew with no bag is still found by its method and note.
+- **Its light (2.6):** green → *green lovely*, amber → *amber drinkable*,
+  red → *red tipped out* (`BrewSearch.lightWords`).
+- **When it was made (2.6):** the month in full and short and the year, in
+  English whatever the phone's language (*October Oct 2026*), plus *today* or
+  *yesterday* when it is (`BrewSearch.dateWords`, `now` passed in so tests
+  are fixed). So *kenya green october* finds exactly that.
 - **Words:** the query is split on whitespace; **every** word must appear
   somewhere in that text. An empty or all-space query matches everything.
 - **Case and accents never matter** — both sides are folded with

@@ -63,6 +63,34 @@ struct HomeView: View {
             .accessibilityIdentifier("home-numbers")
             .poppyAppear(0.10)
 
+            // Kit that wants looking after. A quiet line, only when due.
+            let due = KitCare.due(in: store.data)
+            if !due.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Array(due.enumerated()), id: \.element.id) { index, item in
+                        HStack(spacing: 10) {
+                            Text(KitCare.dueLine(item, in: store.data))
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .foregroundStyle(Candy.inkSoft)
+                            Spacer(minLength: 6)
+                            Button { store.markCareDone(item) } label: {
+                                Text("Done")
+                                    .font(.system(size: 17, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(Capsule().fill(Candy.apricot))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("home-kit-done-\(index)")
+                        }
+                    }
+                }
+                .padding(.horizontal, 6)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("home-kit-due")
+            }
+
             // What the coach said about the last one.
             if let advice = store.lastAdvice {
                 WobbleCard(tint: Candy.sky) {

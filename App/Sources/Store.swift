@@ -76,15 +76,18 @@ final class CoffeeStore: ObservableObject {
         }
     }
 
-    func saveNow(pourCup: Bool = true) {
+    func saveNow(pourCup: Bool = true, merge: Bool = true) {
         data.savedAt = Date()
 
         // Merge against whatever is on disk before writing, so the other
-        // device's work is never flattened by this one's copy.
+        // device's work is never flattened by this one's copy. A restore is
+        // the one write that must NOT merge: merging would let everything
+        // newer on disk win, and pouring a cup back would change nothing.
         var toWrite = data
         var err: NSError?
         coordinator.coordinate(writingItemAt: dataURL, options: .forMerging, error: &err) { url in
-            if let raw = try? Data(contentsOf: url),
+            if merge,
+               let raw = try? Data(contentsOf: url),
                let onDisk = try? JSONDecoder.coffee.decode(CoffeeData.self, from: raw) {
                 toWrite = CoffeeData.merged(onDisk, toWrite)
             }
@@ -161,43 +164,36 @@ final class CoffeeStore: ObservableObject {
 
     func preview(of cup: Cup) -> String? {
         guard let incoming = cupboard.read(cup) else { return nil }
+        return preview(of: incoming)
+    }
+
+    /// "+2 bags · same brews" — what pouring this in would change.
+    func preview(of incoming: CoffeeData) -> String {
         let dBeans = incoming.liveBeans.count - data.liveBeans.count
         let dShots = incoming.liveShots.count - data.liveShots.count
+        let dKit = incoming.livePurchases.count - data.livePurchases.count
         func line(_ n: Int, _ noun: String) -> String {
             n == 0 ? "same \(noun)" : (n > 0 ? "+\(n) \(noun)" : "\(n) \(noun)")
         }
-        return "\(line(dBeans, "bags")) · \(line(dShots, "shots"))"
+        var parts = [line(dBeans, "bags"), line(dShots, "brews")]
+        if dKit != 0 { parts.append(line(dKit, "kit")) }
+        return parts.joined(separator: " · ")
     }
 
     /// Pours a cup back in. Takes a safety cup of *now* first, always.
     func restore(_ cup: Cup) -> Bool {
         guard let incoming = cupboard.read(cup) else { return false }
-        cupboard.pour(data, kind: .keepsake, name: "Before restore")
+        restore(from: incoming, safetyName: "Before restore")
+        return true
+    }
+
+    /// Puts things exactly as they were in `incoming` — a cup or a backup
+    /// file — after keeping where you are now as a named keepsake.
+    func restore(from incoming: CoffeeData, safetyName: String) {
+        cupboard.pour(data, kind: .keepsake, name: safetyName)
         data = incoming
-        saveNow(pourCup: false)
+        saveNow(pourCup: false, merge: false)
         shelf = cupboard.loadShelf()
-        return true
-    }
-
-    func exportFile() -> URL? {
-        guard let payload = try? JSONEncoder.coffee.encode(data) else { return nil }
-        let stamp = ISO8601DateFormatter().string(from: Date()).prefix(10)
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("AMS Coffee \(stamp).amscoffee")
-        try? payload.writeAtomically(to: url)
-        return url
-    }
-
-    @discardableResult
-    func importFile(_ url: URL) -> Bool {
-        guard let raw = try? Data(contentsOf: url),
-              let incoming = try? JSONDecoder.coffee.decode(CoffeeData.self, from: raw)
-        else { return false }
-        cupboard.pour(data, kind: .keepsake, name: "Before import")
-        data = CoffeeData.merged(data, incoming)
-        saveNow(pourCup: false)
-        shelf = cupboard.loadShelf()
-        return true
     }
 
     // MARK: Beans
@@ -260,25 +256,12 @@ final class CoffeeStore: ObservableObject {
     /// method* — a pour-over recipe is no use when you are pulling a shot.
     /// Nothing to copy? The method's own sensible starting point.
     func draftShot(beanID: UUID?, method: BrewMethod = .espresso) -> Shot {
-        var draft = method.starter()
-        draft.beanID = beanID ?? data.liveBeans.first?.id
-        if let id = draft.beanID, let best = data.bestShot(beanID: id, method: method) {
-            draft.grind = best.grind
-            draft.doseGrams = best.doseGrams
-            draft.yieldGrams = best.yieldGrams
-            draft.waterGrams = best.waterGrams
-            draft.seconds = best.seconds
-            draft.tempC = best.tempC
-            draft.preInfusionSeconds = best.preInfusionSeconds
-            draft.basket = best.basket
-            draft.bloomGrams = best.bloomGrams
-            draft.bloomSeconds = best.bloomSeconds
-            draft.pours = best.pours
-            draft.steepMinutes = best.steepMinutes
-            draft.steepHours = best.steepHours
-            draft.plungeSeconds = best.plungeSeconds
-            draft.inverted = best.inverted
+        let bag = beanID ?? data.liveBeans.first?.id
+        if let bag, let best = data.bestShot(beanID: bag, method: method) {
+            return Shot.again(from: best)
         }
+        var draft = method.starter()
+        draft.beanID = bag
         draft.date = Date()
         return draft
     }
@@ -293,6 +276,15 @@ final class CoffeeStore: ObservableObject {
         } else {
             data.purchases.append(p)
         }
+        scheduleSave()
+    }
+
+    /// One tap: the burrs or the backflush were done today. Every date is
+    /// kept, so the kit remembers how often it has been looked after.
+    func markCareDone(_ purchase: Purchase) {
+        guard let i = data.purchases.firstIndex(where: { $0.id == purchase.id }) else { return }
+        data.purchases[i].careDone.append(Date())
+        data.purchases[i].modifiedAt = Date()
         scheduleSave()
     }
 

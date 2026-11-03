@@ -119,3 +119,48 @@ asks first (`bag-rinse-confirm`). Roast date is behind a switch
 (`bag-has-roastdate` → `bag-roastdate`) so a bag without one stays clean.
 Flavours are tapped words (`flavour-<name>`), never emoji. Verdict is
 `bag-verdict`. A photo of the bag can be taken or chosen.
+
+## Reading the label (2.6, `LabelReader.swift`)
+
+When a **new** photo is taken or chosen in the bag editor (`PhotoRow`'s
+`onNewPhoto`), the full-size picture is read **on the device** with Vision
+(`VNRecognizeTextRequest`, accurate, language detected, the photo's own
+orientation respected). No internet. Only a photo that was just taken or
+chosen is read — opening a bag with a photo reads nothing.
+
+- While reading: *Reading the label…* (`bag-label-reading`).
+- Nothing usable: one quiet line, *No roaster, origin or roast date I could
+  read on this one.* (`bag-label-nothing`).
+- Otherwise *From the label — tap to use* (`bag-label-suggestions`) with one
+  full-width row per suggestion and a **Use** pill:
+  `bag-label-suggest-roaster`, `-origin`, `-roastdate`.
+- **Never overwrites.** `LabelSuggestion.offered(for:hasRoastDate:)` offers a
+  roaster or origin only while that field is blank (spaces count as blank),
+  and a roast date only while the switch is off. Typing in a field makes its
+  row disappear; tapping Use fills it (the date also turns the switch on).
+
+The rules (pure, tested):
+- **Roaster** only when a line says it is one: *roaster(s)*, *roastery*,
+  *roasting co*, *rosteri*, *rösterei*, *coffee co*, *coffee company*,
+  *torrefazione*, *brûlerie*. An all-capitals line is put in title case.
+  Nothing is guessed from big letters.
+- **Origin**: 40 coffee countries, matched as whole words in English, Swedish
+  or German spellings (*Kenia* → Kenya, *Etiopien* → Ethiopia, *Sumatra* →
+  Indonesia), returned in English.
+- **Roast date**: *2026-10-20*, *20.10.2026*, *20/10/26*, *20 Oct 2026*,
+  *October 20, 2026* — day before month when ambiguous, as in Sweden. A line
+  with *best*, *bäst*, *use by*, *exp*, *bbe*, *mhd*, *haltbar* is never read;
+  a date after tomorrow or over a year back is not believed; a line saying
+  *roast* / *rost(ad)* wins over a bare date.
+- Under `-uiTesting`, the words come from the `LABEL_LINES` environment value
+  (separated by `|`) when a new bag opens.
+
+## Same again from here (2.6)
+
+At the bottom of *How you dialled it in*, for the method shown:
+**Same again from here** (`dialin-same-again`), full colour, with *Your green
+espresso from 1 Nov: grind 13.5 · 18 g · 30 s* underneath. It opens a new
+brew carrying that brew's recipe (`Shot.again(from:)`: same bag and numbers,
+amber, no note, no photo). It is there only when `CoffeeData.bestGreen` finds a
+green brew of this method on this bag — the newest green one — so it shows
+even when the chart itself is still waiting for a second brew.

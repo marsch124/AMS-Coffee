@@ -12,6 +12,7 @@ Title "AMS Coffee" with a hand-drawn `CupMark`.
 | Shelf warning card | `home-warning` | only when the shelf has a warning; "Got it" is `home-dismiss-warning` |
 | **Pull a shot** | `home-pull-shot` | always — the one big button, full colour, never grey |
 | The numbers | `home-numbers` | always — today · brews · bags · lovely |
+| Kit that is due (2.6) | `home-kit-due` | only when a grinder's burrs or a machine's backflush are due; one quiet line each, with **Done** (`home-kit-done-<i>`) |
 | What the coach said | `home-advice` | only when a brew has been saved this session |
 | **What should I change?** | `home-ask` | only when at least one brew exists |
 | In the hopper | `home-current-bag` | only when a bag exists; taps through to Beans |
@@ -66,3 +67,13 @@ Identical. The Mac gets Mac text sizes from the same type styles. **Nothing on
 this screen is pinned to a safe-area inset**, because a control inside a
 `safeAreaInset` inherits its ancestor's accessibility identifier — see
 [testing.md](testing.md).
+
+## Kit that is due (2.6)
+
+Under the numbers, one quiet line per item in `KitCare.due(in:)` — never a
+card, never shown when nothing is due. It reads
+*"<name> — burrs due · 5.2 of 5 kg since 1 Oct"* or
+*"<name> — backflush due · 22 of 20 shots since 1 Oct"*, in `InkSoft`, with a
+full-colour apricot **Done** on the right. Done calls
+`CoffeeStore.markCareDone`, which appends today to the item's `careDone` and
+the line goes. The rules are in [settings.md](settings.md#looking-after-it-26).

@@ -188,6 +188,8 @@ struct StickyBar: View {
                     .background(Circle().fill(Candy.ink.opacity(0.55)))
             }
             .buttonStyle(.plain)
+            // Escape is Cancel — on the Mac, and with a keyboard on the phone.
+            .keyboardShortcut(.cancelAction)
             .accessibilityIdentifier(closeIdentifier)
         }
         .frame(maxWidth: .infinity)

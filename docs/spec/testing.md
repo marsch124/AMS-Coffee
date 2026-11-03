@@ -5,7 +5,7 @@ identifier, never by the words on it**, and every test is seen failing before
 it is believed. The suite runs in CI on every push, and a red run blocks the
 release.
 
-As of 2.5: **90 checks of the rules** (`Tests/`) and **12 of the screens**
+As of 2.6: **115 checks of the rules** (`Tests/`) and **17 of the screens**
 (`UITests/`).
 
 ## What the rule tests guard
@@ -22,9 +22,19 @@ As of 2.5: **90 checks of the rules** (`Tests/`) and **12 of the screens**
 | Running out | the three warnings, silence above them, a weightless bag, and the dose coming from the bag's own recipe |
 | Dial-in chart (2.5) | one bag + one method, oldest first, Sink left out; opens on the last method; grind finer/coarser; nothing moved; time inside, short of and past the window; cold brew's clock is its steep; taste in words; one brew is not a trend |
 | Search (2.5) | empty matches all; bag, roaster, origin, method and note; every word must match; accents and case ignored; a brew with no bag; newest first; the Sink skipped; works with the method filter |
+| Label (2.6) | roaster, origin and roast date from words; five date shapes; best-before ignored; future and ancient dates ignored; Swedish spellings; no guessed roaster; never offered for a filled field; **real Vision reading of a drawn picture** |
+| Kit care (2.6) | grams since bought, every method; machine counts espresso only; due at the limit; done restarts the count and keeps the date; defaults; rinsed kit and brews; an older file opens |
+| Backup file (2.6) | a safe file name; proved by read-back; a short or garbage file is not proved; opening previews, takes a safety cup and replaces |
+| Same again, search (2.6) | the newest green brew only; a new brew, untasted; light words; month, year, today, yesterday; several words together |
+| Dials (2.6) | a four-digit number is written without a thousands space on a Swedish phone, and the box is wide enough |
 | Asking outright | sour and bitter disagree; lovely changes nothing; the old taste cannot steer a new question; every method answers every complaint |
 
 ## Tests that have earned their keep
+
+- `testOpeningABackupPreviewsThenTakesASafetyCup` (2.6) would have failed on
+  the old restore: it merged with the file on disk, so a restore kept
+  everything newer and put almost nothing back. Restore now writes without
+  merging.
 
 - `testEveryStarterLandsInsideItsOwnWindow` caught the cold-brew default
   recipe sitting outside the window the coach judges cold brew by — the app

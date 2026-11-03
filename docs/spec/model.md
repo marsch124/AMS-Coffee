@@ -51,7 +51,10 @@ Carries every field any method might need; each method shows only its own
 
 `kind` (`PurchaseKind`, default `.accessory`), `what`, `shop`, `priceSEK`,
 `date`, `warrantyUntil` (a **date**, not a number of months), `notes`,
-`photoID` (the receipt), `createdAt`, `modifiedAt`, `rinsedAt`.
+`photoID` (the receipt), `burrEveryKg` (default 5), `backflushEveryShots`
+(default 50), `careDone` (every date the burrs or backflush were done, default
+empty) — the last three added in 2.6 and decoded tolerantly — `createdAt`,
+`modifiedAt`, `rinsedAt`.
 `displayName` falls back to the kind's own title when `what` is empty.
 
 Shown as **Your kit** in Settings, with warranty warnings — and with no totals

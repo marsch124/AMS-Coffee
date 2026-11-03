@@ -6,8 +6,6 @@ struct CupsView: View {
     @State private var keepsakeName = ""
     @State private var naming = false
     @State private var restoring: Cup?
-    @State private var exportURL: URL?
-    @State private var importing = false
 
     var body: some View {
         Screen(title: "Cups") { JarMark(size: 38) } content: {
@@ -57,31 +55,7 @@ struct CupsView: View {
             .buttonStyle(SquashyButton(tint: Candy.grape))
             .accessibilityIdentifier("cups-save-keepsake")
 
-            HStack(spacing: 10) {
-                Button {
-                    exportURL = store.exportFile()
-                } label: {
-                    HStack(spacing: 10) { TrayArrowMark(size: 24, out: true); Text("Export") }
-                }
-                .buttonStyle(SquashyButton(tint: Candy.sky))
-                .accessibilityIdentifier("cups-export")
-
-                Button {
-                    importing = true
-                } label: {
-                    HStack(spacing: 10) { TrayArrowMark(size: 24, out: false); Text("Import") }
-                }
-                .buttonStyle(SquashyButton(tint: Candy.blueberry))
-                .accessibilityIdentifier("cups-import")
-            }
-
-            if let url = exportURL {
-                ShareLink(item: url) {
-                    Text("Share the file you just made")
-                        .font(.system(size: 18, weight: .heavy, design: .rounded))
-                }
-                .accessibilityIdentifier("cups-share")
-            }
+            BackupButtons(prefix: "cups")
 
             ForEach(Array(cups.enumerated()), id: \.element.id) { index, cup in
                 CupRow(cup: cup, index: index) { restoring = cup }
@@ -106,16 +80,16 @@ struct CupsView: View {
             }
         }
         .sheet(item: $restoring) { cup in
-            RestoreSheet(cup: cup, preview: store.preview(of: cup) ?? "could not be read") {
+            RestoreSheet(title: cup.name.isEmpty ? cup.kind.title : cup.name,
+                         when: cup.pouredAt,
+                         contents: cup.contentsLine,
+                         preview: store.preview(of: cup) ?? "could not be read",
+                         safetyName: "Before restore") {
                 _ = store.restore(cup)
                 restoring = nil
             } cancel: {
                 restoring = nil
             }
-        }
-        .fileImporter(isPresented: $importing,
-                      allowedContentTypes: [.json, .data]) { result in
-            if case .success(let url) = result { store.importFile(url) }
         }
     }
 
@@ -215,8 +189,11 @@ struct KeepsakeSheet: View {
 // MARK: - Pouring a cup back in
 
 struct RestoreSheet: View {
-    let cup: Cup
+    let title: String
+    let when: Date?
+    let contents: String
     let preview: String
+    let safetyName: String
     let pour: () -> Void
     let cancel: () -> Void
 
@@ -226,13 +203,15 @@ struct RestoreSheet: View {
             Screen(title: "Pour it back?") { CupMark(size: 38) } content: {
                 WobbleCard(tint: Candy.grape) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(cup.name.isEmpty ? cup.kind.title : cup.name)
+                        Text(title)
                             .font(.system(size: 22, weight: .black, design: .rounded))
                             .foregroundStyle(Candy.ink)
-                        Text(cup.pouredAt.formatted(date: .complete, time: .shortened))
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(Candy.inkSoft)
-                        Chip(text: cup.contentsLine, tint: Candy.grape) { BoxMark(size: 18) }
+                        if let when {
+                            Text(when.formatted(date: .complete, time: .shortened))
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .foregroundStyle(Candy.inkSoft)
+                        }
+                        Chip(text: contents, tint: Candy.grape) { BoxMark(size: 18) }
                     }
                 }
 
@@ -249,7 +228,7 @@ struct RestoreSheet: View {
                 }
 
                 WobbleCard(tint: Candy.mint) {
-                    Text("Where you are now is saved first, as a keepsake cup called “Before restore”. Nothing is lost either way.")
+                    Text("Where you are now is saved first, as a keepsake cup called “\(safetyName)”. Nothing is lost either way.")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
                 }
             } bar: {
@@ -259,5 +238,172 @@ struct RestoreSheet: View {
                           save: pour, close: cancel)
             }
         }
+    }
+}
+
+// MARK: - A backup file you name and place (2.6)
+
+/// Save a backup file · Open a backup — the same pair in Settings and on
+/// the cups shelf.
+struct BackupButtons: View {
+    @EnvironmentObject private var store: CoffeeStore
+    let prefix: String
+    @State private var saving = false
+    @State private var opening = false
+    @State private var incoming: IncomingBackup?
+    @State private var unreadable = false
+
+    struct IncomingBackup: Identifiable {
+        let id = UUID()
+        let name: String
+        let data: CoffeeData
+    }
+
+    var body: some View {
+        FlowRow(spacing: 10) {
+            Button { saving = true } label: {
+                HStack(spacing: 10) { TrayArrowMark(size: 24, out: true); Text("Save a backup file") }
+            }
+            .buttonStyle(SquashyButton(tint: Candy.sky))
+            .accessibilityIdentifier("\(prefix)-backup")
+
+            Button { opening = true } label: {
+                HStack(spacing: 10) { TrayArrowMark(size: 24, out: false); Text("Open a backup") }
+            }
+            .buttonStyle(SquashyButton(tint: Candy.blueberry))
+            .accessibilityIdentifier("\(prefix)-open-backup")
+        }
+        .sheet(isPresented: $saving) { BackupSheet() }
+        .fileImporter(isPresented: $opening, allowedContentTypes: [.json, .data]) { result in
+            guard case .success(let url) = result else { return }
+            if let data = BackupFile.read(url) {
+                incoming = IncomingBackup(name: url.deletingPathExtension().lastPathComponent,
+                                          data: data)
+            } else {
+                unreadable = true
+            }
+        }
+        .sheet(item: $incoming) { file in
+            RestoreSheet(title: file.name,
+                         when: nil,
+                         contents: Cup.counting(file.data).contentsLine,
+                         preview: store.preview(of: file.data),
+                         safetyName: "Before opening a backup") {
+                store.restore(from: file.data, safetyName: "Before opening a backup")
+                incoming = nil
+            } cancel: {
+                incoming = nil
+            }
+        }
+        .alert("That is not a Coffee backup", isPresented: $unreadable) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("It could not be read as one. Nothing was changed.")
+        }
+    }
+}
+
+/// Name it, choose where it goes, and watch it prove itself.
+struct BackupSheet: View {
+    @EnvironmentObject private var store: CoffeeStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var name = BackupFile.suggestedName()
+    @State private var exporting = false
+    @State private var document: BackupDocument?
+    @State private var snapshot = CoffeeData()
+    @State private var proved: Bool?
+    @State private var note = ""
+    @State private var savedAs = ""
+
+    var body: some View {
+        ZStack {
+            CoffeeBackground()
+            Screen(title: "A backup file") { TrayArrowMark(size: 38, out: true) } content: {
+                WobbleCard(tint: Candy.sky) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Every bag, brew and piece of kit in one file. Name it, then choose where it goes — Files, iCloud Drive, or a USB stick on the Mac.")
+                            .font(.system(size: 18, weight: .medium, design: .rounded))
+                        FatField(label: "Call it", text: $name,
+                                 tint: Candy.sky, identifier: "backup-name")
+                        Text("Photos stay with the app; the file holds everything else.")
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
+                    }
+                }
+
+                if let proved {
+                    WobbleCard(tint: proved ? Candy.mint : Candy.apricot) {
+                        HStack(alignment: .top, spacing: 12) {
+                            if proved {
+                                TickMark(size: 30, weight: 6).foregroundStyle(Candy.mint)
+                            } else {
+                                WarningMark(size: 28)
+                            }
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(proved ? "Saved and proved" : "Not proved")
+                                    .font(.system(size: 19, weight: .black, design: .rounded))
+                                if !savedAs.isEmpty {
+                                    Text(savedAs)
+                                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                                        .foregroundStyle(Candy.inkSoft)
+                                }
+                                Text(note)
+                                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                            }
+                        }
+                    }
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier(proved ? "backup-proved" : "backup-unproven")
+                }
+            } bar: {
+                StickyBar(saveTitle: proved == true ? "Done" : "Choose where",
+                          tint: Candy.sky,
+                          saveIdentifier: "backup-save", closeIdentifier: "backup-close",
+                          save: save, close: { dismiss() })
+            }
+        }
+        .fileExporter(isPresented: $exporting, document: document, contentType: .json,
+                      defaultFilename: fileStem) { result in
+            switch result {
+            case .success(let url):
+                prove(url)
+            case .failure:
+                proved = false
+                note = "It was not saved. Nothing changed."
+            }
+        }
+    }
+
+    private var fileStem: String {
+        (BackupFile.fileName(for: name) as NSString).deletingPathExtension
+    }
+
+    private func save() {
+        if proved == true { dismiss(); return }
+        snapshot = store.data
+        guard let bytes = try? BackupFile.encode(snapshot) else {
+            proved = false
+            note = "The file could not be made. Nothing changed."
+            return
+        }
+        // A screen test cannot drive the system's place picker, so under
+        // test the file goes straight to a scratch folder — and is proved
+        // by exactly the same read-back.
+        if ProcessInfo.processInfo.arguments.contains("-uiTesting") {
+            let url = FileManager.default.temporaryDirectory
+                .appendingPathComponent(BackupFile.fileName(for: name))
+            try? bytes.write(to: url)
+            prove(url)
+            return
+        }
+        document = BackupDocument(bytes: bytes)
+        exporting = true
+    }
+
+    private func prove(_ url: URL) {
+        let proof = BackupFile.prove(url, expecting: snapshot)
+        savedAs = url.lastPathComponent
+        proved = proof.passed
+        note = proof.note
     }
 }

@@ -12,6 +12,9 @@ struct PhotoRow: View {
     let hint: String
     @Binding var photoID: String?
     let identifier: String
+    /// Handed the full-size picture whenever a NEW one is taken or chosen —
+    /// the bag uses it to read its label.
+    var onNewPhoto: ((Data) -> Void)? = nil
 
     @EnvironmentObject private var store: CoffeeStore
     @State private var picked: PhotosPickerItem?
@@ -91,6 +94,7 @@ struct PhotoRow: View {
             Task {
                 if let raw = try? await item.loadTransferable(type: Data.self) {
                     photoID = store.keepPhoto(raw)
+                    onNewPhoto?(raw)
                 }
                 picked = nil
             }
@@ -99,6 +103,7 @@ struct PhotoRow: View {
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker { raw in
                 photoID = store.keepPhoto(raw)
+                onNewPhoto?(raw)
             }
             .ignoresSafeArea()
         }

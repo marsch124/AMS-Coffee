@@ -94,6 +94,11 @@ struct KitCard: View {
                         .foregroundStyle(Candy.inkSoft)
                     FlowRow(spacing: 7) {
                         Chip(text: item.kind.title, tint: tint)
+                        if let task = KitCare.task(for: item) {
+                            let due = KitCare.isDue(item, in: store.data)
+                            Chip(text: due ? "\(task.title) due" : "\(task.title) fine",
+                                 tint: due ? Candy.apricot : Candy.sky)
+                        }
                         if item.warrantyIsLive, let until = item.warrantyUntil {
                             Chip(text: "to \(until.formatted(date: .abbreviated, time: .omitted))",
                                  tint: Candy.mint) { ShieldMark(size: 18) }
@@ -187,6 +192,10 @@ struct KitEditor: View {
                     }
                 }
 
+                if let task = KitCare.task(for: purchase) {
+                    careCard(task)
+                }
+
                 if !isNew {
                     DangerButton(title: "Remove", identifier: "kit-rinse") {
                         confirmRinse = true
@@ -211,6 +220,58 @@ struct KitEditor: View {
             Button("Keep it", role: .cancel) { }
         } message: {
             Text("It waits 30 days in the Sink.")
+        }
+    }
+}
+
+// MARK: - Looking after it (2.6)
+
+extension KitEditor {
+
+    /// How often it is due, how far along it is, and one tap for "done".
+    func careCard(_ task: KitCare.Task) -> some View {
+        let due = KitCare.isDue(purchase, in: store.data)
+        let burrs = task == .burrs
+        return WobbleCard(tint: Candy.sky) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Looking after it")
+                    .font(.system(size: 19, weight: .black, design: .rounded))
+                Text(burrs
+                     ? "Counted from every brew you log, since the burrs were last done — or since you got it."
+                     : "Counted from every espresso you log, since the last backflush — or since you got it.")
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundStyle(Candy.inkSoft)
+                Text((due ? "\(task.title) due · " : "") + KitCare.line(purchase, in: store.data))
+                    .font(.system(size: 18, weight: .heavy, design: .rounded))
+                    .foregroundStyle(due ? Candy.apricot : Candy.sky)
+                    .accessibilityIdentifier("kit-care-line")
+                NumberDial(label: burrs ? "Burrs due every" : "Backflush every",
+                           unit: burrs ? "kg" : "shots",
+                           value: burrs ? $purchase.burrEveryKg : $purchase.backflushEveryShots,
+                           step: burrs ? 1 : 5,
+                           range: burrs ? 1...100 : 5...500,
+                           tint: Candy.sky,
+                           identifier: "kit-care-every")
+                Button {
+                    purchase.careDone.append(Date())
+                } label: {
+                    HStack(spacing: 10) {
+                        TickMark(size: 22, weight: 5)
+                        Text(burrs ? "Burrs done today" : "Backflushed today")
+                    }
+                }
+                .buttonStyle(SquashyButton(tint: Candy.sky))
+                .accessibilityIdentifier("kit-care-done")
+                if let last = KitCare.lastDone(purchase) {
+                    let n = purchase.careDone.count
+                    Text("Last done \(last.formatted(date: .abbreviated, time: .omitted)) · \(n == 1 ? "once" : "\(n) times") in all")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(Candy.inkSoft)
+                        .accessibilityIdentifier("kit-care-last")
+                }
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("kit-care")
         }
     }
 }

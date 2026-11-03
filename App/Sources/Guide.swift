@@ -12,10 +12,32 @@ struct Release: Identifiable {
 
 enum Guide {
 
-    static let appVersion = "2.5"
+    static let appVersion = "2.6"
 
     /// Newest first. Every release adds an entry — never edits an old one.
     static let releases: [Release] = [
+        Release(version: "2.6", date: "2026-11-03",
+                headline: "Read the bag, look after the kit, keep a file",
+                lines: [
+                    "NEW — Read the label. Take or choose a photo of a new bag and the app reads the words on it, right on the phone — no internet, nothing sent anywhere. Underneath the photo it offers what it found: the roaster, the origin and the roast date, each on its own row with a Use button.",
+                    "Nothing is ever filled in behind your back. A suggestion only appears for a box that is still empty, and it never replaces something you typed. Start typing the roaster yourself and the roaster suggestion simply goes away.",
+                    "It understands the usual ways a roast date is written — 2026-10-20, 20.10.2026, 20/10/26, 20 Oct 2026, October 20, 2026 — and never mistakes a best-before date for one. It knows about forty coffee countries in English, Swedish and German spellings, so Kenia becomes Kenya. It only suggests a roaster when the label says so (Roasters, Rosteri, Coffee Co…), rather than guessing from the biggest letters.",
+                    "If it cannot read anything useful it says so in one quiet line, and you type it in as before.",
+                    "NEW — Looking after your kit. A grinder now counts how much coffee has gone through it, and a machine counts its espresso shots — both worked out from the brews you log, nothing to type. Open the grinder or machine in Your kit to see \"0.6 of 5 kg since 1 Oct\" or \"12 of 50 shots since 1 Oct\".",
+                    "You choose how often each is due: the burrs every 5 kg and a backflush every 50 shots to start with, both easy to change. One tap marks it done today, and every date is kept — the card says when it was last done and how many times in all.",
+                    "When something is due, one quiet line appears on Today — \"Lever machine — backflush due · 22 of 20 shots since 1 Oct\" — with a Done button. Nothing due, no line. The kit list also says Burrs fine or Backflush due on each card.",
+                    "NEW — A backup file you name and place. In Settings (and on the cups shelf), Save a backup file asks for a name, then lets you choose where it goes: Files, iCloud Drive, or a USB stick on the Mac.",
+                    "The file proves itself exactly the way a cup does: once it is saved, the app opens it again from where it landed, reads it and counts the bags, brews and kit inside. Only then does it say Saved and proved with a green tick. If it came back different, it says so in orange instead.",
+                    "Open a backup reads a file, shows what is in it and what would change — \"+2 bags · same brews\" — and keeps where you are now as a keepsake cup called Before opening a backup before it does anything. A file that is not a Coffee backup is refused and nothing changes.",
+                    "NEW — Same again from here. Open a bag and, under How you dialled it in, a button starts a new brew with the numbers from your best green brew of that method on that bag, and says which one it is. No green brew yet, no button.",
+                    "NEW — Search finds more. The Brews search now also knows a brew's light — green or lovely, amber or drinkable, red or tipped — and when it was made: the month (October or Oct), the year, today and yesterday. Words still combine, so \"kenya green october\" finds exactly that.",
+                    "CHANGED — Export, Import and Share are replaced by Save a backup file and Open a backup. Import used to mix a file into what you had without showing anything first; opening a backup now previews it, keeps a safety cup, and then puts things exactly as they were in the file.",
+                    "FIXED — pouring a cup back did not really put things back. It mixed the cup with what was already saved, and anything changed since the cup was poured stayed as it was. It now puts things exactly as they were in the cup, after keeping Before restore as always.",
+                    "FIXED — a bag of 1000 g or more showed its weight cut off as \"1 0…\". Numbers no longer get a thousands space, and the box is wider where a number can run into the thousands. Found by looking at a full shelf, not by a test; there is a test for it now.",
+                    "FIXED — on the Mac, Escape now works as Cancel on every screen where you change something, as it always should have. Before, only the search box listened to it.",
+                    "CHANGED — the search box hint is shorter, so it is no longer cut off on the phone: \"Search: bag, note, green, Oct\".",
+                    "Tests: 115 checks of the rules and 17 of the screens — 25 new rule checks (including the phone really reading the words off a picture) and 5 new screen checks, each seen failing before the feature existed.",
+                ]),
         Release(version: "2.5", date: "2026-11-02",
                 headline: "See where a bag is heading, and find any brew",
                 lines: [
@@ -160,6 +182,17 @@ enum Guide {
                 taste line one for balanced, so you can see whether you are \
                 walking towards them. Made it more than one way? Tap a method \
                 above the chart to see that one.
+
+                Once a brew of that method has been green, Same again from \
+                here sits under the chart: one tap starts a new brew with the \
+                numbers of your best green one, and it says which brew that is.
+
+                Reading the label: take or choose a photo of a new bag and \
+                the phone reads it — no internet. It offers the roaster, the \
+                origin and the roast date it found, each with a Use button. \
+                It only offers what would fill an empty box, never replaces \
+                something you typed, and never takes a best-before date for a \
+                roast date. If it finds nothing it says so quietly.
                 """),
         Chapter(title: "Making coffee",
                 body: """
@@ -203,6 +236,11 @@ enum Guide {
                 bag. Capitals and accents never matter. It works together \
                 with the method chips underneath, and the cross clears it \
                 (Escape on the Mac). Brews in the Sink are left out.
+
+                It also knows a brew's light — green or lovely, amber or \
+                drinkable, red or tipped — and when it was made: the month \
+                (October or Oct), the year, today and yesterday. So "kenya \
+                green october" finds the lovely Kenyan brews of October.
                 """),
         Chapter(title: "The coach",
                 body: """
@@ -236,6 +274,13 @@ enum Guide {
                 totals and no cost per cup. If you want to note what something \
                 cost you can, on one quiet line, and the app will never mention \
                 it again.
+
+                A grinder counts the coffee that has gone through it and a \
+                machine counts its espresso shots, both from the brews you \
+                log. Set how often the burrs and the backflush are due — 5 kg \
+                and 50 shots to start with — and tap done when you have done \
+                it; every date is kept. When one is due, a quiet line with a \
+                Done button appears on Today, and only then.
                 """),
         Chapter(title: "Photos",
                 body: """
@@ -275,7 +320,16 @@ enum Guide {
 
                 3. Restoring takes a safety cup first. Pouring a cup back shows \
                 you what will change before it does anything, and saves where \
-                you are now as Before restore.
+                you are now as Before restore. Then it puts things exactly as \
+                they were in the cup.
+
+                A backup file works the same way. Save a backup file, give it \
+                a name, and choose where it goes — Files, iCloud Drive, a USB \
+                stick on the Mac. The app then opens the file again from \
+                there and counts what is inside before it shows the green \
+                tick. Open a backup shows what would change and keeps Before \
+                opening a backup first. Photos stay with the app; the file \
+                holds everything else.
                 """),
         Chapter(title: "Why old cups still open",
                 body: """
@@ -309,8 +363,9 @@ enum Guide {
         Chapter(title: "Settings",
                 body: """
                 Everything you touch once lives here, off the morning screen: \
-                where your coffee is kept, your cups, your kit, the Sink, a copy \
-                of everything to export, this guide, and the version history.
+                where your coffee is kept, your cups, your kit, the Sink, a \
+                backup file you name and place, this guide, and the version \
+                history.
 
                 The version history is the whole story of the app, newest at the \
                 top, one line per thing that changed. It is never tidied up or \
@@ -318,10 +373,9 @@ enum Guide {
                 """),
         Chapter(title: "Coming next",
                 body: """
-                Read a bag's label from a photo to fill in the roaster, origin \
-                and roast date. Looking after your kit — when the burrs and the \
-                backflush are due. A backup file you name and put wherever you \
-                like.
+                Everything from the list you picked in September is now in. \
+                Next: a proper look at the Mac app as a Mac app — windows, \
+                keyboard, and the backup file on a USB stick.
                 """),
     ]
 }

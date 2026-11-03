@@ -18,10 +18,13 @@ struct NumberDial: View {
                     .font(.system(size: 16, weight: .heavy, design: .rounded))
                     .foregroundStyle(Candy.inkSoft)
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
-                    TextField(label, value: $value, format: .number.precision(.fractionLength(0...1)))
+                    // No thousands space ("1 000" on a Swedish phone), and
+                    // room for four or more digits where the dial goes that
+                    // high — a 1 kg bag used to read "1 0…" (fixed in 2.6).
+                    TextField(label, value: $value, format: NumberDial.style)
                         .font(.system(size: 26, weight: .black, design: .rounded))
                         .foregroundStyle(tint)
-                        .frame(width: 74)
+                        .frame(width: fieldWidth)
                         .textFieldStyle(.plain)
                         .multilineTextAlignment(.leading)
                         #if os(iOS)
@@ -48,6 +51,17 @@ struct NumberDial: View {
             }
         }
         .padding(.vertical, 4)
+    }
+
+    static let style = FloatingPointFormatStyle<Double>.number
+        .grouping(.never).precision(.fractionLength(0...1))
+
+    private var fieldWidth: CGFloat { NumberDial.width(for: range) }
+
+    static func width(for range: ClosedRange<Double>) -> CGFloat {
+        if range.upperBound >= 10_000 { return 112 }
+        if range.upperBound >= 1_000 { return 92 }
+        return 74
     }
 
     private func dialButton<M: View>(identifier: String,

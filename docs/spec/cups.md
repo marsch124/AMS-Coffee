@@ -27,7 +27,40 @@ was poured, and whether it is `tested`.
    straight from a real data loss in another app, where a blind backup
    overwrote itself with an empty snapshot.
 3. **Restoring takes a safety cup first**, and previews the delta
-   (`restore-preview`) before anything is replaced.
+   (`restore-preview`, *"+2 bags · same brews"*, with a kit count only when it
+   differs) before anything is replaced.
+
+`CoffeeStore.restore(from:safetyName:)` is the one place this happens, for a
+cup ("Before restore") and for a backup file ("Before opening a backup"). It
+writes **without merging** (`saveNow(pourCup:merge: false)`): before 2.6 a
+restore merged with the file on disk, so every record changed since the cup
+was poured won the merge and pouring a cup back put almost nothing back.
+
+## The backup file (2.6, `BackupFile.swift`, `BackupButtons` in `CupsView.swift`)
+
+The same pair of buttons in Settings (`settings-backup`,
+`settings-open-backup`) and on the shelf (`cups-backup`, `cups-open-backup`).
+They replace 2.5's Export / Import / Share.
+
+- **Save a backup file** opens a sheet: a name (`backup-name`, starts as
+  *AMS Coffee 2026-11-03*), then **Choose where** (`backup-save`) hands the
+  file to the system's place picker (`fileExporter`, `.json`) — Files, iCloud
+  Drive, a USB stick on the Mac. `BackupFile.fileName(for:)` turns `/ : \`
+  into `-`, adds `.json`, and uses today's name when blank.
+- **It proves itself like a cup.** `BackupFile.prove` reads the file back from
+  where it landed (security-scoped), decodes it and compares bags, brews and
+  kit with what was written. Only then: **Saved and proved** with a tick
+  (`backup-proved`) and *"Opened and counted: 5 bags · 46 brews · 3 things"*;
+  otherwise an orange **Not proved** (`backup-unproven`) saying what came
+  back. The button then reads **Done**. Photos are not in the file.
+- **Open a backup** picks a file (`.json` or any data). `BackupFile.read`
+  refuses anything that is not a Coffee file (it must carry `beans` or
+  `shots`) with *"That is not a Coffee backup … Nothing was changed."*
+  Otherwise the same `RestoreSheet` as a cup: name, contents, the delta, and
+  the promise that *Before opening a backup* is kept first. Pouring it in
+  **replaces** what is there (2.5's Import merged silently, with no preview).
+- Under `-uiTesting` the file goes straight to the temporary folder instead of
+  the place picker, and is proved by the same read-back.
 
 ## The Sink
 

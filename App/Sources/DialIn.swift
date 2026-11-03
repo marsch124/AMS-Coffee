@@ -118,9 +118,10 @@ enum DialIn {
 
 // MARK: - Search across every brew (2.5)
 
-/// One search over every brew: the bag, its roaster and origin, the method
-/// and the notes. Every word typed must turn up somewhere; case and accents
-/// never matter, so "cafe" finds "Café".
+/// One search over every brew: the bag, its roaster and origin, the method,
+/// the notes — and (2.6) its light and when it was made. Every word typed
+/// must turn up somewhere; case and accents never matter, so "cafe" finds
+/// "Café", and "kenya green october" finds exactly that.
 enum BrewSearch {
 
     static func fold(_ s: String) -> String {
@@ -131,7 +132,7 @@ enum BrewSearch {
         fold(query).split(whereSeparator: { $0.isWhitespace }).map(String.init)
     }
 
-    static func matches(_ shot: Shot, bean: Bean?, query: String) -> Bool {
+    static func matches(_ shot: Shot, bean: Bean?, query: String, now: Date = Date()) -> Bool {
         let wanted = words(query)
         if wanted.isEmpty { return true }
         var parts = [shot.method.title, shot.note, shot.basket]
@@ -139,8 +140,32 @@ enum BrewSearch {
             parts += [bean.displayName, bean.roaster, bean.name, bean.origin,
                       bean.process, bean.notes]
         }
+        parts += lightWords(shot.light)
+        parts += dateWords(shot.date, now: now)
         let haystack = fold(parts.joined(separator: " "))
         return wanted.allSatisfy { haystack.contains($0) }
+    }
+
+    /// The colour and the word the light picker shows.
+    static func lightWords(_ light: TrafficLight) -> [String] {
+        switch light {
+        case .green: return ["green", "lovely"]
+        case .amber: return ["amber", "drinkable"]
+        case .red:   return ["red", "tipped out"]
+        }
+    }
+
+    /// "October Oct 2026", plus today or yesterday when it is.
+    static func dateWords(_ date: Date, now: Date) -> [String] {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_GB")
+        f.dateFormat = "MMMM MMM yyyy"
+        var words = [f.string(from: date)]
+        let cal = Calendar.current
+        if cal.isDate(date, inSameDayAs: now) { words.append("today") }
+        if let yesterday = cal.date(byAdding: .day, value: -1, to: now),
+           cal.isDate(date, inSameDayAs: yesterday) { words.append("yesterday") }
+        return words
     }
 
     /// Newest first, the Sink left out, and the method filter still honoured.
@@ -160,6 +185,7 @@ struct DialInCard: View {
     @EnvironmentObject private var store: CoffeeStore
     let beanID: UUID
     @State private var picked: BrewMethod?
+    @State private var again: Shot?
 
     private var methods: [BrewMethod] { store.data.methodsUsed(beanID: beanID) }
     private var method: BrewMethod? {
@@ -205,8 +231,25 @@ struct DialInCard: View {
                         .accessibilityElement(children: .contain)
                         .accessibilityIdentifier("bag-dialin")
                     }
+
+                    // Same again from here (2.6): only once a brew of this
+                    // method on this bag has been green.
+                    if let green = store.data.bestGreen(beanID: beanID, method: method) {
+                        Button { again = Shot.again(from: green) } label: {
+                            HStack(spacing: 10) {
+                                MethodMark(method: method, size: 24)
+                                Text("Same again from here")
+                            }
+                        }
+                        .buttonStyle(SquashyButton(tint: Candy.mint))
+                        .accessibilityIdentifier("dialin-same-again")
+                        Text("Your green \(method.title.lowercased()) from \(KitCare.shortDate(green.date)): grind \(Coach.trim(green.grind)) · \(Coach.trim(green.doseGrams)) g · \(green.timeText)")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(Candy.inkSoft)
+                    }
                 }
             }
+            .sheet(item: $again) { ShotEditor(shot: $0) }
         }
     }
 }

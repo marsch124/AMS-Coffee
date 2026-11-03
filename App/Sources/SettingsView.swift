@@ -6,8 +6,6 @@ struct SettingsView: View {
     @EnvironmentObject private var store: CoffeeStore
     @State private var showGuide = false
     @State private var showHistory = false
-    @State private var exportURL: URL?
-    @State private var importing = false
 
     var body: some View {
         Screen(title: "Settings") { CogMark(size: 38) } content: {
@@ -58,29 +56,9 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("A copy of everything")
                         .font(.system(size: 19, weight: .black, design: .rounded))
-                    Text("Every bag, every brew, every cup, in one file you can keep anywhere.")
+                    Text("Every bag, every brew and all your kit in one file you name and keep anywhere — proved by being opened again before it gets its tick.")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
-                    FlowRow(spacing: 10) {
-                        Button { exportURL = store.exportFile() } label: {
-                            HStack(spacing: 10) { TrayArrowMark(size: 24, out: true); Text("Export") }
-                        }
-                        .buttonStyle(SquashyButton(tint: Candy.sky))
-                        .accessibilityIdentifier("settings-export")
-
-                        Button { importing = true } label: {
-                            HStack(spacing: 10) { TrayArrowMark(size: 24, out: false); Text("Import") }
-                        }
-                        .buttonStyle(SquashyButton(tint: Candy.blueberry))
-                        .accessibilityIdentifier("settings-import")
-                    }
-                    if let url = exportURL {
-                        ShareLink(item: url) {
-                            Text("Share the file you just made")
-                                .font(.system(size: 19, weight: .heavy, design: .rounded))
-                                .foregroundStyle(Candy.blueberry)
-                        }
-                        .accessibilityIdentifier("settings-share")
-                    }
+                    BackupButtons(prefix: "settings")
                 }
             }
 
@@ -135,10 +113,6 @@ struct SettingsView: View {
                 }
                 .accessibilityIdentifier("settings-version-list")
             }
-        }
-        .fileImporter(isPresented: $importing,
-                      allowedContentTypes: [.json, .data]) { result in
-            if case .success(let url) = result { store.importFile(url) }
         }
     }
 

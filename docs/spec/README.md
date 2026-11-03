@@ -17,7 +17,7 @@ these files do not change, the release is wrong.
 | [brews.md](brews.md) | Brews: the list, search, the editor, the seven methods, the timer |
 | [coach.md](coach.md) | The coach: windows, advice, and asking outright |
 | [cups.md](cups.md) | The Cup System, the Sink, and how data is kept safe |
-| [settings.md](settings.md) | Settings, the guide, What's new, export and import |
+| [settings.md](settings.md) | Settings, the guide, What's new, your kit and looking after it, the backup file |
 | [testing.md](testing.md) | What the tests guard, and the traps in testing this app |
 
 ## The shape of the app
@@ -31,7 +31,7 @@ Four tabs, and only four: **Today · Beans · Brews · Settings**
 (`Tab` in `AMSCoffeeApp.swift`, raw values `today`, `bags`, `shots`,
 `settings` — the raw values are stable test identifiers and deliberately do
 not match the visible labels). Every one-off thing — the guide, What's new,
-the cups, the Sink, your kit, export and import — lives in Settings, so the
+the cups, the Sink, your kit, the backup file — lives in Settings, so the
 morning screen stays a morning screen.
 
 ## House rules this app obeys
@@ -52,3 +52,6 @@ Set by Martin, each one learned the hard way (dates in `docs/spec/*.md` and in
 - **Remove and Delete are one calm red, quiet, and last on the screen.**
   Keeping a thing is always the easy way out.
 - **Add buttons sit at the bottom** of a list, where a thumb is.
+- **Escape is Cancel on the Mac.** `StickyBar`'s round close button carries
+  `.keyboardShortcut(.cancelAction)` (2.6), so every editor and sheet closes
+  on Escape.

@@ -159,6 +159,13 @@ struct BagEditor: View {
     @State private var hasRoastDate = false
     @State private var roastDate = Date()
     @State private var confirmRinse = false
+    @State private var label: LabelReading = .idle
+
+    /// What reading the label has come to.
+    enum LabelReading: Equatable {
+        case idle, reading, nothing
+        case found(LabelSuggestion)
+    }
 
     private var isNew: Bool { store.data.beans.allSatisfy { $0.id != bean.id } }
 
@@ -167,10 +174,14 @@ struct BagEditor: View {
             CoffeeBackground()
             Screen(title: isNew ? "A new bag" : "The bag") { BeanMark(size: 38) } content: {
                 WobbleCard(tint: Candy.bubblegum) {
-                    PhotoRow(title: "The bag",
-                             hint: "A photo of the label beats any description",
-                             photoID: $bean.photoID,
-                             identifier: "bag-photo")
+                    VStack(alignment: .leading, spacing: 12) {
+                        PhotoRow(title: "The bag",
+                                 hint: "A photo of the label beats any description",
+                                 photoID: $bean.photoID,
+                                 identifier: "bag-photo",
+                                 onNewPhoto: readLabel)
+                        labelSuggestions
+                    }
                 }
 
                 WobbleCard(tint: Candy.mint) {
@@ -249,6 +260,10 @@ struct BagEditor: View {
         }
         .onAppear {
             if let d = bean.roastDate { hasRoastDate = true; roastDate = d }
+            if isNew, let lines = LabelReader.testLines {
+                let s = LabelReader.suggest(fromText: lines)
+                label = s.isEmpty ? .nothing : .found(s)
+            }
         }
         .alert("Remove this bag?", isPresented: $confirmRinse) {
             Button("Remove", role: .destructive) {
@@ -260,6 +275,97 @@ struct BagEditor: View {
         } message: {
             Text("It waits 30 days in the Sink, where one tap brings it back.")
         }
+    }
+}
+
+// MARK: - Reading the label (2.6)
+
+extension BagEditor {
+
+    /// Reads the new photo on the phone, then offers what it found.
+    func readLabel(_ raw: Data) {
+        label = .reading
+        Task {
+            let lines = await LabelReader.read(raw)
+            let found = LabelReader.suggest(from: lines)
+            label = found.isEmpty ? .nothing : .found(found)
+        }
+    }
+
+    /// Each suggestion is one row to tap. Only empty fields are offered
+    /// anything, and a row goes away the moment its field is filled — by
+    /// the tap or by typing.
+    @ViewBuilder var labelSuggestions: some View {
+        switch label {
+        case .idle:
+            EmptyView()
+        case .reading:
+            Text("Reading the label…")
+                .font(.system(size: 16, weight: .heavy, design: .rounded))
+                .foregroundStyle(Candy.inkSoft)
+                .accessibilityIdentifier("bag-label-reading")
+        case .nothing:
+            Text("No roaster, origin or roast date I could read on this one.")
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .foregroundStyle(Candy.inkSoft)
+                .accessibilityIdentifier("bag-label-nothing")
+        case .found(let found):
+            let offer = found.offered(for: bean, hasRoastDate: hasRoastDate)
+            if !offer.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("From the label — tap to use")
+                        .font(.system(size: 16, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Candy.inkSoft)
+                    if let r = offer.roaster {
+                        suggestion("Roaster", r, "bag-label-suggest-roaster") { bean.roaster = r }
+                    }
+                    if let o = offer.origin {
+                        suggestion("Origin", o, "bag-label-suggest-origin") { bean.origin = o }
+                    }
+                    if let d = offer.roastDate {
+                        suggestion("Roasted on",
+                                   d.formatted(date: .abbreviated, time: .omitted),
+                                   "bag-label-suggest-roastdate") {
+                            roastDate = d
+                            hasRoastDate = true
+                        }
+                    }
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("bag-label-suggestions")
+            }
+        }
+    }
+
+    private func suggestion(_ what: String, _ value: String, _ id: String,
+                            use: @escaping () -> Void) -> some View {
+        Button(action: use) {
+            HStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(what)
+                        .font(.system(size: 15, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Candy.inkSoft)
+                    Text(value)
+                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .foregroundStyle(Candy.ink)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 6)
+                Text("Use")
+                    .font(.system(size: 17, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(Capsule().fill(Candy.bubblegum))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Candy.bubblegum.opacity(0.12)))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(id)
     }
 }
 

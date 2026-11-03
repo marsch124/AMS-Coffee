@@ -456,6 +456,11 @@ struct Purchase: Identifiable, Codable, Equatable {
     var notes = ""
     /// The receipt. A file name, not the picture itself.
     var photoID: String?
+    /// Looking after it (2.6): how often the burrs or the backflush are
+    /// due, and every day it was done. Only a grinder or a machine uses them.
+    var burrEveryKg: Double = 5
+    var backflushEveryShots: Double = 50
+    var careDone: [Date] = []
     var createdAt = Date()
     var modifiedAt = Date()
     var rinsedAt: Date?
@@ -481,6 +486,9 @@ struct Purchase: Identifiable, Codable, Equatable {
         warrantyUntil = try c.decodeIfPresent(Date.self, forKey: .warrantyUntil)
         notes = try c.decodeIfPresent(String.self, forKey: .notes) ?? ""
         photoID = try c.decodeIfPresent(String.self, forKey: .photoID)
+        burrEveryKg = try c.decodeIfPresent(Double.self, forKey: .burrEveryKg) ?? 5
+        backflushEveryShots = try c.decodeIfPresent(Double.self, forKey: .backflushEveryShots) ?? 50
+        careDone = try c.decodeIfPresent([Date].self, forKey: .careDone) ?? []
         createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? date
         modifiedAt = try c.decodeIfPresent(Date.self, forKey: .modifiedAt) ?? createdAt
         rinsedAt = try c.decodeIfPresent(Date.self, forKey: .rinsedAt)
