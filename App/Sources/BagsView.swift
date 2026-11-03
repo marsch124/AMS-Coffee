@@ -160,6 +160,7 @@ struct BagEditor: View {
     @State private var roastDate = Date()
     @State private var confirmRinse = false
     @State private var label: LabelReading = .idle
+    @State var fills = LabelFills()
 
     /// What reading the label has come to.
     enum LabelReading: Equatable {
@@ -187,13 +188,20 @@ struct BagEditor: View {
                 WobbleCard(tint: Candy.mint) {
                     VStack(alignment: .leading, spacing: 12) {
                         FatField(label: "Roaster", text: $bean.roaster,
-                                 tint: Candy.mint, identifier: "bag-roaster")
+                                 tint: Candy.mint, identifier: "bag-roaster",
+                                 fromLabel: fills.shows(.roaster, current: bean.roaster))
                         FatField(label: "Name of the bean", text: $bean.name,
-                                 tint: Candy.mint, identifier: "bag-name")
+                                 tint: Candy.mint, identifier: "bag-name",
+                                 fromLabel: fills.shows(.name, current: bean.name))
                         FatField(label: "Origin", text: $bean.origin,
-                                 tint: Candy.mint, identifier: "bag-origin")
+                                 tint: Candy.mint, identifier: "bag-origin",
+                                 fromLabel: fills.shows(.origin, current: bean.origin))
                         FatField(label: "Process (washed, natural…)", text: $bean.process,
-                                 tint: Candy.mint, identifier: "bag-process")
+                                 tint: Candy.mint, identifier: "bag-process",
+                                 fromLabel: fills.shows(.process, current: bean.process))
+                        FatField(label: "Roast (light, medium, dark…)", text: $bean.roastLevel,
+                                 tint: Candy.mint, identifier: "bag-roastlevel",
+                                 fromLabel: fills.shows(.roastLevel, current: bean.roastLevel))
                     }
                 }
 
@@ -213,9 +221,14 @@ struct BagEditor: View {
                         .tint(Candy.blueberry)
                         .accessibilityIdentifier("bag-has-roastdate")
                         if hasRoastDate {
-                            DatePicker("", selection: $roastDate, displayedComponents: .date)
-                                .labelsHidden()
-                                .accessibilityIdentifier("bag-roastdate")
+                            HStack(spacing: 10) {
+                                DatePicker("", selection: $roastDate, displayedComponents: .date)
+                                    .labelsHidden()
+                                    .accessibilityIdentifier("bag-roastdate")
+                                if fills.shows(roastDate) {
+                                    FromLabelMark(identifier: "bag-roastdate-from-label")
+                                }
+                            }
                         }
                     }
                 }
@@ -305,7 +318,7 @@ extension BagEditor {
                 .foregroundStyle(Candy.inkSoft)
                 .accessibilityIdentifier("bag-label-reading")
         case .nothing:
-            Text("Nothing on this label I could read as a name, roaster, origin, process or roast date.")
+            Text("Nothing on this label I could read as a name, roaster, origin, process, roast or roast date.")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
                 .foregroundStyle(Candy.inkSoft)
                 .accessibilityIdentifier("bag-label-nothing")
@@ -317,16 +330,34 @@ extension BagEditor {
                         .font(.system(size: 16, weight: .heavy, design: .rounded))
                         .foregroundStyle(Candy.inkSoft)
                     if let n = offer.name {
-                        suggestion("Name of the bean", n, "bag-label-suggest-name") { bean.name = n }
+                        suggestion("Name of the bean", n, "bag-label-suggest-name") {
+                            bean.name = n
+                            fills.filled(.name, with: n)
+                        }
                     }
                     if let r = offer.roaster {
-                        suggestion("Roaster", r, "bag-label-suggest-roaster") { bean.roaster = r }
+                        suggestion("Roaster", r, "bag-label-suggest-roaster") {
+                            bean.roaster = r
+                            fills.filled(.roaster, with: r)
+                        }
                     }
                     if let o = offer.origin {
-                        suggestion("Origin", o, "bag-label-suggest-origin") { bean.origin = o }
+                        suggestion("Origin", o, "bag-label-suggest-origin") {
+                            bean.origin = o
+                            fills.filled(.origin, with: o)
+                        }
                     }
                     if let p = offer.process {
-                        suggestion("Process", p, "bag-label-suggest-process") { bean.process = p }
+                        suggestion("Process", p, "bag-label-suggest-process") {
+                            bean.process = p
+                            fills.filled(.process, with: p)
+                        }
+                    }
+                    if let l = offer.roastLevel {
+                        suggestion("Roast", l, "bag-label-suggest-roastlevel") {
+                            bean.roastLevel = l
+                            fills.filled(.roastLevel, with: l)
+                        }
                     }
                     if let d = offer.roastDate {
                         suggestion("Roasted on",
@@ -334,6 +365,7 @@ extension BagEditor {
                                    "bag-label-suggest-roastdate") {
                             roastDate = d
                             hasRoastDate = true
+                            fills.filled(d)
                         }
                     }
                 }

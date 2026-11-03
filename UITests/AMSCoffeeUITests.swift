@@ -516,6 +516,36 @@ final class AMSCoffeeUITests: XCTestCase {
         XCTAssertEqual(line.label, "Last backup file: today")
     }
 
+    /// Test 20 (2.8) — the roast level is offered too, and a box filled
+    /// from the label says "from the label" until you change it.
+    func testABoxFilledFromTheLabelIsMarkedUntilYouChangeIt() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-uiTesting"]
+        app.launchEnvironment["LABEL_LINES"] =
+            "Little Owl Rosteri|Kiamaina AA|Kenya|Ljusrost|250 g"
+        app.launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+
+        tap(app, "tab-bags")
+        tap(app, "bags-add")
+        tap(app, "bag-label-suggest-roastlevel")
+        XCTAssertEqual(app.textFields["bag-roastlevel"].value as? String, "Light")
+        XCTAssertTrue(waitFor(app, "bag-roastlevel-from-label"), "marked")
+        tap(app, "bag-label-suggest-name")
+        XCTAssertTrue(waitFor(app, "bag-name-from-label"), "marked")
+        XCTAssertTrue(absent(app, "bag-roaster-from-label"), "not used, not marked")
+
+        // The offers push the boxes down behind the Save bar; bring the
+        // name box up before typing.
+        let name = app.textFields["bag-name"]
+        app.scrollViews.firstMatch.swipeUp()
+        name.tap()
+        name.typeText(" No 2")
+        dismissKeyboard(app)
+        XCTAssertTrue(absent(app, "bag-name-from-label"), "changed by hand, so no longer marked")
+        XCTAssertTrue(waitFor(app, "bag-roastlevel-from-label"), "the other box keeps its mark")
+    }
+
     /// The number in the Total time dial, read back out of the field.
     private func seconds(_ app: XCUIApplication) -> Double {
         let field = app.textFields["shot-seconds"]

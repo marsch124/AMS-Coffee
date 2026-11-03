@@ -5,7 +5,7 @@ identifier, never by the words on it**, and every test is seen failing before
 it is believed. The suite runs in CI on every push, and a red run blocks the
 release.
 
-As of 2.7: **127 checks of the rules** (`Tests/`) and **19 of the screens**
+As of 2.8: **133 checks of the rules** (`Tests/`) and **20 of the screens**
 (`UITests/`).
 
 ## What the rule tests guard
@@ -28,6 +28,7 @@ As of 2.7: **127 checks of the rules** (`Tests/`) and **19 of the screens**
 | Same again, search (2.6) | the newest green brew only; a new brew, untasted; light words; month, year, today, yesterday; several words together |
 | Dials (2.6) | a four-digit number is written without a thousands space on a Swedish phone, and the box is wide enough |
 | Label name and process (2.7) | process in three languages, two together, whole words only, never from a tasting-notes line, but read from a spec line that opens with it; name only when one line is plainly left, or one is clearly taller; weights, whole bean, profile words, addresses and dates are never names; shouted names read naturally; never offered for a filled field |
+| Roast level, from the label (2.8) | roast level in three languages and the Swedish compounds; never from a flavour or body word; a roast line is never the name; only for an empty box; the mark shows while the box holds what the label gave and goes once it is changed; a roast date only on the same day |
 | Last backup file (2.7) | plain words from today to months; the date travels in the file and an old file still opens; phone and Mac keep the later; only a proved save sets it and a restore never winds it back |
 | Asking outright | sour and bitter disagree; lovely changes nothing; the old taste cannot steer a new question; every method answers every complaint |
 

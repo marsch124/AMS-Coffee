@@ -114,7 +114,10 @@ for a bag moved over time so I can see where it is heading."*
 
 ## The editor
 
-Every field, then **Save** and **Cancel**; Remove is one calm red, last, and
+Every field — roaster (`bag-roaster`), name (`bag-name`), origin
+(`bag-origin`), process (`bag-process`) and, from 2.8, roast
+(`bag-roastlevel`, *Roast (light, medium, dark…)*, stored in the long-existing
+`Bean.roastLevel` that had no box before) — then **Save** and **Cancel**; Remove is one calm red, last, and
 asks first (`bag-rinse-confirm`). Roast date is behind a switch
 (`bag-has-roastdate` → `bag-roastdate`) so a bag without one stays clean.
 Flavours are tapped words (`flavour-<name>`), never emoji. Verdict is
@@ -130,13 +133,13 @@ chosen is read — opening a bag with a photo reads nothing.
 
 - While reading: *Reading the label…* (`bag-label-reading`).
 - Nothing usable: one quiet line, *Nothing on this label I could read as a
-  name, roaster, origin, process or roast date.* (`bag-label-nothing`).
+  name, roaster, origin, process, roast or roast date.* (`bag-label-nothing`).
 - Otherwise *From the label — tap to use* (`bag-label-suggestions`) with one
   full-width row per suggestion and a **Use** pill:
   `bag-label-suggest-name` (2.7), `-roaster`, `-origin`, `-process` (2.7),
-  `-roastdate`.
+  `-roastlevel` (2.8), `-roastdate`.
 - **Never overwrites.** `LabelSuggestion.offered(for:hasRoastDate:)` offers a
-  name, roaster, origin or process only while that field is blank (spaces count as blank),
+  name, roaster, origin, process or roast only while that field is blank (spaces count as blank),
   and a roast date only while the switch is off. Typing in a field makes its
   row disappear; tapping Use fills it (the date also turns the switch on).
 
@@ -180,6 +183,23 @@ The rules (pure, tested):
   all-capitals name is put in title case, with grades (*AA*, *AB*, *PB*) and
   words with digits (*SL28*) kept as they are; a name in mixed case is kept
   exactly.
+- **Roast level** (2.8): *Light*, *Medium-light*, *Medium*, *Medium-dark*,
+  *Dark*, from English, Swedish or German (*ljusrost*, *helle Röstung* →
+  Light; *mellanrost*, *mittlere Röstung* → Medium; *mörkrost*, *dunkle
+  Röstung* → Dark; *medium light*, *medium dark*). Because light, medium and
+  dark are also flavour and body words, a level counts only on a line that
+  speaks of roasting (*roast*, *rost*, *Röstung*, *level*, or a Swedish
+  compound like *ljusrost*) or when it stands alone on its line; tasting-notes
+  lines are skipped. *Dark chocolate* and *light and juicy* give nothing. A
+  roast line is never the name.
+- **From the label** (2.8): tapping Use records the value in `LabelFills`
+  (in `LabelReader.swift`). While a box still holds exactly that value
+  (spaces ignored), `FatField(fromLabel:)` shows *from the label* in 15 pt
+  bubblegum beside its title — `bag-name-from-label`, `bag-roaster-…`,
+  `bag-origin-…`, `bag-process-…`, `bag-roastlevel-from-label`; a roast date
+  shows `bag-roastdate-from-label` beside the date while it is the same day.
+  Editing the box removes the mark. It lives only in the editor and is not
+  stored.
 - Under `-uiTesting`, the words come from the `LABEL_LINES` environment value
   (separated by `|`) when a new bag opens.
 

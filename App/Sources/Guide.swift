@@ -12,10 +12,22 @@ struct Release: Identifiable {
 
 enum Guide {
 
-    static let appVersion = "2.7"
+    static let appVersion = "2.8"
 
     /// Newest first. Every release adds an entry — never edits an old one.
     static let releases: [Release] = [
+        Release(version: "2.8", date: "2026-11-03",
+                headline: "The roast from the label, and a mark on what it filled",
+                lines: [
+                    "NEW — Reading the label now also offers the roast: Light, Medium-light, Medium, Medium-dark or Dark, with its own Use button, next to the name, roaster, origin, process and roast date.",
+                    "It understands English, Swedish and German — Ljusrost and helle Röstung become Light, Mellanrost and mittlere Röstung become Medium, Mörkrost and dunkle Röstung become Dark — and always writes it in plain English.",
+                    "Light, medium and dark are also words for flavours and body, so the roast is only read from a line that talks about roasting (\"Light roast\", \"Roast: medium\", \"Ljusrost\") or where the word stands alone. \"Dark chocolate\" or \"light and juicy\" are never taken for a roast.",
+                    "NEW — A Roast box on the bag. The app could already keep a bag's roast, but there was nowhere to type it. Now there is one, under Process, so you can fill it in yourself too.",
+                    "NEW — \"from the label\". When you tap Use, the box it fills says \"from the label\" in small pink letters beside its title, so you can see at a glance what came off the photo and give it a quick look. The roast date gets the same mark beside the date.",
+                    "Change the box by hand and the mark goes away — from then on it is yours. Boxes you typed yourself never get the mark. The mark is only there while you are adding the bag; it is not saved with it.",
+                    "CHANGED — when the label gives nothing useful, the quiet line now also mentions the roast.",
+                    "Tests: 133 checks of the rules and 20 of the screens — 6 new rule checks and 1 new screen check, each seen failing before the feature existed.",
+                ]),
         Release(version: "2.7", date: "2026-11-03",
                 headline: "Name and process from the label",
                 lines: [
@@ -204,8 +216,10 @@ enum Guide {
 
                 Reading the label: take or choose a photo of a new bag and \
                 the phone reads it — no internet. It offers the name of the \
-                bean, the roaster, the origin, the process and the roast date \
-                it found, each with a Use button. The process is always in \
+                bean, the roaster, the origin, the process, the roast and the \
+                roast date it found, each with a Use button. A box filled this \
+                way says "from the label" beside its title until you change \
+                it, so you can see what came off the photo. The process is always in \
                 plain English, even from a Swedish or German bag, and a \
                 flavour like honey is never taken for one. The name is only \
                 offered when one line is plainly the name — otherwise it \
@@ -399,7 +413,7 @@ enum Guide {
         Chapter(title: "Coming next",
                 body: """
                 Everything from the list you picked in September is now in, \
-                and the label reader now knows the name and the process too. \
+                and the label reader now knows the name, process and roast too. \
                 Next: a proper look at the Mac app as a Mac app — windows, \
                 keyboard, and the backup file on a USB stick.
                 """),

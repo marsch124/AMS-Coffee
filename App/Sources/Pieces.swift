@@ -208,12 +208,18 @@ struct FatField: View {
     @Binding var text: String
     var tint: Color = Candy.blueberry
     let identifier: String
+    /// Says "from the label" beside the title (2.8) — read off a photo, so
+    /// worth a glance. It goes once the box is changed by hand.
+    var fromLabel = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label)
-                .font(.system(size: 16, weight: .heavy, design: .rounded))
-                .foregroundStyle(Candy.inkSoft)
+            // Beside the title when both fit on one line; under it when
+            // the title is long, so the title never breaks in two.
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) { title; mark }
+                VStack(alignment: .leading, spacing: 0) { title; mark }
+            }
             TextField(label, text: $text)
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .textFieldStyle(.plain)
@@ -225,6 +231,31 @@ struct FatField: View {
                     .strokeBorder(tint.opacity(0.45), lineWidth: 2))
                 .accessibilityIdentifier(identifier)
         }
+    }
+
+    private var title: some View {
+        Text(label)
+            .font(.system(size: 16, weight: .heavy, design: .rounded))
+            .foregroundStyle(Candy.inkSoft)
+            .fixedSize()
+    }
+
+    @ViewBuilder private var mark: some View {
+        if fromLabel {
+            FromLabelMark(identifier: "\(identifier)-from-label").fixedSize()
+        }
+    }
+}
+
+/// The quiet "from the label" mark beside a box filled from a photo (2.8).
+struct FromLabelMark: View {
+    let identifier: String
+
+    var body: some View {
+        Text("from the label")
+            .font(.system(size: 15, weight: .heavy, design: .rounded))
+            .foregroundStyle(Candy.bubblegum)
+            .accessibilityIdentifier(identifier)
     }
 }
 

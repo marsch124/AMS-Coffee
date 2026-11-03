@@ -32,7 +32,7 @@ they still open.
 | `id` | UUID | new | |
 | `roaster` | String | `""` | shown upper-cased on the card |
 | `name` | String | `""` | |
-| `origin`, `process`, `roastLevel` | String | `""` | |
+| `origin`, `process`, `roastLevel` | String | `""` | `roastLevel` gets a box in the editor from 2.8 |
 | `roastDate` | Date? | nil | drives freshness — see [beans.md](beans.md) |
 | `bagWeightGrams` | Double | 250 | 0 means "not entered": never counted down |
 | `priceSEK` | Double | 0 | stored, never totalled or shown as a total |

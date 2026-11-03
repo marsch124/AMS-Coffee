@@ -21,9 +21,11 @@ struct LabelSuggestion: Equatable {
     var roastDate: Date?
     var name: String?
     var process: String?
+    var roastLevel: String?
 
     var isEmpty: Bool {
         roaster == nil && origin == nil && roastDate == nil && name == nil && process == nil
+            && roastLevel == nil
     }
 
     /// Only what would fill an EMPTY field. Something typed is never offered
@@ -34,7 +36,33 @@ struct LabelSuggestion: Equatable {
                                origin: blank(bean.origin) ? origin : nil,
                                roastDate: hasRoastDate ? nil : roastDate,
                                name: blank(bean.name) ? name : nil,
-                               process: blank(bean.process) ? process : nil)
+                               process: blank(bean.process) ? process : nil,
+                               roastLevel: blank(bean.roastLevel) ? roastLevel : nil)
+    }
+}
+
+/// The boxes a label can fill.
+enum LabelField: String { case name, roaster, origin, process, roastLevel }
+
+/// What was filled from the label (2.8), so the box can say "from the
+/// label" — until you change it, when it is yours.
+struct LabelFills {
+    private var values: [LabelField: String] = [:]
+    private var day: Date?
+
+    private func clean(_ s: String) -> String { s.trimmingCharacters(in: .whitespaces) }
+
+    mutating func filled(_ field: LabelField, with value: String) { values[field] = clean(value) }
+    mutating func filled(_ day: Date) { self.day = day }
+
+    func shows(_ field: LabelField, current: String) -> Bool {
+        guard let v = values[field], !v.isEmpty else { return false }
+        return v == clean(current)
+    }
+
+    func shows(_ day: Date) -> Bool {
+        guard let mine = self.day else { return false }
+        return Calendar.current.isDate(mine, inSameDayAs: day)
     }
 }
 
@@ -56,7 +84,8 @@ enum LabelReader {
                                origin: origin(in: texts),
                                roastDate: roastDate(in: texts, now: now),
                                name: name(in: kept, now: now),
-                               process: process(in: texts))
+                               process: process(in: texts),
+                               roastLevel: roastLevel(in: texts))
     }
 
     /// The line as whole words: letters and digits kept, everything else a
@@ -149,6 +178,43 @@ enum LabelReader {
         return nil
     }
 
+    // MARK: Roast level (2.8)
+    //
+    // Light, medium and dark are also words for flavours and body ("dark
+    // chocolate", "light and juicy"), so a level only counts on a line that
+    // speaks of roasting, or standing alone on its line.
+
+    private static let roastLevels: [(String, [String])] = [
+        ("Medium-light", ["medium light", "light medium", "ljus mellan", "mellanljus"]),
+        ("Medium-dark", ["medium dark", "dark medium", "mellanmork", "mork mellan"]),
+        ("Light", ["light", "ljus", "ljusrost", "ljusrostat", "ljusrostad", "hell", "helle",
+                   "heller", "hellen"]),
+        ("Medium", ["medium", "mellan", "mellanrost", "mellanrostat", "mellanrostad",
+                    "mittel", "mittlere", "mittlerer", "mittleren"]),
+        ("Dark", ["dark", "mork", "morkrost", "morkrostat", "morkrostad", "dunkel", "dunkle",
+                  "dunkler", "dunklen"]),
+    ]
+
+    /// Words that say the line is about the roast. Swedish runs it together
+    /// with the level ("ljusrost"), which is in the list above.
+    private static let roastingWords = ["roast", "rost", "rostgrad", "rostning", "rostung",
+                                        "rostungsgrad", "level"]
+
+    static func roastLevel(in lines: [String]) -> String? {
+        for line in lines where !isNotesLine(line) {
+            let w = words(line)
+            let trimmed = w.trimmingCharacters(in: .whitespaces)
+            // "Roasted 12.10.2026" speaks of roasting but names no level.
+            for (level, spellings) in roastLevels {
+                guard let s = spellings.first(where: { w.contains(" \($0) ") }) else { continue }
+                let compound = s.hasSuffix("rost") || s.contains("rostat") || s.contains("rostad")
+                let roasting = roastingWords.contains { w.contains(" \($0) ") }
+                if compound || roasting || trimmed == s { return level }
+            }
+        }
+        return nil
+    }
+
     // MARK: Name (2.7)
     //
     // A wrong name is worse than none, so this strikes out every line that
@@ -163,7 +229,8 @@ enum LabelReader {
         "producent", "farmer", "region", "harvest", "skord", "ernte", "process",
         "processing", "aufbereitung", "bearbetning", "ingredients", "ingredienser",
         "roast", "roasted", "rostad", "rostat", "geröstet", "geroestet", "gerostet",
-        "www", "http", "https", "instagram",
+        "www", "http", "https", "instagram", "ljusrost", "mellanrost", "morkrost",
+        "rostung", "rostgrad",
     ]
 
     private static let profileOnly: Set<String> = [
