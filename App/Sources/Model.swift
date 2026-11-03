@@ -204,6 +204,26 @@ struct Bean: Identifiable, Codable, Equatable {
     /// The Sink. Nothing is ever hard-deleted from under you.
     var rinsedAt: Date?
 
+    /// "Light roast" for the card (2.9). A roast that already says roast —
+    /// "Light roast", "Ljusrost", "Helle Röstung" — stays as typed; an empty
+    /// one says nothing at all.
+    var roastCardText: String? {
+        let r = roastLevel.trimmingCharacters(in: .whitespaces)
+        guard !r.isEmpty else { return nil }
+        let folded = BrewSearch.fold(r)
+        if ["roast", "rost"].contains(where: { folded.contains($0) }) { return r }
+        return r.prefix(1).uppercased() + r.dropFirst() + " roast"
+    }
+
+    /// The quiet line under the bag's name: "Kenya · Washed · Light roast",
+    /// each part only when it is filled in.
+    var cardDetails: String? {
+        let parts = [origin.trimmingCharacters(in: .whitespaces),
+                     process.trimmingCharacters(in: .whitespaces),
+                     roastCardText ?? ""].filter { !$0.isEmpty }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
     var displayName: String {
         let n = name.trimmingCharacters(in: .whitespaces)
         let r = roaster.trimmingCharacters(in: .whitespaces)

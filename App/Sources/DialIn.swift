@@ -129,7 +129,12 @@ enum BrewSearch {
     }
 
     static func words(_ query: String) -> [String] {
-        fold(query).split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        var q = " " + fold(query) + " "
+        // "medium dark" typed as two words is the one level, not two.
+        for (two, one) in [("medium dark", "medium-dark"), ("medium light", "medium-light")] {
+            q = q.replacingOccurrences(of: " \(two) ", with: " \(one) ")
+        }
+        return q.split(whereSeparator: { $0.isWhitespace }).map(String.init)
     }
 
     static func matches(_ shot: Shot, bean: Bean?, query: String, now: Date = Date()) -> Bool {
@@ -143,7 +148,45 @@ enum BrewSearch {
         parts += lightWords(shot.light)
         parts += dateWords(shot.date, now: now)
         let haystack = fold(parts.joined(separator: " "))
-        return wanted.allSatisfy { haystack.contains($0) }
+        let roast = roastWords(bean?.roastLevel ?? "")
+        return wanted.allSatisfy { haystack.contains($0) || roast.contains($0) }
+    }
+
+    // MARK: The bag's roast (2.9)
+    //
+    // The roast is matched as a whole word, never as part of one: "dark"
+    // finds a dark bag, not a medium-dark one. Medium-dark is its own step
+    // on the scale — the bag says so — and typing "medium dark" finds it.
+
+    private static let levelWords: [String: [String]] = [
+        "Light": ["light", "ljus", "ljusrost", "ljusrostat", "ljusrostad",
+                  "hell", "helle", "heller", "hellen"],
+        "Medium-light": ["medium-light", "mellanljus"],
+        "Medium": ["medium", "mellan", "mellanrost", "mellanrostat", "mellanrostad",
+                   "mittel", "mittlere", "mittlerer", "mittleren"],
+        "Medium-dark": ["medium-dark", "mellanmork"],
+        "Dark": ["dark", "mork", "morkrost", "morkrostat", "morkrostad",
+                 "dunkel", "dunkle", "dunkler", "dunklen"],
+    ]
+
+    /// Any roast filled in also answers to the word roast itself.
+    private static let roastingWords: Set<String> = ["roast", "rost", "rostung", "rostning",
+                                                     "rostgrad"]
+
+    /// Every whole word a bag's roast answers to, in English, Swedish and
+    /// German — read the same way the label reader reads a label, so
+    /// "Ljusrost" typed by hand answers to "light" too.
+    static func roastWords(_ roast: String) -> Set<String> {
+        let typed = fold(roast).map { $0.isLetter || $0 == "-" ? $0 : " " }
+        let words = Set(String(typed).split(separator: " ").map(String.init))
+        guard !words.isEmpty else { return [] }
+        // A known level answers to its own words only — "medium dark"
+        // typed with a space must not answer to "dark". Anything else
+        // ("Omni") answers to what was typed.
+        if let level = LabelReader.roastLevel(in: [roast]), let known = levelWords[level] {
+            return roastingWords.union(known)
+        }
+        return roastingWords.union(words)
     }
 
     /// The colour and the word the light picker shows.

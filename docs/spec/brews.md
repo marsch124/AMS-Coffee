@@ -125,6 +125,26 @@ Escape clears it.
   English whatever the phone's language (*October Oct 2026*), plus *today* or
   *yesterday* when it is (`BrewSearch.dateWords`, `now` passed in so tests
   are fixed). So *kenya green october* finds exactly that.
+- **Its bag's roast (2.9):** `BrewSearch.roastWords` gives the words a bag's
+  roast answers to, and `BrewSearch.words` adds them to the brew's text.
+  - Levels: *light, medium, dark, medium-light, medium-dark*, plus Swedish
+    (*ljusrost, mellanrost, mörkrost, ljus, mellan, mörk, mellanljus,
+    mellanmörk*) and German (*hell/helle, mittel/mittlere, dunkel/dunkle*, with
+    *Röstung*).
+  - A roast typed by hand in any of these languages answers to all of them:
+    *Ljusrost* is found by *light*.
+  - The word *roast* / *rost* / *Röstung* matches any bag that has a roast
+    filled in.
+  - **The roast matches as a WHOLE word:** *dark* does not find medium-dark,
+    *medium* does not find medium-dark, *light* does not find medium-light.
+    Medium-dark is its own step on the scale and the bag says so; letting
+    *dark* return medium-dark bags would bury the truly dark ones. *medium
+    dark* (two words) or *medium-dark* finds them; two words typed that way
+    count as the one level.
+  - Every word typed must still match somewhere (*kenya light*).
+  - The *Nothing matches* hint (`brews-search-empty`) now mentions roast.
+  - Tests: `Release29Tests` (rules) and `testSearchFindsABrewByItsBagsRoast`
+    (screen test 22).
 - **Words:** the query is split on whitespace; **every** word must appear
   somewhere in that text. An empty or all-space query matches everything.
 - **Case and accents never matter** — both sides are folded with

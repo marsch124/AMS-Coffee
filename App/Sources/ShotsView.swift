@@ -83,7 +83,7 @@ struct ShotsView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Nothing matches \u{201C}\(query.trimmingCharacters(in: .whitespaces))\u{201D}")
                             .font(.system(size: 20, weight: .black, design: .rounded))
-                        Text("Search looks at the bag, its roaster and origin, the way you made it, your notes, its light (green, amber, red) and when it was made (October, 2026, yesterday). Every word has to turn up somewhere.")
+                        Text("Search looks at the bag, its roaster, origin and roast (light, medium-dark, ljusrost…), the way you made it, your notes, its light (green, amber, red) and when it was made (October, 2026, yesterday). Every word has to turn up somewhere.")
                             .font(.system(size: 17, weight: .medium, design: .rounded))
                     }
                 }

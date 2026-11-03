@@ -12,10 +12,24 @@ struct Release: Identifiable {
 
 enum Guide {
 
-    static let appVersion = "2.8"
+    static let appVersion = "2.9"
 
     /// Newest first. Every release adds an entry — never edits an old one.
     static let releases: [Release] = [
+        Release(version: "2.9", date: "2026-11-03",
+                headline: "The roast on the bag card, and search by roast",
+                lines: [
+                    "NEW — a bag in the Beans list now shows one quiet line under its name: where it is from, how it was processed and how it was roasted, for example \"Colombia · Anaerobic natural · Medium-light roast\". Before, the card showed none of these.",
+                    "The line is in the bag's own colour, in bold. Each part is only there when you have filled it in, and a bag with none of the three has no line at all, so nothing is left empty or looks odd.",
+                    "A roast of \"Light\" reads \"Light roast\" on the card. A roast that already says roast — \"Light roast\", \"Ljusrost\", \"Helle Röstung\" — is shown exactly as you typed it.",
+                    "NEW — the Brews search now finds a brew by its bag's roast. Type light, medium, dark, medium-light or medium-dark. It also understands Swedish (ljusrost, mellanrost, mörkrost, ljus, mellan, mörk, mellanljus, mellanmörk) and German (hell, helle, mittel, mittlere, dunkel, dunkle, with or without Röstung).",
+                    "The word roast itself (or rost, or Röstung) finds every brew whose bag has a roast filled in.",
+                    "A roast you typed by hand in any of these languages answers to all of them: a bag with \"Ljusrost\" is found by \"light\", and a bag with \"Light\" by \"ljusrost\" or \"helle\".",
+                    "The roast must match as a whole word, on purpose. \"dark\" does not find medium-dark bags, \"medium\" does not find medium-dark, and \"light\" does not find medium-light. Medium-dark is its own step on the scale, and the bag says so; if \"dark\" also brought back medium-dark bags, the truly dark ones would be buried. To find those, type \"medium dark\" or \"medium-dark\" — two words count as the one level.",
+                    "As always, every word you type still has to turn up somewhere, so \"kenya light\" finds the light-roast Kenyan brews.",
+                    "CHANGED — the \"Nothing matches\" hint now also says that search looks at the bag's roast.",
+                    "Tests: 140 checks of the rules and 22 of the screens — 7 new rule checks and 2 new screen checks (the roast line on the card, and finding a brew by its bag's roast), each seen failing before the feature existed.",
+                ]),
         Release(version: "2.8", date: "2026-11-03",
                 headline: "The roast from the label, and a mark on what it filled",
                 lines: [
@@ -197,6 +211,13 @@ enum Guide {
                 weeks, then fading, then past it. A bag with no roast date says \
                 nothing rather than guessing.
 
+                Under the bag's name, in the bag's own colour, one quiet line \
+                says where it is from, how it was processed and how it was \
+                roasted — "Colombia · Anaerobic natural · Medium-light roast". \
+                Each part only shows if you filled it in, and a bag with none \
+                of them has no line. A roast of "Light" reads "Light roast"; \
+                one that already says roast is shown as you typed it.
+
                 The bag also shows which ways you have made it, and keeps a \
                 separate recipe for each one.
 
@@ -275,6 +296,15 @@ enum Guide {
                 drinkable, red or tipped — and when it was made: the month \
                 (October or Oct), the year, today and yesterday. So "kenya \
                 green october" finds the lovely Kenyan brews of October.
+
+                And its bag's roast: light, medium, dark, medium-light or \
+                medium-dark — also in Swedish (ljusrost, mellanrost, \
+                mörkrost) and German (helle, mittlere, dunkle Röstung). A roast \
+                you typed in one language is found in all of them, and the word \
+                roast finds every bag with a roast filled in. The roast matches \
+                as a whole word: "dark" finds dark bags, not medium-dark ones — \
+                for those type "medium dark". So "kenya light" finds the \
+                light-roast Kenyan brews.
                 """),
         Chapter(title: "The coach",
                 body: """

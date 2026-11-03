@@ -546,6 +546,66 @@ final class AMSCoffeeUITests: XCTestCase {
         XCTAssertTrue(waitFor(app, "bag-roastlevel-from-label"), "the other box keeps its mark")
     }
 
+    // MARK: 2.9
+
+    /// A bag filled from an invented label: Kenya, washed, light roast.
+    private func addKenyaBag(_ app: XCUIApplication) {
+        tap(app, "tab-bags")
+        tap(app, "bags-add")
+        tap(app, "bag-label-suggest-name")
+        tap(app, "bag-label-suggest-origin")
+        tap(app, "bag-label-suggest-process")
+        tap(app, "bag-label-suggest-roastlevel")
+        tap(app, "bag-save")
+    }
+
+    private func launchWithLabel() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments += ["-uiTesting"]
+        app.launchEnvironment["LABEL_LINES"] =
+            "Little Owl Rosteri|Kiamaina AA|Kenya|Tvättad|Ljusrost|250 g"
+        app.launch()
+        return app
+    }
+
+    /// Test 21 (2.9) — the bag's card says its roast beside the origin
+    /// and process; a bag with no roast says nothing about it.
+    func testABagCardShowsItsRoast() {
+        let app = launchWithLabel()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+        addKenyaBag(app)
+        let line = app.staticTexts["bag-details-0"]
+        XCTAssertTrue(line.waitForExistence(timeout: 15))
+        XCTAssertEqual(line.label, "Kenya · Washed · Light roast")
+
+        addBag(app, named: "No roast here")
+        XCTAssertTrue(waitFor(app, "bag-row-1"))
+        // The newer bag sorts first, so count the lines rather than guess a row.
+        let lines = app.staticTexts.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'bag-details-'"))
+        XCTAssertEqual(lines.count, 1, "nothing filled in, no line")
+        XCTAssertEqual(lines.firstMatch.label, "Kenya · Washed · Light roast")
+    }
+
+    /// Test 22 (2.9) — the Brews search finds a brew by its bag's roast,
+    /// in Swedish too; "dark" does not find a light bag; every word counts.
+    func testSearchFindsABrewByItsBagsRoast() {
+        let app = launchWithLabel()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+        addKenyaBag(app)
+        logBrew(app)
+        XCTAssertTrue(waitFor(app, "shot-row-0"))
+
+        let field = app.textFields["brews-search"]
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+        field.tap()
+        field.typeText("kenya light")
+        XCTAssertTrue(waitFor(app, "shot-row-0"), "found by origin and roast")
+
+        field.typeText(" mörkrost")
+        XCTAssertTrue(waitFor(app, "brews-search-empty"), "a light bag is not dark")
+    }
+
     /// The number in the Total time dial, read back out of the field.
     private func seconds(_ app: XCUIApplication) -> Double {
         let field = app.textFields["shot-seconds"]

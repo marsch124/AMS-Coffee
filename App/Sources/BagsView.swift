@@ -74,6 +74,12 @@ struct BagCard: View {
                         Text(bean.displayName)
                             .font(.system(size: 25, weight: .black, design: .rounded))
                             .foregroundStyle(Candy.ink)
+                        if let details = bean.cardDetails {
+                            Text(details)
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .foregroundStyle(tint)
+                                .accessibilityIdentifier("bag-details-\(index)")
+                        }
                     }
                     Spacer()
                     VerdictMark(verdict: bean.verdict, size: 32)

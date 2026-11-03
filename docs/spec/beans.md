@@ -11,6 +11,21 @@ Photo if there is one · roaster upper-cased · name · a grams-left bar · then
 chips. `index` exists on the card only so its chips can carry distinct
 identifiers.
 
+### The details line (2.9, `bag-details-<index>`)
+
+One quiet line under the name: **origin · process · roast**, e.g.
+*Colombia · Anaerobic natural · Medium-light roast*. 17 pt bold, in the bag's
+own colour. Before 2.9 the card showed neither origin nor process.
+
+- `Bean.cardDetails` joins the parts that are filled in with ` · `; each part
+  is trimmed and skipped when empty. Nothing filled in → **no line at all**
+  (no `bag-details-<index>` element).
+- `Bean.roastCardText` writes the roast: *Light* → *Light roast*. A roast that
+  already says roast (*Light roast*, *Ljusrost*, *Helle Röstung*) stays as
+  typed.
+- Test: `testABagCardShowsItsRoast` (screen test 21) finds
+  `bag-details-<index>` by identifier.
+
 ### Chips
 
 | Chip | Identifier | Example |
