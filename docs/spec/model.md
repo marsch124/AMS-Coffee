@@ -16,6 +16,15 @@ one written today will still open in a version nobody has written yet.
 `OldFileTests` holds a verbatim 1.0 file and a verbatim 1.0 cup and asserts
 they still open.
 
+## `CoffeeData` — the whole file
+
+| Field | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `schema` | Int | 2 (1 when missing) | |
+| `beans`, `shots`, `purchases` | arrays | `[]` | |
+| `savedAt` | Date | now | |
+| `lastBackupFileAt` (2.7) | Date? | nil | when a backup file was last saved **and proved**; merging keeps the later, a restore never winds it back — see [cups.md](cups.md) |
+
 ## `Bean` — a bag of beans
 
 | Field | Type | Default | Notes |

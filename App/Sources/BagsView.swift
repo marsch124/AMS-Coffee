@@ -305,7 +305,7 @@ extension BagEditor {
                 .foregroundStyle(Candy.inkSoft)
                 .accessibilityIdentifier("bag-label-reading")
         case .nothing:
-            Text("No roaster, origin or roast date I could read on this one.")
+            Text("Nothing on this label I could read as a name, roaster, origin, process or roast date.")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
                 .foregroundStyle(Candy.inkSoft)
                 .accessibilityIdentifier("bag-label-nothing")
@@ -316,11 +316,17 @@ extension BagEditor {
                     Text("From the label — tap to use")
                         .font(.system(size: 16, weight: .heavy, design: .rounded))
                         .foregroundStyle(Candy.inkSoft)
+                    if let n = offer.name {
+                        suggestion("Name of the bean", n, "bag-label-suggest-name") { bean.name = n }
+                    }
                     if let r = offer.roaster {
                         suggestion("Roaster", r, "bag-label-suggest-roaster") { bean.roaster = r }
                     }
                     if let o = offer.origin {
                         suggestion("Origin", o, "bag-label-suggest-origin") { bean.origin = o }
+                    }
+                    if let p = offer.process {
+                        suggestion("Process", p, "bag-label-suggest-process") { bean.process = p }
                     }
                     if let d = offer.roastDate {
                         suggestion("Roasted on",

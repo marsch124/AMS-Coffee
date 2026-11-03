@@ -59,6 +59,10 @@ struct SettingsView: View {
                     Text("Every bag, every brew and all your kit in one file you name and keep anywhere — proved by being opened again before it gets its tick.")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
                     BackupButtons(prefix: "settings")
+                    Text(BackupFile.lastSavedLine(store.data.lastBackupFileAt))
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(Candy.inkSoft)
+                        .accessibilityIdentifier("settings-last-backup")
                 }
             }
 

@@ -12,10 +12,25 @@ struct Release: Identifiable {
 
 enum Guide {
 
-    static let appVersion = "2.6"
+    static let appVersion = "2.7"
 
     /// Newest first. Every release adds an entry — never edits an old one.
     static let releases: [Release] = [
+        Release(version: "2.7", date: "2026-11-03",
+                headline: "Name and process from the label",
+                lines: [
+                    "NEW — Reading the label now also offers the bean's name and its process. Take or choose a photo of a new bag and, next to the roaster, origin and roast date, you may now see Name of the bean and Process, each with its own Use button.",
+                    "The process is understood in English, Swedish and German and always written in plain English: Tvättad and gewaschen become Washed, naturlig and Natur become Natural, honung becomes Honey, and you also get Anaerobic, Wet-hulled and Carbonic maceration. Two together read as one, such as Anaerobic natural.",
+                    "A flavour is never mistaken for a process. If the label says \"Notes: honey, peach\", or lists flavours one after another, that line is left alone (a line like \"Tvättad · SL28 · SL34\" that starts with the process is still read) — so a honey-sweet washed coffee is not called Honey.",
+                    "The name is offered carefully, because a wrong guess is worse than none. Everything that is clearly something else is set aside first: the roaster, the country, any date, the process, the weight, Whole bean, tasting notes, web addresses and words like Espresso or Filter on their own. If exactly one line is left, that is the name. If several are left, the name is only offered when one stands clearly taller on the bag than all the others. Otherwise nothing is offered and you type it as before.",
+                    "A name written in capitals is shown the way you would write it — KIAMAINA AA becomes Kiamaina AA, keeping grades like AA and varieties like SL28 as they are.",
+                    "As always, nothing is filled in behind your back: the name and process are only offered while their boxes are empty, and typing in a box makes its suggestion go away.",
+                    "NEW — Settings now says when you last saved a backup file, in one quiet line under the backup buttons: \"Last backup file: 3 days ago\" (or today, yesterday, a few weeks or months ago). Before the first one it simply says \"No backup file saved yet\". It is never a warning and never nags.",
+                    "Only a backup file that proved itself counts — saved, opened again and counted. A save that was cancelled or came back wrong changes nothing.",
+                    "The date travels with your coffee, so the phone and the Mac both show the same line, and the later save wins. Opening an older backup or pouring back a cup never turns it back to an earlier date.",
+                    "CHANGED — when the label gives nothing useful, the quiet line now reads \"Nothing on this label I could read as a name, roaster, origin, process or roast date.\"",
+                    "Tests: 127 checks of the rules and 19 of the screens — 12 new rule checks and 2 new screen checks, each seen failing before the feature existed.",
+                ]),
         Release(version: "2.6", date: "2026-11-03",
                 headline: "Read the bag, look after the kit, keep a file",
                 lines: [
@@ -188,8 +203,13 @@ enum Guide {
                 numbers of your best green one, and it says which brew that is.
 
                 Reading the label: take or choose a photo of a new bag and \
-                the phone reads it — no internet. It offers the roaster, the \
-                origin and the roast date it found, each with a Use button. \
+                the phone reads it — no internet. It offers the name of the \
+                bean, the roaster, the origin, the process and the roast date \
+                it found, each with a Use button. The process is always in \
+                plain English, even from a Swedish or German bag, and a \
+                flavour like honey is never taken for one. The name is only \
+                offered when one line is plainly the name — otherwise it \
+                offers nothing rather than guess. \
                 It only offers what would fill an empty box, never replaces \
                 something you typed, and never takes a best-before date for a \
                 roast date. If it finds nothing it says so quietly.
@@ -330,6 +350,11 @@ enum Guide {
                 tick. Open a backup shows what would change and keeps Before \
                 opening a backup first. Photos stay with the app; the file \
                 holds everything else.
+
+                Under the backup buttons in Settings one quiet line says when \
+                you last saved a backup file that proved itself — "Last \
+                backup file: 3 days ago" — or that there is none yet. The \
+                phone and the Mac show the same date.
                 """),
         Chapter(title: "Why old cups still open",
                 body: """
@@ -373,7 +398,8 @@ enum Guide {
                 """),
         Chapter(title: "Coming next",
                 body: """
-                Everything from the list you picked in September is now in. \
+                Everything from the list you picked in September is now in, \
+                and the label reader now knows the name and the process too. \
                 Next: a proper look at the Mac app as a Mac app — windows, \
                 keyboard, and the backup file on a USB stick.
                 """),

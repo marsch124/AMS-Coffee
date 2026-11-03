@@ -129,13 +129,14 @@ orientation respected). No internet. Only a photo that was just taken or
 chosen is read — opening a bag with a photo reads nothing.
 
 - While reading: *Reading the label…* (`bag-label-reading`).
-- Nothing usable: one quiet line, *No roaster, origin or roast date I could
-  read on this one.* (`bag-label-nothing`).
+- Nothing usable: one quiet line, *Nothing on this label I could read as a
+  name, roaster, origin, process or roast date.* (`bag-label-nothing`).
 - Otherwise *From the label — tap to use* (`bag-label-suggestions`) with one
   full-width row per suggestion and a **Use** pill:
-  `bag-label-suggest-roaster`, `-origin`, `-roastdate`.
+  `bag-label-suggest-name` (2.7), `-roaster`, `-origin`, `-process` (2.7),
+  `-roastdate`.
 - **Never overwrites.** `LabelSuggestion.offered(for:hasRoastDate:)` offers a
-  roaster or origin only while that field is blank (spaces count as blank),
+  name, roaster, origin or process only while that field is blank (spaces count as blank),
   and a roast date only while the switch is off. Typing in a field makes its
   row disappear; tapping Use fills it (the date also turns the switch on).
 
@@ -152,6 +153,33 @@ The rules (pure, tested):
   with *best*, *bäst*, *use by*, *exp*, *bbe*, *mhd*, *haltbar* is never read;
   a date after tomorrow or over a year back is not believed; a line saying
   *roast* / *rost(ad)* wins over a bare date.
+- **Process** (2.7): whole words only, in English, Swedish or German, returned
+  in plain English — *washed / fully washed / tvättad / gewaschen / lavado* →
+  Washed; *natural / naturlig / naturell / natur* → Natural; *honey / honung /
+  honig* → Honey; *anaerobic / anaerob / anaerobisk* → Anaerobic;
+  *wet-hulled / wet hulled / giling basah* → Wet-hulled; *carbonic maceration*
+  → Carbonic maceration. Two together read as one: *Anaerobic natural*. A
+  line that names tasting notes (*notes*, *tasting*, *smak*, *aroma*,
+  *geschmack*, *noter*) or lists three or more words between commas or dots
+  is skipped, so *honey* as a flavour is never read as the process — except
+  a spec line whose **first** item is nothing but a process (*Tvättad · SL28
+  · SL34*, *Natural, Heirloom, 2100 masl*); one opening with *Honey* must
+  also carry a number (a variety or altitude), which a flavour list does not.
+  *Naturally* and *unwashed* are not matches.
+- **Name** (2.7) — careful, because a wrong guess is worse than none. Every
+  line is struck out that is the roaster line, names a country, holds a date,
+  names a process, is a tasting-notes line, holds a weight (*250 g*, *1 kg*,
+  *12 oz*), is a web or mail address, says *whole bean / ground / hela bönor /
+  malet / ganze Bohne / gemahlen*, says *net*, *weight*, *vikt*, *best*,
+  *altitude*, *masl*, *variety*, *producer*, *region* and the like, or is only
+  a profile word (*Espresso*, *Filter*, *Omni*, *Coffee*, *Kaffe*,
+  *Single origin*, *Light/Medium/Dark roast*). What is left must be 3–40
+  characters with at least three letters and at most six words. Then: **one
+  line left → that is the name**; several → the tallest wins only when it
+  stands at least 1.3 times taller than every other; otherwise **nothing**. An
+  all-capitals name is put in title case, with grades (*AA*, *AB*, *PB*) and
+  words with digits (*SL28*) kept as they are; a name in mixed case is kept
+  exactly.
 - Under `-uiTesting`, the words come from the `LABEL_LINES` environment value
   (separated by `|`) when a new bag opens.
 

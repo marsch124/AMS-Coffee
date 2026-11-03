@@ -479,6 +479,43 @@ final class AMSCoffeeUITests: XCTestCase {
         XCTAssertTrue(absent(app, "shot-row-1"), "and the amber one is not")
     }
 
+    /// Test 18 (2.7) — the label also offers the bean's name and its
+    /// process, in plain English even when the bag says it in Swedish.
+    func testTheBagLabelOffersNameAndProcess() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-uiTesting"]
+        app.launchEnvironment["LABEL_LINES"] =
+            "Little Owl Rosteri|Kiamaina AA|Kenya|Tvättad|250 g"
+        app.launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+
+        tap(app, "tab-bags")
+        tap(app, "bags-add")
+        tap(app, "bag-label-suggest-name")
+        XCTAssertEqual(app.textFields["bag-name"].value as? String, "Kiamaina AA")
+        tap(app, "bag-label-suggest-process")
+        XCTAssertEqual(app.textFields["bag-process"].value as? String, "Washed")
+        XCTAssertTrue(absent(app, "bag-label-suggest-name"), "used, so not offered again")
+    }
+
+    /// Test 19 (2.7) — Settings says quietly when the last proved backup
+    /// file was saved, and says so plainly before there is one.
+    func testSettingsSaysWhenTheLastBackupFileWasSaved() {
+        let app = launch()
+        XCTAssertTrue(waitFor(app, "home-pull-shot"))
+        tap(app, "tab-settings")
+        let line = app.staticTexts["settings-last-backup"]
+        XCTAssertTrue(line.waitForExistence(timeout: 15))
+        XCTAssertEqual(line.label, "No backup file saved yet")
+
+        tap(app, "settings-backup")
+        tap(app, "backup-save")
+        XCTAssertTrue(waitFor(app, "backup-proved"))
+        tap(app, "backup-save")    // Done
+        XCTAssertTrue(line.waitForExistence(timeout: 15))
+        XCTAssertEqual(line.label, "Last backup file: today")
+    }
+
     /// The number in the Total time dial, read back out of the field.
     private func seconds(_ app: XCUIApplication) -> Double {
         let field = app.textFields["shot-seconds"]

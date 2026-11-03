@@ -25,6 +25,26 @@ enum BackupFile {
         return name
     }
 
+    /// The quiet line under the backup buttons (2.7). Plain words, never a
+    /// warning — it says when, and leaves the rest to you.
+    static func lastSavedLine(_ date: Date?, now: Date = Date()) -> String {
+        guard let date else { return "No backup file saved yet" }
+        let cal = Calendar.current
+        let days = cal.dateComponents([.day], from: cal.startOfDay(for: date),
+                                      to: cal.startOfDay(for: now)).day ?? 0
+        let when: String
+        switch days {
+        case ..<1:   when = "today"
+        case 1:      when = "yesterday"
+        case 2..<14: when = "\(days) days ago"
+        case 14..<60: when = "\(days / 7) weeks ago"
+        default:
+            let months = max(2, days / 30)
+            when = "\(months) months ago"
+        }
+        return "Last backup file: \(when)"
+    }
+
     static func encode(_ data: CoffeeData) throws -> Data {
         try JSONEncoder.coffee.encode(data)
     }

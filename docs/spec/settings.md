@@ -10,6 +10,7 @@ the morning screen stays a morning screen.
 | Your kit | `settings-kit` | equipment, with warranty warnings — and no totals |
 | The Sink | — | rinsed things, restorable for 30 days |
 | A backup file (2.6) | `settings-backup`, `settings-open-backup` | named, placed anywhere, proved by reading it back — see [cups.md](cups.md#the-backup-file-26-backupfileswift-backupbuttons-in-cupsviewswift) |
+| Last backup file (2.7) | `settings-last-backup` | one quiet line under the backup buttons: *Last backup file: 3 days ago*, or *No backup file saved yet*. Only a **proved** save counts. Never a warning or a reminder |
 | How it works | `settings-guide-toggle` → `settings-guide-list` | the guide below |
 | What's new | `settings-version-toggle` → `settings-version-list` | every version, newest first |
 

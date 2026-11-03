@@ -61,6 +61,15 @@ They replace 2.5's Export / Import / Share.
   **replaces** what is there (2.5's Import merged silently, with no preview).
 - Under `-uiTesting` the file goes straight to the temporary folder instead of
   the place picker, and is proved by the same read-back.
+- **When it was last saved (2.7).** When — and only when — the read-back
+  passes, `CoffeeStore.backupFileProved(at:)` stores the moment in
+  `CoffeeData.lastBackupFileAt`, so it travels between phone and Mac with
+  everything else. Merging keeps the later of the two; restoring a cup or an
+  older backup file never winds it back. Settings shows it as one quiet line
+  (`settings-last-backup`) from `BackupFile.lastSavedLine`: *today*,
+  *yesterday*, *N days ago* (to 13), *N weeks ago* (to 59 days), then
+  *N months ago*; with none, *No backup file saved yet*. A failed or cancelled
+  save changes nothing. It is information, never a nag.
 
 ## The Sink
 

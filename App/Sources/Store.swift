@@ -180,6 +180,13 @@ final class CoffeeStore: ObservableObject {
         return parts.joined(separator: " · ")
     }
 
+    /// Only a backup file that was read back and counted gets here (2.7).
+    /// The moment travels in the file, so the Mac shows it too.
+    func backupFileProved(at date: Date = Date()) {
+        data.lastBackupFileAt = CoffeeData.later(data.lastBackupFileAt, date)
+        scheduleSave(pourCup: false)
+    }
+
     /// Pours a cup back in. Takes a safety cup of *now* first, always.
     func restore(_ cup: Cup) -> Bool {
         guard let incoming = cupboard.read(cup) else { return false }
@@ -191,7 +198,10 @@ final class CoffeeStore: ObservableObject {
     /// file — after keeping where you are now as a named keepsake.
     func restore(from incoming: CoffeeData, safetyName: String) {
         cupboard.pour(data, kind: .keepsake, name: safetyName)
+        // An older file must not wind back when a backup file was last saved.
+        let lastBackup = CoffeeData.later(data.lastBackupFileAt, incoming.lastBackupFileAt)
         data = incoming
+        data.lastBackupFileAt = lastBackup
         saveNow(pourCup: false, merge: false)
         shelf = cupboard.loadShelf()
     }

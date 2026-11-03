@@ -405,5 +405,6 @@ struct BackupSheet: View {
         savedAs = url.lastPathComponent
         proved = proof.passed
         note = proof.note
+        if proof.passed { store.backupFileProved() }
     }
 }

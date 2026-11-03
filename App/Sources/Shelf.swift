@@ -7,6 +7,7 @@ struct CoffeeData: Codable, Equatable {
     var shots: [Shot] = []
     var purchases: [Purchase] = []
     var savedAt = Date()
+    var lastBackupFileAt: Date?
 
     var liveBeans: [Bean] { beans.filter { $0.rinsedAt == nil } }
     var liveShots: [Shot] { shots.filter { $0.rinsedAt == nil } }
@@ -28,6 +29,7 @@ struct CoffeeData: Codable, Equatable {
         shots = try c.decodeIfPresent([Shot].self, forKey: .shots) ?? []
         purchases = try c.decodeIfPresent([Purchase].self, forKey: .purchases) ?? []
         savedAt = try c.decodeIfPresent(Date.self, forKey: .savedAt) ?? Date()
+        lastBackupFileAt = try c.decodeIfPresent(Date.self, forKey: .lastBackupFileAt)
     }
 
     /// Every photo this data refers to — including rinsed records, because
@@ -164,7 +166,15 @@ struct CoffeeData: Codable, Equatable {
         out.shots = mergeRecords(a.shots, b.shots, id: \.id, stamp: \.modifiedAt)
         out.purchases = mergeRecords(a.purchases, b.purchases, id: \.id, stamp: \.modifiedAt)
         out.savedAt = max(a.savedAt, b.savedAt)
+        out.lastBackupFileAt = later(a.lastBackupFileAt, b.lastBackupFileAt)
         return out
+    }
+
+    /// The later of two moments, either of which may never have happened.
+    static func later(_ a: Date?, _ b: Date?) -> Date? {
+        guard let a else { return b }
+        guard let b else { return a }
+        return max(a, b)
     }
 
     private static func mergeRecords<T>(_ a: [T], _ b: [T],

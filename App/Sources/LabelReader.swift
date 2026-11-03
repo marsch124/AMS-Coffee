@@ -19,8 +19,12 @@ struct LabelSuggestion: Equatable {
     var roaster: String?
     var origin: String?
     var roastDate: Date?
+    var name: String?
+    var process: String?
 
-    var isEmpty: Bool { roaster == nil && origin == nil && roastDate == nil }
+    var isEmpty: Bool {
+        roaster == nil && origin == nil && roastDate == nil && name == nil && process == nil
+    }
 
     /// Only what would fill an EMPTY field. Something typed is never offered
     /// a replacement — that is the whole promise.
@@ -28,7 +32,9 @@ struct LabelSuggestion: Equatable {
         func blank(_ s: String) -> Bool { s.trimmingCharacters(in: .whitespaces).isEmpty }
         return LabelSuggestion(roaster: blank(bean.roaster) ? roaster : nil,
                                origin: blank(bean.origin) ? origin : nil,
-                               roastDate: hasRoastDate ? nil : roastDate)
+                               roastDate: hasRoastDate ? nil : roastDate,
+                               name: blank(bean.name) ? name : nil,
+                               process: blank(bean.process) ? process : nil)
     }
 }
 
@@ -41,12 +47,175 @@ enum LabelReader {
     }
 
     static func suggest(from lines: [LabelLine], now: Date = Date()) -> LabelSuggestion {
-        let texts = lines
-            .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+        let kept = lines
+            .map { LabelLine(text: $0.text.trimmingCharacters(in: .whitespacesAndNewlines),
+                             height: $0.height) }
+            .filter { !$0.text.isEmpty }
+        let texts = kept.map(\.text)
         return LabelSuggestion(roaster: roaster(in: texts),
                                origin: origin(in: texts),
-                               roastDate: roastDate(in: texts, now: now))
+                               roastDate: roastDate(in: texts, now: now),
+                               name: name(in: kept, now: now),
+                               process: process(in: texts))
+    }
+
+    /// The line as whole words: letters and digits kept, everything else a
+    /// space, folded, with a space at each end so " word " finds whole words.
+    private static func words(_ s: String) -> String {
+        let f = fold(s).map { $0.isLetter || $0.isNumber ? $0 : " " }
+        return " " + String(f).split(separator: " ").joined(separator: " ") + " "
+    }
+
+    // MARK: Process (2.7)
+
+    /// Each process with the spellings a label might use — English, Swedish,
+    /// German (and the Spanish a producer often prints), accents folded away.
+    /// Listed in the order they are said together: "Anaerobic natural".
+    private static let processes: [(String, [String])] = [
+        ("Carbonic maceration", ["carbonic maceration", "kolsyremaceration",
+                                 "karbonische mazeration"]),
+        ("Anaerobic", ["anaerobic", "anaerob", "anaerobisk", "anaerobe", "anaerobico"]),
+        ("Wet-hulled", ["wet hulled", "wethulled", "giling basah"]),
+        ("Honey", ["honey", "honung", "honig", "miel"]),
+        ("Natural", ["natural", "naturlig", "naturell", "natur", "naturel", "natural process"]),
+        ("Washed", ["washed", "fully washed", "tvattad", "tvattat", "gewaschen",
+                    "lavado", "nassaufbereitet"]),
+    ]
+
+    /// A line that is listing flavours is not saying how the coffee was
+    /// processed — "Notes: honey, peach" is a taste, not Honey.
+    private static let notesWords = ["notes", "note", "tasting", "smak", "smaker", "aroma",
+                                     "geschmack", "noter", "flavour", "flavor", "cup profile"]
+
+    private static let separators = ",·•/|"
+
+    private static func saysNotes(_ line: String) -> Bool {
+        let w = words(line)
+        return notesWords.contains { w.contains(" \($0) ") }
+    }
+
+    private static func isList(_ line: String) -> Bool {
+        line.filter { separators.contains($0) }.count >= 2
+    }
+
+    static func isNotesLine(_ line: String) -> Bool {
+        saysNotes(line) || isList(line)
+    }
+
+    /// True when the words are nothing but process words: "Tvättad",
+    /// "Anaerobic natural" — not "Peach and honey".
+    private static func isOnlyProcess(_ text: String) -> Bool {
+        var rest = words(text)
+        for (_, spellings) in processes {
+            for s in spellings.sorted(by: { $0.count > $1.count }) {
+                rest = rest.replacingOccurrences(of: " \(s) ", with: " ")
+            }
+        }
+        return rest.trimmingCharacters(in: .whitespaces).isEmpty && !processes(on: text).isEmpty
+    }
+
+    /// A list line is a spec line ("Tvättad · SL28 · SL34") only when its
+    /// first item is the process. Honey is also a flavour, so a list that
+    /// opens with it must carry a number somewhere (a variety, an altitude)
+    /// — a flavour list does not.
+    private static func processLeadingSpecLine(_ line: String) -> [String]? {
+        let items = line.split(whereSeparator: { separators.contains($0) }).map(String.init)
+        guard let first = items.first, isOnlyProcess(first) else { return nil }
+        let found = processes(on: first)
+        if found == ["Honey"], !line.contains(where: \.isNumber) { return nil }
+        return found
+    }
+
+    /// The processes named on one line, in their usual order.
+    private static func processes(on line: String) -> [String] {
+        let w = words(line)
+        return processes.filter { _, spellings in
+            spellings.contains { w.contains(" \($0) ") }
+        }.map(\.0)
+    }
+
+    static func process(in lines: [String]) -> String? {
+        for line in lines where !saysNotes(line) {
+            let found: [String]
+            if isList(line) {
+                found = processLeadingSpecLine(line) ?? []
+            } else {
+                found = processes(on: line)
+            }
+            guard let first = found.first else { continue }
+            let rest = found.dropFirst().map { $0.lowercased() }
+            return ([first] + rest).joined(separator: " ")
+        }
+        return nil
+    }
+
+    // MARK: Name (2.7)
+    //
+    // A wrong name is worse than none, so this strikes out every line that
+    // is plainly something else, and only answers when what is left is
+    // obvious: one line, or one that stands clearly taller than the rest.
+
+    private static let notANameWords = [
+        "whole bean", "whole beans", "ground", "hela bonor", "malet", "malda",
+        "ganze bohne", "ganze bohnen", "gemahlen", "net", "netto", "weight", "vikt",
+        "gewicht", "best", "bast", "use by", "exp", "mhd", "altitude", "masl", "moh",
+        "hohe", "variety", "varietal", "varieties", "sort", "sorter", "producer",
+        "producent", "farmer", "region", "harvest", "skord", "ernte", "process",
+        "processing", "aufbereitung", "bearbetning", "ingredients", "ingredienser",
+        "roast", "roasted", "rostad", "rostat", "geröstet", "geroestet", "gerostet",
+        "www", "http", "https", "instagram",
+    ]
+
+    private static let profileOnly: Set<String> = [
+        "espresso", "filter", "omni", "omniroast", "coffee", "kaffe", "kaffee",
+        "single origin", "blend", "light roast", "medium roast", "dark roast",
+        "light", "medium", "dark", "ljusrost", "mellanrost", "morkrost",
+        "decaf", "koffeinfri", "organic", "ekologisk", "bio",
+    ]
+
+    private static func isWeight(_ folded: String) -> Bool {
+        !groups(#"\b\d+([.,]\d+)?\s?(g|gr|gram|kg|oz|lb|lbs)\b"#, folded).isEmpty
+    }
+
+    static func isPlainlyNotAName(_ line: String, now: Date) -> Bool {
+        let f = fold(line)
+        let w = words(line)
+        if roaster(in: [line]) != nil { return true }
+        if origin(in: [line]) != nil { return true }
+        if process(in: [line]) != nil || !processes(on: line).isEmpty { return true }
+        if isNotesLine(line) { return true }
+        if !dates(in: f).isEmpty { return true }
+        if isWeight(f) { return true }
+        if line.contains("@") || f.contains(".com") || f.contains("www.") { return true }
+        if notANameWords.contains(where: { w.contains(" \($0) ") }) { return true }
+        let trimmed = w.trimmingCharacters(in: .whitespaces)
+        if profileOnly.contains(trimmed) { return true }
+        let letters = line.filter(\.isLetter).count
+        let wordCount = trimmed.split(separator: " ").count
+        return line.count < 3 || line.count > 40 || letters < 3 || wordCount > 6
+    }
+
+    static func name(in lines: [LabelLine], now: Date = Date()) -> String? {
+        let left = lines.filter { !isPlainlyNotAName($0.text, now: now) }
+        guard let tallest = left.max(by: { $0.height < $1.height }) else { return nil }
+        if left.count > 1 {
+            let others = left.filter { $0.text != tallest.text }
+            guard others.allSatisfy({ tallest.height >= $0.height * 1.3 }) else { return nil }
+        }
+        return readable(tallest.text)
+    }
+
+    /// Grades and varieties stay as they are printed; the rest of a shouted
+    /// name is put in ordinary title case. A mixed-case name is kept.
+    private static let grades: Set<String> = ["AA", "AB", "PB", "AAA", "SHB", "SHG", "HB", "TOP"]
+
+    private static func readable(_ name: String) -> String {
+        guard !name.contains(where: { $0.isLowercase }) else { return name }
+        return name.split(separator: " ").map { part -> String in
+            let word = String(part)
+            if grades.contains(word) || word.contains(where: \.isNumber) { return word }
+            return word.capitalized
+        }.joined(separator: " ")
     }
 
     private static func fold(_ s: String) -> String {
