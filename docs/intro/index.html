@@ -1,0 +1,717 @@
+<meta charset="utf-8">
+<title>Coffee Tour</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Coffee Tour: chapter rail on the left, coach card + a pretend iPhone on the right. Same engine as the other AMS tours.
+   Written for AMS Coffee 2.9. Update this tour in the release that changes a taught screen. */
+:root {
+  --bg: #F4F6F7; --panel: #FFFFFF; --fg: #16232A; --muted: #5F7078; --line: #E2E8EA;
+  --accent: #B45309; --accent-soft: #FBEBD3; --good: #15803D; --good-soft: #E3F4E8; --warn: #C2410C;
+  --shadow: 0 18px 40px rgba(22,35,42,.2);
+  --pbg:#F4F6F7; --pcard:#FFFFFF; --pink:#16232A; --pmuted:#5F7078; --pline:#E2E8EA; --pfield:rgba(120,120,128,.14);
+  --ind:#B45309; --gt:#B45309; --band:#2E1A0B; --bz:#FF8C1A; --bz-ink:#4A2300; --bzt:#C2410C;
+  --plum:#9C3D8C; --plumt:#9C3D8C; --navy:#2A5194; --grn:#30D158; --grn-ink:#0B3A17; --sess:#15803D;
+  --yel:#FFD60A; --yel-ink:#3D3000; --wut:#A16207; --gold:#B7791F; --acc:#2F6FE0; --red:#DC3D43; --blue:#0A84FF; --pink2:#FF6FA8; --pink2-ink:#5A0F2E;
+  --f-display: "Avenir Next", "Helvetica Neue", system-ui, sans-serif;
+  --f-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --f-phone: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#0E1416; --panel:#161F22; --fg:#E7EDEE; --muted:#94A6AC; --line:#26343A;
+  --accent:#FDBA74; --accent-soft:#3A2412; --good:#86EFAC; --good-soft:#15301F; --warn:#FDBA74;
+  --shadow: 0 18px 40px rgba(0,0,0,.55);
+  --pbg:#0E1416; --pcard:#161F22; --pink:#E7EDEE; --pmuted:#94A6AC; --pline:#26343A; --pfield:rgba(120,120,128,.3);
+  --gt:#FDBA74; --bzt:#FDBA74; --plumt:#E29BD6; --sess:#86EFAC; --wut:#FCD34D; --gold:#F6C453;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg:#0E1416; --panel:#161F22; --fg:#E7EDEE; --muted:#94A6AC; --line:#26343A;
+  --accent:#FDBA74; --accent-soft:#3A2412; --good:#86EFAC; --good-soft:#15301F; --warn:#FDBA74;
+  --shadow: 0 18px 40px rgba(0,0,0,.55);
+  --pbg:#0E1416; --pcard:#161F22; --pink:#E7EDEE; --pmuted:#94A6AC; --pline:#26343A; --pfield:rgba(120,120,128,.3);
+  --gt:#FDBA74; --bzt:#FDBA74; --plumt:#E29BD6; --sess:#86EFAC; --wut:#FCD34D; --gold:#F6C453;
+  color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.45; margin: 0 }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; grid-template-columns: 230px minmax(0,1fr); gap: 22px; }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none }
+svg.g { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none }
+
+/* Rail */
+.rail { display: flex; flex-direction: column; gap: 4px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); align-self: start; }
+.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.brand h1 { font-family: var(--f-display); font-size: 19px; line-height: 1.1; margin: 0; text-wrap: balance }
+.brand small { color: var(--muted); font-size: 12px }
+.logo { width: 40px; height: 40px; border-radius: 10px; background: #B45309; color: #fff; display: grid; place-items: center; flex: none }
+.chap { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 9px; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+.chap:hover { background: var(--accent-soft) }
+.chap:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.chap .n { color: var(--muted); font-size: 12px; margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap }
+.chap.cur { background: var(--accent-soft); color: var(--accent); font-weight: 600 }
+.chap.done .n { color: var(--good) }
+.bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 10px 2px 2px }
+.bar i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .4s }
+.railnote { color: var(--muted); font-size: 12px; margin: 4px 2px }
+
+/* Coach */
+.main { display: grid; grid-template-columns: minmax(0,1fr); gap: 14px; min-width: 0; align-content: start }
+.topnote { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 13.5px }
+.coach { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px 16px; align-items: center; }
+.coach .eyebrow { grid-column: 1 / -1; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); font-weight: 600; display: flex; gap: 8px; align-items: center }
+.coach .eyebrow .kind { color: var(--muted); font-weight: 500 }
+.coach h2 { font-family: var(--f-display); font-size: 23px; line-height: 1.2; margin: 0; text-wrap: balance }
+.coach p { margin: 4px 0 0; color: var(--fg); max-width: 62ch }
+.coach .btns { display: flex; gap: 8px; align-items: center }
+.btn { font: inherit; font-weight: 600; border-radius: 9px; padding: 8px 16px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer }
+.btn.main-b { background: #B45309; border-color: #B45309; color: #fff }
+.btn.main-b:disabled { opacity: .45; cursor: default }
+.btn.ghost { border-color: transparent; color: var(--muted) }
+.answers { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px }
+.ans { font: inherit; padding: 8px 14px; border-radius: 9px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; text-align: left }
+.ans:hover { border-color: var(--accent) }
+.ans.right { border-color: var(--good); background: var(--good-soft); color: var(--good); font-weight: 600 }
+.ans.wrong { border-color: var(--warn); color: var(--warn); text-decoration: line-through }
+.feedback { grid-column: 1 / -1; font-weight: 600; color: var(--good); min-height: 1.4em; margin: 0 }
+.feedback.no { color: var(--warn) }
+
+/* Stage = pretend iPhone, 390 x 760, scaled to fit */
+.stagebox { position: relative; width: min(100%, 390px); aspect-ratio: 390 / 760; border-radius: 40px; overflow: hidden; box-shadow: 0 0 0 6px #1f1f23, var(--shadow); justify-self: center; background: var(--pbg) }
+.stage { position: absolute; left: 0; top: 0; width: 390px; height: 760px; transform-origin: 0 0; font-family: var(--f-phone); font-size: 15px; line-height: 1.3; color: var(--pink); background: var(--pbg); overflow: hidden; -webkit-user-select: none; user-select: none }
+:where(.stage button) { font: inherit; color: inherit }
+:where(.stage input) { font: inherit; color: var(--pink); -webkit-user-select: text; user-select: text }
+.sbar { position: absolute; left: 0; right: 0; top: 0; height: 44px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 30px 6px 34px; font-weight: 600; font-size: 15px; z-index: 40; pointer-events: none; background: linear-gradient(var(--pbg) 70%, transparent) }
+.sbar .bat { width: 25px; height: 12px; border: 1.5px solid var(--pink); border-radius: 4px; position: relative; opacity: .8 }
+.sbar .bat::after { content: ""; position: absolute; left: 1.5px; top: 1.5px; bottom: 1.5px; width: 70%; background: var(--pink); border-radius: 2px }
+.scr { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 46px 16px 84px; scrollbar-width: none }
+.scr::-webkit-scrollbar { display: none }
+.sp { flex: 1 }
+.tr { color: var(--gt) }
+
+/* Tab bar: flat, three items, like the app */
+.tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 64px; background: var(--pcard); border-top: 1px solid var(--pline); display: flex; align-items: flex-start; padding-top: 6px; z-index: 30 }
+.tabs button { flex: 1; border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; color: var(--pmuted); cursor: pointer; padding: 0 }
+.tabs button svg { width: 24px; height: 24px }
+.tabs button.on { font-weight: 600 }
+
+/* Navigation */
+.ltop { display: flex; align-items: center; min-height: 40px }
+.nbk { display: flex; align-items: center; border: 0; background: none; color: var(--acc); font-size: 16px; padding: 4px 0; cursor: pointer; min-height: 40px }
+.nbk svg { width: 20px; height: 20px }
+.ltitle { margin: 0 0 8px; font-size: 32px; line-height: 1.12; font-weight: 700 }
+.inl { display: flex; align-items: center; min-height: 40px; margin-bottom: 4px }
+.inl b { flex: 1; text-align: center; font-size: 17px }
+.inl .l, .inl .r { width: 80px; display: flex }
+.inl .r { justify-content: flex-end }
+.ib { border: 0; background: none; padding: 6px; cursor: pointer; display: grid; place-items: center; color: var(--gt); border-radius: 10px }
+.ib svg { width: 22px; height: 22px }
+.cap { color: var(--pmuted); font-size: 12.5px; margin: 4px 0 }
+
+/* ---------- Pretend screens of Coffee (every class starts with cf-) ---------- */
+.stage { --pbg:#FFF8E6; --pcard:rgba(255,255,255,.9); --pink:#472917; --pmuted:#54402F; --pline:rgba(71,41,23,.18); --pfield:rgba(255,255,255,.96);
+  --mango:#FFB321; --apricot:#FF8C33; --bubble:#FF4D8C; --mint:#21D19E; --blue:#7066FF; --sky:#33C2FF; --grape:#B366FF; --danger:#C72E2E; --gt:#B45309 }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stage { --pbg:#1C1412; --pcard:rgba(42,34,31,.94); --pink:#F8F1E8; --pmuted:#DED5CC; --pline:rgba(248,241,232,.2); --pfield:#1B1613; --danger:#FF6B66 } }
+:root[data-theme="dark"] .stage { --pbg:#1C1412; --pcard:rgba(42,34,31,.94); --pink:#F8F1E8; --pmuted:#DED5CC; --pline:rgba(248,241,232,.2); --pfield:#1B1613; --danger:#FF6B66 }
+.stage { background: linear-gradient(135deg, color-mix(in srgb, var(--mango) 22%, var(--pbg)), var(--pbg) 45%, color-mix(in srgb, var(--bubble) 14%, var(--pbg))) }
+.sbar { background: transparent }
+.cf-title { display: flex; align-items: center; gap: 10px; font: 800 30px/1.1 ui-rounded, "SF Pro Rounded", var(--f-phone); margin: 6px 0 14px }
+.cf-title svg { width: 34px; height: 34px; fill: none; stroke: var(--apricot); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round }
+.cf-card { --t: var(--mint); border-radius: 26px; background: var(--pcard); border: 3px solid color-mix(in srgb, var(--t) 55%, transparent); box-shadow: 0 5px 0 color-mix(in srgb, var(--t) 30%, transparent); padding: 14px 16px; margin: 0 0 14px; display: block; width: 100%; text-align: left; color: var(--pink) }
+.cf-h { font: 800 19px/1.2 ui-rounded, "SF Pro Rounded", var(--f-phone); margin: 0 0 6px }
+.cf-soft { color: var(--pmuted); font: 700 15px/1.3 ui-rounded, "SF Pro Rounded", var(--f-phone) }
+.cf-sq { --t: var(--bubble); display: flex; align-items: center; gap: 12px; width: 100%; border: 0; border-radius: 22px; padding: 16px 20px; background: var(--t); color: #fff; font: 800 20px/1.1 ui-rounded, "SF Pro Rounded", var(--f-phone); box-shadow: 0 6px 0 color-mix(in srgb, var(--t) 45%, #000 12%); margin: 0 0 14px; cursor: pointer; text-align: left }
+.cf-sq svg { width: 30px; height: 30px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex: none }
+.cf-sq.sm { width: auto; padding: 10px 16px; font-size: 16px; border-radius: 16px; margin: 0; box-shadow: 0 4px 0 color-mix(in srgb, var(--t) 45%, #000 12%) }
+.cf-bn { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center }
+.cf-bn b { display: block; font: 900 30px/1.1 ui-rounded, "SF Pro Rounded", var(--f-phone) }
+.cf-bn span { font: 700 14px var(--f-phone); color: var(--pmuted) }
+.cf-chip { --t: var(--mint); display: inline-flex; gap: 5px; align-items: center; border-radius: 999px; padding: 4px 11px; font: 800 13.5px ui-rounded, "SF Pro Rounded", var(--f-phone); background: color-mix(in srgb, var(--t) 22%, transparent); color: var(--pink); white-space: nowrap }
+.cf-chip i { width: 9px; height: 9px; border-radius: 50%; background: var(--t); display: inline-block }
+.cf-flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0 }
+.cf-ask { display: flex; flex-wrap: wrap; gap: 7px }
+.cf-cap { border: 0; border-radius: 999px; padding: 8px 14px; font: 800 14.5px ui-rounded, "SF Pro Rounded", var(--f-phone); background: color-mix(in srgb, var(--grape) 22%, transparent); color: var(--pink); cursor: pointer }
+.cf-cap.on { background: var(--grape); color: #fff }
+.cf-bag { display: flex; gap: 12px }
+.cf-ph { width: 64px; height: 84px; border-radius: 14px; flex: none; display: grid; place-items: center; color: #fff }
+.cf-ph svg { width: 30px; height: 30px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round }
+.cf-rr { font: 800 12.5px var(--f-phone); letter-spacing: .06em; text-transform: uppercase; color: var(--pmuted) }
+.cf-nm { font: 900 21px/1.15 ui-rounded, "SF Pro Rounded", var(--f-phone) }
+.cf-det { font: 800 16px/1.25 ui-rounded, "SF Pro Rounded", var(--f-phone); margin: 2px 0 }
+.cf-meter { height: 12px; border-radius: 6px; background: var(--pline); overflow: hidden; margin: 6px 0 }
+.cf-meter i { display: block; height: 100%; border-radius: 6px }
+.cf-stars { color: var(--mango); letter-spacing: 1px; font-size: 16px }
+.cf-add { position: absolute; left: 16px; right: 16px; bottom: 74px; z-index: 20 }
+.cf-add .cf-sq { margin: 0 }
+.cf-m { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px }
+.cf-m button { --t: var(--blue); border: 0; border-radius: 16px; padding: 9px 13px; background: var(--t); color: #fff; font: 800 14px ui-rounded, "SF Pro Rounded", var(--f-phone); cursor: pointer; box-shadow: 0 3px 0 color-mix(in srgb, var(--t) 45%, #000 12%) }
+.cf-fl { display: flex; gap: 6px; overflow-x: auto; margin: 0 0 10px; scrollbar-width: none }
+.cf-fl button { border: 2px solid var(--pline); border-radius: 999px; padding: 6px 12px; background: transparent; color: var(--pink); font: 800 13.5px ui-rounded, "SF Pro Rounded", var(--f-phone); white-space: nowrap; cursor: pointer }
+.cf-fl button.on { background: var(--pink); color: var(--pbg); border-color: var(--pink) }
+.cf-sh { display: flex; align-items: center; gap: 8px; border-radius: 16px; background: var(--pfield); border: 2px solid var(--pline); padding: 8px 12px; margin: 0 0 10px }
+.cf-sh svg { width: 18px; height: 18px; fill: none; stroke: var(--pmuted); stroke-width: 2.2; stroke-linecap: round }
+.cf-sh input { flex: 1; min-width: 0; border: 0; background: none; font: 700 16px ui-rounded, "SF Pro Rounded", var(--f-phone) }
+.cf-found { font: 800 14.5px ui-rounded, "SF Pro Rounded", var(--f-phone); color: var(--pmuted); margin: 0 4px 10px }
+.cf-lt { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex: none }
+.cf-sr { display: flex; gap: 8px; align-items: center; margin: 0 0 6px }
+.cf-pill { border-radius: 999px; padding: 3px 10px; font: 800 13px ui-rounded, "SF Pro Rounded", var(--f-phone); background: var(--pfield); border: 2px solid var(--pline) }
+.cf-tabs button { font: 800 11px ui-rounded, "SF Pro Rounded", var(--f-phone) }
+.cf-sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 34px; border-radius: 22px 22px 0 0; z-index: 55; overflow: hidden; box-shadow: 0 -8px 30px rgba(0,0,0,.3); background: linear-gradient(135deg, color-mix(in srgb, var(--mango) 22%, var(--pbg)), var(--pbg) 45%, color-mix(in srgb, var(--bubble) 14%, var(--pbg))) }
+.cf-sheet .scr { inset: 0; padding: 14px 16px 100px }
+.cf-sticky { position: absolute; left: 0; right: 0; bottom: 0; display: flex; gap: 10px; padding: 10px 16px 18px; z-index: 6; background: color-mix(in srgb, var(--pbg) 88%, transparent) }
+.cf-sticky .cf-sq { margin: 0; justify-content: center }
+.cf-x { width: 56px; height: 56px; border-radius: 50%; border: 0; flex: none; background: color-mix(in srgb, var(--pink) 55%, transparent); color: #fff; display: grid; place-items: center; cursor: pointer }
+.cf-x svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round }
+.cf-fat { margin: 0 0 10px }
+.cf-fat label { display: flex; gap: 8px; align-items: baseline; font: 800 15px ui-rounded, "SF Pro Rounded", var(--f-phone); color: var(--pmuted); margin: 0 0 3px }
+.cf-fat label em { font-style: normal; color: var(--bubble); font-size: 13px }
+.cf-fat input { width: 100%; border: 2px solid var(--pline); border-radius: 14px; background: var(--pfield); padding: 10px 12px; font: 700 17px ui-rounded, "SF Pro Rounded", var(--f-phone) }
+.cf-use { --t: var(--mint); border: 0; border-radius: 999px; background: var(--t); color: #fff; font: 800 13.5px ui-rounded, "SF Pro Rounded", var(--f-phone); padding: 5px 13px; cursor: pointer; margin-left: auto }
+.cf-sg { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--pline); font: 700 14.5px ui-rounded, "SF Pro Rounded", var(--f-phone) }
+.cf-sg:first-of-type { border-top: 0 }
+.cf-dial { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--pline) }
+.cf-dial:first-child { border-top: 0 }
+.cf-dial small { display: block; font: 800 14px ui-rounded, "SF Pro Rounded", var(--f-phone); color: var(--pmuted) }
+.cf-dial b { font: 900 24px/1.1 ui-rounded, "SF Pro Rounded", var(--f-phone) }
+.cf-dial .pm { margin-left: auto; display: flex; gap: 6px }
+.cf-dial .pm span { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--blue) 18%, transparent); font: 800 18px var(--f-phone) }
+.cf-clock { font: 900 44px/1 ui-rounded, "SF Pro Rounded", var(--f-phone); font-variant-numeric: tabular-nums; margin: 2px 0 }
+.cf-sl { position: relative; height: 26px; margin: 2px 0 6px; cursor: pointer }
+.cf-sl::before { content: ""; position: absolute; left: 0; right: 0; top: 11px; height: 5px; border-radius: 3px; background: var(--pline) }
+.cf-sl i { position: absolute; top: 4px; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 3px solid var(--t); margin-left: -10px; box-shadow: 0 1px 3px rgba(0,0,0,.3) }
+.cf-sl .w { display: flex; justify-content: space-between; position: absolute; left: 0; right: 0; top: -17px; font: 800 14px ui-rounded, "SF Pro Rounded", var(--f-phone); color: var(--pmuted) }
+.cf-lp { display: flex; gap: 8px; margin: 8px 0 }
+.cf-lp button { flex: 1; border-radius: 18px; padding: 8px 0; background: transparent; border: 2px solid var(--pline); color: var(--pmuted); display: flex; flex-direction: column; align-items: center; gap: 3px; font: 800 13.5px ui-rounded, "SF Pro Rounded", var(--f-phone); cursor: pointer }
+.cf-lp button.on { border-width: 3px; border-color: var(--mint); background: color-mix(in srgb, var(--mint) 22%, transparent) }
+.cf-lp .cf-lt { width: 30px; height: 30px }
+.cf-adv { font: 900 21px/1.2 ui-rounded, "SF Pro Rounded", var(--f-phone); color: var(--sky) }
+.cf-chart { margin: 4px 0 }
+.cf-chart svg { width: 100%; height: 44px }
+.cf-warn { color: var(--apricot) }
+.cf-red { --t: var(--danger); background: transparent; color: var(--danger); border: 2px solid color-mix(in srgb, var(--danger) 60%, transparent); box-shadow: none; justify-content: center; font-size: 17px; padding: 12px }
+.cf-fold { display: flex; align-items: center; justify-content: space-between; font: 800 18px ui-rounded, "SF Pro Rounded", var(--f-phone) }
+.cf-big { display: flex; align-items: center; gap: 12px }
+.cf-big .ic { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; color: #fff; flex: none }
+.cf-big .ic svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round }
+.cf-big b { display: block; font: 900 19px ui-rounded, "SF Pro Rounded", var(--f-phone) }
+.cf-big small { display: block; font: 700 14px var(--f-phone); color: var(--pmuted) }
+.cf-toast { position: absolute; left: 50%; bottom: 100px; transform: translateX(-50%); background: #2F3B41; color: #fff; font-weight: 600; font-size: 13px; padding: 7px 14px; border-radius: 18px; z-index: 90; animation: pop .3s; max-width: 340px; text-align: center }
+.cf-sig { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--pline); font: 600 13.5px/1.3 var(--f-phone) }
+.cf-sig:first-child { border-top: 0 }
+.cf-sig .k { width: 76px; flex: none; display: flex; justify-content: center; align-items: center; min-height: 24px; flex-wrap: wrap; gap: 3px }
+
+/* Highlight: no position here (it would break absolutely placed boxes) */
+.target { z-index: 2; animation: ring 1.6s ease-in-out infinite; border-radius: 9px }
+@keyframes ring { 0%,100% { box-shadow: 0 0 0 2px #E6B53F, 0 0 0 6px rgba(230,181,63,.35) } 50% { box-shadow: 0 0 0 2px #E6B53F, 0 0 0 11px rgba(230,181,63,0) } }
+@keyframes pop { from { transform: translate(-50%, 8px); opacity: .3 } to { transform: translate(-50%, 0); opacity: 1 } }
+
+/* Finish */
+.finish { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px }
+.finish h3 { font-family: var(--f-display); margin: 0 0 8px; font-size: 19px }
+.finish label { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-top: 1px solid var(--line); cursor: pointer }
+.finish input { width: 18px; height: 18px; accent-color: #B45309; margin-top: 2px; flex: none }
+
+@media (min-width: 1020px) {
+  .main { grid-template-columns: minmax(0,1fr) 402px; align-items: start }
+  .topnote, .finish { grid-column: 1 / -1 }
+  .coach { grid-column: 1; grid-template-columns: minmax(0,1fr); position: sticky; top: 16px }
+  .stagebox { grid-column: 2; grid-row: 2 }
+  .coach { grid-row: 2 }
+}
+@media (max-width: 820px) {
+  .wrap { grid-template-columns: minmax(0,1fr) }
+  .rail { position: static; flex-direction: row; flex-wrap: wrap; gap: 4px }
+  .brand { width: 100% }
+  .chap .n { display: none }
+  .railnote, .bar { width: 100% }
+  .coach { grid-template-columns: minmax(0,1fr) }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important } }
+</style>
+
+
+<div class="wrap">
+  <nav class="rail" id="rail" aria-label="Chapters"></nav>
+  <main class="main">
+    <p class="topnote">Everything here is a practice copy. Nothing changes on your iPhone.</p>
+    <section class="coach" id="coach" aria-live="polite"></section>
+    <div class="stagebox" id="stagebox"><div class="stage" id="stage"></div></div>
+    <section class="finish" id="finish" hidden></section>
+  </main>
+</div>
+
+<script>
+/* ---------- Icons: simple hand-drawn line shapes, 24-pt grid, stroke 1.9, round ends, no fill. ---------- */
+const ICON = {
+  cup: 'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5Z M16 10h1.5a2.5 2.5 0 0 1 0 5H16 M8 4v2 M12 4v2',
+  bean: 'M12 4c4 0 7 3.5 7 8s-3 8-7 8-7-3.5-7-8 3-8 7-8Z M12 4c-2.5 4 2.5 8 0 16',
+  dial: 'M4.5 12a7.5 7.5 0 1 0 15 0 7.5 7.5 0 1 0-15 0 M12 12l3-3.5 M12 4.5V6 M4.5 12H6 M19.5 12H18',
+  gear: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z M12 3v3 M12 18v3 M3 12h3 M18 12h3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M5.6 18.4l2.1-2.1 M16.3 7.7l2.1-2.1',
+  jar: 'M7 5h10 M8 5v2.5c-2 1-3 2.6-3 4.5v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6c0-1.9-1-3.5-3-4.5V5',
+  search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4',
+  plus: 'M12 5v14M5 12h14', check: 'M5 12.5l5 5 9-10.5', cross: 'M7 7l10 10M17 7 7 17',
+  chevR: 'M9 6l6 6-6 6', chevL: 'M15 6l-6 6 6 6',
+  camera: 'M4 8h3l1.5-2h7L17 8h3v11H4Z M12 10.5a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z',
+  photo: 'M4 6h16v12H4Z M4 16l5-5 4 4 2-2 5 5',
+  tray: 'M5 14v5h14v-5 M12 4v10 M8 10l4 4 4-4',
+  case: 'M4 8h16v11H4Z M9 8V6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2 M4 13h16',
+  tap: 'M8 4h8 M12 4v5 M7 9h10v3a5 5 0 0 1-10 0Z M12 17v3',
+  doc: 'M7 3.5h7l4 4v13H7Z M14 3.5v4h4 M9.5 12h6 M9.5 15.5h6',
+  phone: 'M8 3.5h8a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H8A1.5 1.5 0 0 1 6.5 19V5A1.5 1.5 0 0 1 8 3.5Z M11 17.8h2',
+  warn: 'M12 4l9 16H3Z M12 10v4.5 M12 17.2h.1'
+};
+const icon = (n, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON[n]}"/></svg>`;
+const ico = (n, px) => `<svg class="g" width="${px}" height="${px}" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON[n]}"/></svg>`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DOT = ' · ';
+
+/* ---------- Invented coffees, roasters and brews. Nothing here is a real bag or a real person's coffee. ---------- */
+const BAGS = [
+  { id: 'b1', roaster: 'Mossy Hill Roasters', name: 'Finca Alba', origin: 'Colombia', process: 'Anaerobic natural', roast: 'Medium-light', col: 'var(--blue)', left: 214, total: 250, days: 11, flav: ['Stone fruit', 'Caramel'], stars: 4, methods: ['Espresso', 'Pour-over'] },
+  { id: 'b2', roaster: 'Tern & Cask', name: 'Gedeb Washed', origin: 'Ethiopia', process: 'Washed', roast: 'Light', col: 'var(--bubble)', left: 34, total: 250, days: 5, flav: ['Jasmine', 'Lemon'], stars: 5, methods: ['Pour-over', 'Espresso'] },
+  { id: 'b3', roaster: 'Lantern Coffee Co', name: 'Rift Peaberry', origin: 'Kenya', process: 'Washed', roast: 'Medium-dark', col: 'var(--mango)', left: 180, total: 250, days: 30, flav: ['Blackcurrant'], stars: 3, methods: ['Filter'] },
+  { id: 'b4', roaster: 'Hollow Oak Rosteri', name: 'Sumatra Night', origin: 'Indonesia', process: 'Wet-hulled', roast: 'Dark', col: 'var(--grape)', left: 120, total: 250, days: 48, flav: ['Cocoa', 'Cedar'], stars: 4, methods: ['French press'] }
+];
+const bagOf = id => BAGS.find(b => b.id === id);
+const FRESH = d => d <= 3 ? ['resting', 'var(--sky)'] : d <= 21 ? ['at its best', 'var(--mint)'] : d <= 42 ? ['fading', 'var(--mango)'] : ['past it', 'var(--apricot)'];
+const LEFT = { b1: null, b2: ['1 more brew', 'var(--apricot)'], b3: null, b4: null };
+const BREWS = [
+  { id: 1, bag: 'b1', m: 'Espresso', when: 'Today, 08:10', g: 13.5, dose: 18, y: 36, t: '28 s', light: 'green', note: 'Sweet, caramel', date: 'november nov 2026 today' },
+  { id: 2, bag: 'b3', m: 'Filter', when: 'Wed 25 Nov', g: 18, dose: 30, y: 480, t: '4:50', light: 'amber', note: 'A bit flat', date: 'november nov 2026' },
+  { id: 3, bag: 'b2', m: 'Espresso', when: 'Tue 24 Nov', g: 12, dose: 18, y: 38, t: '26 s', light: 'green', note: 'Lemon and jasmine', date: 'november nov 2026' },
+  { id: 4, bag: 'b2', m: 'Pour-over', when: 'Mon 23 Nov', g: 20, dose: 15, y: 250, t: '3:05', light: 'amber', note: 'Tea-like', date: 'november nov 2026' },
+  { id: 5, bag: 'b1', m: 'Pour-over', when: 'Sun 22 Nov', g: 19, dose: 15, y: 250, t: '3:10', light: 'green', note: 'Clean and bright', date: 'november nov 2026' },
+  { id: 6, bag: 'b4', m: 'French press', when: 'Sat 21 Nov', g: 28, dose: 30, y: 500, t: '4 min', light: 'red', note: 'Muddy', date: 'november nov 2026' }
+];
+const LWORD = { green: ['Lovely', 'green lovely', 'var(--mint)'], amber: ['Drinkable', 'amber drinkable', 'var(--mango)'], red: ['Tipped it out', 'red tipped out', 'var(--bubble)'] };
+const ROASTW = { light: 'light ljusrost ljus hell helle', 'medium-light': 'medium-light medium light mellanljus', medium: 'medium mellanrost mellan mittel mittlere', 'medium-dark': 'medium-dark mellanmork', dark: 'dark morkrost mork dunkel dunkle' };
+function roastToks(r) {
+  const k = r.toLowerCase(), set = new Set(['roast']);
+  const base = { light: ['light', 'ljusrost', 'ljus', 'hell', 'helle'], 'medium-light': ['medium-light', 'mellanljus'], medium: ['medium', 'mellanrost', 'mellan', 'mittel', 'mittlere'], 'medium-dark': ['medium-dark', 'mellanmork'], dark: ['dark', 'morkrost', 'mork', 'dunkel', 'dunkle'] }[k] || [k];
+  base.forEach(x => set.add(x)); return set;
+}
+function brewHit(b, q) {
+  const bag = bagOf(b.bag), ws = q.toLowerCase().replace(/-/g, ' ').split(/\s+/).filter(Boolean);
+  const rt = roastToks(bag.roast); const rtx = new Set([...rt].map(x => x.replace(/-/g, ' ')));
+  const txt = [b.m, b.note, bag.roaster, bag.name, bag.origin, bag.process, LWORD[b.light][1], b.date].join(' ').toLowerCase();
+  // two words typed as "medium dark" count as the one level
+  const joined = ws.join(' '); let rest = ws.slice();
+  ['medium light', 'medium dark'].forEach(l => { if (joined.includes(l)) { if (!rtx.has(l)) return false; rest = rest.filter((w, i) => !l.split(' ').includes(w)); } });
+  return rest.every(w => rtx.has(w) || txt.includes(w)) && ['medium light', 'medium dark'].every(l => !joined.includes(l) || rtx.has(l));
+}
+const START = () => ({ tab: 'today', sheet: null, page: null, bag: null, shot: null, timer: null, ask: null, advice: null, q: '', meth: '', cups: null, name: '', restore: null, kitDue: false, backup: null, toast: '', sig: 1, newCup: false, cupWarn: false });
+let S = START();
+const set = o => { S = Object.assign(START(), o); };
+const timers = [];
+const later = (fn, ms) => { const h = setTimeout(fn, ms); timers.push(h); return h; };
+const clearTimers = () => { while (timers.length) clearTimeout(timers.pop()); };
+const CUPS = () => [
+  { kind: 'keepsake', name: 'Before the move', when: '1 Nov 2026, 19:20', line: '4 bags · 41 brews · 3 things', ok: true },
+  { kind: 'daily', name: 'Daily cup', when: '27 Nov 2026, 07:55', line: '4 bags · 46 brews · 3 things', ok: true },
+  { kind: 'quick', name: 'Quick cup', when: '27 Nov 2026, 08:12', line: '4 bags · 46 brews · 3 things', ok: true }
+];
+const CAPS = ['sour', 'bitter', 'thin', 'strong', 'lovely'], CAPQ = { sour: 'Too sour', bitter: 'Too bitter', thin: 'Too thin', strong: 'Too strong', lovely: 'It was lovely' };
+const LASTBREW = { g: 13.5, dose: 18, y: 36, sec: 28, temp: 93 };
+const trim = n => String(Math.round(n * 10) / 10);
+
+/* The coach: the app's own espresso rules (Coach.swift), a small copy. */
+function advise(s) {
+  if (s.light === 'green') return { h: 'Keep it exactly here', d: `Grind ${trim(s.g)}, ${trim(s.dose)} g in, ${trim(s.y)} g out, ${trim(s.sec)} s.` };
+  const sour = s.sb < -0.15, bitter = s.sb > 0.15, thin = s.ts < -0.2, fast = s.sec < 22, slow = s.sec > 35, ratio = s.y / s.dose;
+  if (sour && fast) return { h: 'Grind finer', d: `About 2 clicks. It ran through in ${trim(s.sec)} s — too quick to taste sweet.` };
+  if (bitter && slow) return { h: 'Grind coarser', d: `About 2 clicks. ${trim(s.sec)} s is choking it and pulling out the harsh bits.` };
+  if (sour && ratio < 1.7) return { h: 'Let it run longer', d: `Aim for about ${trim(s.dose * 2)} g out. A short shot tastes sour before it tastes sweet.` };
+  if (bitter && ratio > 2.6) return { h: 'Stop it earlier', d: `Aim for about ${trim(s.dose * 2)} g out. Past 1 : 2.6 you are mostly rinsing the puck.` };
+  if (thin && ratio > 2.4) return { h: 'Less water', d: `Thin and long. Try ${trim(s.dose * 2)} g out and a click finer.` };
+  if (sour) return { h: 'A touch finer, a touch hotter', d: `Try grind ${trim(s.g - 1)} and ${Math.min(96, s.temp + 1)}°C.` };
+  if (bitter) return { h: 'A touch coarser, a touch cooler', d: `Try grind ${trim(s.g + 1)} and ${Math.max(88, s.temp - 1)}°C.` };
+  if (fast) return { h: 'Finer', d: `${trim(s.sec)} s is fast for espresso. Two clicks finer and taste again.` };
+  if (slow) return { h: 'Coarser', d: `${trim(s.sec)} s is slow. Two clicks coarser and taste again.` };
+  return { h: 'Change one thing only', d: 'Nothing is obviously off. Nudge the grind by one click and see which way it moves.' };
+}
+function fix(c) {
+  if (c === 'lovely') return { h: 'Change nothing', d: 'That is the recipe. It is already what this bag offers you next time.' };
+  return advise({ g: LASTBREW.g, dose: LASTBREW.dose, y: LASTBREW.y, sec: LASTBREW.sec, temp: LASTBREW.temp, light: 'amber', sb: c === 'sour' ? -.5 : c === 'bitter' ? .5 : 0, ts: c === 'thin' ? -.5 : c === 'strong' ? .5 : 0 });
+}
+const ltDot = c => `<span class="cf-lt" style="background:${c}"></span>`;
+const chip = (t, col, dot) => `<span class="cf-chip" style="--t:${col}">${dot ? '<i></i>' : ''}${esc(t)}</span>`;
+
+/* ---------- The pretend iPhone ---------- */
+const TABS = [['today', 'Today', 'cup'], ['bags', 'Beans', 'bean'], ['shots', 'Brews', 'dial'], ['settings', 'Settings', 'gear']];
+function tabBar() { return `<div class="tabs cf-tabs" data-t="tabbar">${TABS.map(t => `<button class="${S.tab === t[0] && !S.page ? 'on' : ''}" style="${S.tab === t[0] ? 'color:var(--bubble)' : ''}" data-act="tab" data-id="${t[0]}" data-t="tab-${t[0]}">${icon(t[2], 'i')}<span>${t[1]}</span></button>`).join('')}</div>`; }
+const title = (t, ic, col) => `<div class="cf-title"><svg viewBox="0 0 24 24" style="${col ? 'stroke:' + col : ''}"><path d="${ICON[ic]}"/></svg>${t}</div>`;
+function hopper() {
+  const b = BAGS[0], f = FRESH(b.days);
+  return `<div class="cf-card" style="--t:var(--mint)" data-t="hopper"><div class="cf-rr">In the hopper</div><div class="cf-bag" style="margin-top:6px"><div class="cf-ph" style="background:${b.col};height:56px;width:56px">${icon('bean')}</div><div><div class="cf-nm" style="font-size:19px">${esc(b.name)}</div><div class="cf-flow">${chip(b.left + ' g left', 'var(--mint)')}${chip('11 days' + DOT + f[0], f[1])}</div></div></div></div>`;
+}
+function todayHTML() {
+  const adv = S.advice, ans = S.ask ? fix(S.ask) : null;
+  return `<div class="scr" data-keep>${title('AMS Coffee', 'cup')}
+    <button class="cf-sq" style="--t:var(--bubble)" data-act="pull" data-t="pull">${icon('cup')}<span>Pull a shot</span></button>
+    <div class="cf-card" style="--t:var(--mint)" data-t="numbers"><div class="cf-bn"><div><b style="color:var(--mint)">${S.shotSaved ? 2 : 1}</b><span>today</span></div><div><b style="color:var(--blue)">${S.shotSaved ? 47 : 46}</b><span>brews</span></div><div><b style="color:var(--bubble)">4</b><span>bags</span></div><div><b style="color:var(--mango)">${S.shotSaved ? 20 : 19}</b><span>lovely</span></div></div></div>
+    ${S.kitDue ? `<div class="cf-sr" data-t="kit-line" style="padding:0 6px"><span class="cf-soft" style="flex:1;font-size:15.5px">Conical grinder — burrs due · 5.2 of 5 kg since 1 Oct</span><button class="cf-sq sm" style="--t:var(--apricot)" data-act="kit-done" data-t="kit-done">Done</button></div>` : ''}
+    ${adv ? `<div class="cf-card" style="--t:var(--sky)" data-t="advice-card"><div class="cf-adv">${esc(adv.h)}</div><div style="font:600 16px/1.3 var(--f-phone);margin-top:4px">${esc(adv.d)}</div></div>` : ''}
+    <div class="cf-card" style="--t:var(--grape)" data-t="ask-card"><div class="cf-h" style="color:var(--grape)">What should I change?</div><div class="cf-soft" style="margin-bottom:8px">About the espresso you just made.</div>
+      <div class="cf-ask">${CAPS.map(c => `<button class="cf-cap ${S.ask === c ? 'on' : ''}" data-act="ask" data-id="${c}" data-t="ask-${c}">${CAPQ[c]}</button>`).join('')}</div>
+      ${ans ? `<div data-t="ask-answer" style="margin-top:10px"><div class="cf-adv" style="color:var(--grape)">${esc(ans.h)}</div><div style="font:600 16px/1.3 var(--f-phone);margin-top:3px">${esc(ans.d)}</div></div>` : ''}</div>
+    ${hopper()}</div>${tabBar()}`;
+}
+function bagCard(b, i) {
+  const f = FRESH(b.days), det = [b.origin, b.process, /roast|ljus|rost|r.stung/i.test(b.roast) ? b.roast : b.roast + ' roast'].filter(Boolean).join(DOT);
+  const left = LEFT[b.id];
+  return `<button class="cf-card" style="--t:${b.col}" data-act="bag-open" data-id="${b.id}" data-t="bag-${i}"><div class="cf-bag"><div class="cf-ph" style="background:${b.col}">${icon('bean')}</div><div style="flex:1;min-width:0">
+    <div class="cf-rr">${esc(b.roaster)}</div><div class="cf-nm">${esc(b.name)}</div><div class="cf-det" style="color:${b.col}" data-t="details-${i}">${esc(det)}</div></div></div>
+    <div class="cf-meter"><i style="width:${Math.round(b.left / b.total * 100)}%;background:${b.col}"></i></div>
+    <div class="cf-flow">${chip(b.left + ' g left', b.col)}<span data-t="fresh-${i}">${chip(b.days + ' days' + DOT + f[0], f[1])}</span>${left ? `<span data-t="runout-${i}">${chip(left[0], left[1])}</span>` : ''}<span class="cf-stars">${'★'.repeat(b.stars)}</span></div>
+    <div style="font:800 16px ui-rounded,var(--f-phone)">${b.flav.join(DOT)}</div><div class="cf-soft" style="font-size:14.5px">${b.methods.join(DOT)}</div>
+    <div class="cf-soft" style="font-size:14px;margin-top:3px">${[b.left <= 50 ? 'nearly gone' : '', b.days <= 7 ? 'fresh roast' : '', i === 0 ? 'dialled in' : ''].filter(Boolean).join(DOT)}</div></button>`;
+}
+function bagsHTML() {
+  return `<div class="scr" data-keep>${title('Beans', 'bean')}${BAGS.map(bagCard).join('')}</div>
+    <div class="cf-add"><button class="cf-sq" style="--t:var(--mint)" data-act="bag-new" data-t="bags-add">${icon('plus')}<span>Add a bag</span></button></div>${tabBar()}`;
+}
+function brewsHTML() {
+  const res = BREWS.filter(b => (!S.meth || b.m === S.meth) && (!S.q.trim() || brewHit(b, S.q)));
+  return `<div class="scr" data-keep>${title('Brews', 'dial')}
+    <div class="cf-h" style="font-size:16px">Or make it another way</div>
+    <div class="cf-m">${['Pour-over', 'AeroPress', 'French press', 'Moka', 'Cold brew', 'Filter'].map((m, i) => `<button style="--t:${['var(--blue)', 'var(--grape)', 'var(--sky)', 'var(--apricot)', 'var(--mint)', 'var(--mango)'][i]}" data-act="soon">${m}</button>`).join('')}</div>
+    <div class="cf-fl"><button class="${S.meth ? '' : 'on'}" data-act="meth" data-id="">All 6</button>${[['Espresso', 2], ['Pour-over', 2], ['Filter', 1], ['French press', 1]].map(m => `<button class="${S.meth === m[0] ? 'on' : ''}" data-act="meth" data-id="${m[0]}" data-t="filter-${m[0].replace(' ', '-')}">${m[0]} ${m[1]}</button>`).join('')}</div>
+    <div class="cf-sh" data-t="search">${icon('search')}<input data-in="q" placeholder="Search: bag, note, green, Oct" value="${esc(S.q)}"></div>
+    ${S.q.trim() ? `<div class="cf-found" data-t="search-count">${res.length} brew${res.length === 1 ? '' : 's'} found</div>` : ''}
+    ${res.length ? res.map(b => { const bag = bagOf(b.bag), l = LWORD[b.light]; return `<div class="cf-card" style="--t:${bag.col}" data-t="shot-${b.id}"><div class="cf-sr">${ltDot(l[2])}<b style="font:900 17px ui-rounded,var(--f-phone)">${esc(bag.name)}</b><span class="cf-soft" style="margin-left:auto;font-size:13.5px">${b.when}</span></div><div class="cf-soft" style="font-size:14px">${b.m}${DOT}${esc(bag.roaster)}</div><div class="cf-flow"><span class="cf-pill">grind ${b.g}</span><span class="cf-pill">${b.dose} g → ${b.y} g</span><span class="cf-pill">${b.t}</span></div><div style="font:600 14.5px var(--f-phone)">${esc(b.note)}</div></div>`; }).join('') : `<div class="cf-card" style="--t:var(--apricot)" data-t="search-empty"><div class="cf-h">Nothing matches “${esc(S.q.trim())}”</div><div class="cf-soft">Search looks at the bag, its roaster, origin and roast (light, medium-dark, ljusrost…), the way you made it, your notes, its light and when it was made.</div></div>`}</div>
+    <div class="cf-add"><button class="cf-sq" style="--t:var(--bubble)" data-act="pull" data-t="shots-add">${icon('plus')}<span>Pull a shot</span></button></div>${tabBar()}`;
+}
+function settingsHTML() {
+  const big = (t, sub, col, ic, id) => `<button class="cf-card" style="--t:${col}" data-act="${id}" data-t="big-${id}"><div class="cf-big"><span class="ic" style="background:${col}">${icon(ic)}</span><div style="flex:1"><b>${t}</b><small>${sub}</small></div>${ico('chevR', 18)}</div></button>`;
+  return `<div class="scr" data-keep>${title('Settings', 'gear')}
+    <div class="cf-card" style="--t:var(--sky)"><div class="cf-h">Where your coffee lives</div><div class="cf-soft">In your iCloud Drive: the phone and the Mac read one file.</div></div>
+    ${big('Your cups', S.cups ? S.cups.length + ' kept · ' + S.cups.length + ' proved' : '3 kept · 3 proved', 'var(--grape)', 'jar', 'cups-open')}
+    ${big('Your kit', '2 things · burrs due', 'var(--apricot)', 'case', 'kit')}${big('The Sink', 'Nothing waiting', 'var(--mint)', 'tap', 'sink')}
+    <div class="cf-card" style="--t:var(--blue)"><div class="cf-h">A copy of everything</div><div class="cf-soft" style="margin-bottom:8px">Every bag, every brew and all your kit in one file you name and keep anywhere — proved by being opened again before it gets a tick.</div>
+      <div style="display:flex;flex-direction:column;gap:8px"><button class="cf-sq sm" style="--t:var(--blue)" data-act="backup-open" data-t="settings-backup">${icon('tray')}<span>Save a backup file</span></button><button class="cf-sq sm" style="--t:var(--sky)" data-act="soon">${icon('tray')}<span>Open a backup</span></button></div>
+      <div class="cf-soft" style="margin-top:8px">${S.backup === 'proved' ? 'Last backup file: today' : 'No backup file saved yet'}</div></div>
+    <div class="cf-card" style="--t:var(--mango)"><div class="cf-fold"><span>How this works</span><span class="cf-soft" style="font-size:13px">13 short chapters</span></div></div>
+    <div class="cf-card" style="--t:var(--bubble)"><div class="cf-fold"><span>Version history</span><span class="cf-soft" style="font-size:13px">v2.9 · The roast on the bag card</span></div></div></div>${tabBar()}`;
+}
+function cupsHTML() {
+  const cups = S.cups || CUPS();
+  const kc = { keepsake: 'var(--grape)', daily: 'var(--mint)', quick: 'var(--mint)' }, kn = { keepsake: 'Keepsake cup', daily: 'Daily cup', quick: 'Quick cup' };
+  return `<div class="scr" data-keep><div class="ltop"><button class="nbk" data-act="page-back" data-t="page-back" style="color:var(--bubble)">${icon('chevL')}Settings</button></div>${title('Cups', 'jar')}
+    <div class="cf-card" style="--t:var(--mint)" data-t="cups-intro"><div class="cf-h">Everything is kept safe in cups</div><div class="cf-soft" style="font-size:14px">Every save is poured into a cup, and every cup proves itself by being opened again and counted.</div><div class="cf-flow">${chip(cups.length + ' proved', 'var(--mint)')}</div></div>
+    ${S.cupWarn ? `<div class="cf-card" style="--t:var(--apricot)" data-t="cups-warning"><div class="cf-h" style="font-size:16px">A cup holding 4 bags · 0 brews · 3 things was not poured — the last cup holds 4 bags · 46 brews · 3 things. Nothing was overwritten.</div></div>` : ''}
+    <button class="cf-sq" style="--t:var(--grape)" data-act="save-cup" data-t="save-cup">${icon('jar')}<span>Save a cup</span></button>
+    ${cups.map((c, i) => `<div class="cf-card" style="--t:${kc[c.kind]}" data-t="cup-${i}"><div class="cf-sr"><span style="color:${kc[c.kind]};display:flex">${ico('jar', 30)}</span><div style="flex:1"><div style="font:900 18px ui-rounded,var(--f-phone)">${esc(c.name)}</div><div class="cf-soft" style="font-size:14px">${c.when}</div></div><span style="color:var(--mint);display:flex" data-t="cup-tick-${i}">${ico('check', 30)}</span></div>
+      <div class="cf-flow">${chip(c.line, kc[c.kind])}</div><div class="cf-soft" style="font-size:14px">Opened and counted: ${c.line}.</div>
+      <div style="display:flex;gap:8px;margin-top:8px"><button class="cf-sq sm" style="--t:var(--grape)" data-act="restore-open" data-id="${i}" data-t="restore-${i}">Pour it back</button><button class="cf-sq sm" style="--t:var(--sky)" data-act="soon">Test again</button></div></div>`).join('')}</div>${tabBar()}`;
+}
+function kitPage() { return `<div class="scr"><div class="cf-title">Your kit</div></div>`; }
+function sigPage() {
+  const A = [
+    [[chip('3 days · resting', 'var(--sky)'), chip('12 days · at its best', 'var(--mint)'), chip('30 days · fading', 'var(--mango)'), chip('50 days · past it', 'var(--apricot)')].join(''), 'Days off roast: sky is resting, mint is at its best, mango is fading, apricot is past it. A bag with no roast date shows nothing.'],
+    [[chip('2 more brews', 'var(--mango)'), chip('1 more brew', 'var(--apricot)')].join(''), 'A bag running out: mango, then apricot, then red “not enough for another”. While there is plenty it says nothing.'],
+    [`${ltDot('var(--mint)')}${ltDot('var(--mango)')}${ltDot('var(--bubble)')}`, 'The light of a brew: green is Lovely, amber is Drinkable, red is Tipped it out. Green is also the recipe the bag offers next time.'],
+    ['<span style="font:800 13px ui-rounded,var(--f-phone);color:var(--bubble)">from the label</span>', 'Small pink words beside a box: it was filled from the photo of the bag. Change the box by hand and the words go.'],
+    ['<span class="cf-soft" style="font-size:13px">nearly gone</span>', 'Small grey words under a bag: nearly gone (50 g or less), fresh roast (a week or less), dialled in (a green brew exists).']
+  ], B = [
+    [`<span style="font:900 22px ui-rounded,var(--f-phone);color:var(--mint)">28</span> <span style="font:900 22px ui-rounded,var(--f-phone);color:var(--mango)">22</span> <span style="font:900 22px ui-rounded,var(--f-phone);color:var(--danger)">34</span>`, 'The running clock: plain while it settles, mango when you are nearly in the window, green inside it, calm red once past it.'],
+    [`<span style="color:var(--mint);display:flex">${ico('check', 28)}</span><span style="color:var(--apricot);display:flex">${ico('warn', 26)}</span>`, 'On a cup: a green tick means it was opened again and counted; an orange warning means it could not be proved. A warning on the shelf says a cup was refused for holding less.'],
+    ['<span class="cf-sq sm" style="--t:var(--apricot);padding:5px 12px;font-size:13px;box-shadow:none">Done</span>', 'On Today, one quiet line with an apricot Done: your grinder or machine is due for care. Nothing due, no line.'],
+    ['<span class="cf-sq sm cf-red" style="padding:5px 10px;font-size:13px">Remove</span>', 'One calm red, last on the screen, for everything that removes something. Keeping is always the easy way out.'],
+    ['<svg viewBox="0 0 70 30" style="width:64px"><rect x="0" y="9" width="70" height="12" rx="3" fill="var(--mint)" opacity=".25"/><path d="M4 22 L22 17 L40 14 L66 11" stroke="var(--blue)" stroke-width="2.4" fill="none"/><circle cx="4" cy="22" r="3.4" fill="var(--bubble)"/><circle cx="40" cy="14" r="3.4" fill="var(--mango)"/><circle cx="66" cy="11" r="3.4" fill="var(--mint)"/></svg>', 'The dial-in chart: oldest brew on the left, every dot in the colour of its light, a shaded strip for the window you are aiming at.'],
+    ['<span class="cf-sq sm" style="--t:var(--bubble);padding:5px 12px;font-size:13px;box-shadow:none">Pull a shot</span>', 'The one big full-colour button of a screen is the main action; it is never grey.']
+  ];
+  const L = S.sig === 1 ? A : B;
+  return `<div class="scr" data-keep>${title('How this works', 'doc')}<div class="cf-card" style="--t:var(--mango)" data-t="sign-${S.sig}"><div class="cf-h">Signs in this app${S.sig === 2 ? ' (continued)' : ''}</div>${L.map(s => `<div class="cf-sig"><span class="k">${s[0]}</span><span>${s[1]}</span></div>`).join('')}</div></div>${tabBar()}`;
+}
+
+/* The bag editor */
+const FIELDS = [['roaster', 'Roaster'], ['name', 'Name of the bean'], ['origin', 'Origin'], ['process', 'Process (washed, natural…)'], ['roast', 'Roast (light, medium, dark…)']];
+const SUG = { roaster: 'Tern & Cask Roasters', name: 'Saffron Ridge', origin: 'Ethiopia', process: 'Washed', roast: 'Light', date: '20 Nov 2026' };
+function bagSheet() {
+  const b = S.bag, isNew = b.mode === 'new';
+  const offered = b.label === 'found' ? FIELDS.map(f => f[0]).filter(k => !String(b[k]).trim() && !b.fills[k]).concat(b.dateOff ? [] : ['date']) : [];
+  const suggestions = b.label === 'reading' ? '<div class="cf-soft" data-t="reading">Reading the label…</div>' : b.label === 'found' && offered.length ? `<div class="cf-card" style="--t:var(--bubble)" data-t="suggest"><div class="cf-h" style="font-size:16px">From the label — tap to use</div>${offered.map(k => `<div class="cf-sg"><span class="cf-soft" style="width:78px;font-size:13px">${k === 'date' ? 'Roast date' : FIELDS.find(f => f[0] === k)[1].split(' (')[0]}</span><span>${esc(SUG[k])}</span><button class="cf-use" data-act="use" data-id="${k}" data-t="use-${k}">Use</button></div>`).join('')}</div>` : '';
+  const fat = FIELDS.map(f => `<div class="cf-fat"><label>${f[1]}${b.fills[f[0]] ? `<em data-t="fl-${f[0]}">from the label</em>` : ''}</label><input data-in="f-${f[0]}" data-t="f-${f[0]}" value="${esc(b[f[0]])}"></div>`).join('');
+  const dial = !isNew ? `<div class="cf-card" style="--t:var(--sky)" data-t="dialin"><div class="cf-h">How you dialled it in</div><div class="cf-soft" style="margin-bottom:6px" data-t="dialin-sum">3 brews · 1 green · the last one green</div>
+      ${[['Grind', '15 → 13.5 · finer', 'var(--blue)', '4,8 24,16 44,20 66,24'], ['Dose', '18 g all along', 'var(--grape)', '4,16 24,16 44,16 66,16'], ['Time', '21 s → 28 s · in the window', 'var(--sky)', '4,26 24,18 44,12 66,10'], ['Taste', 'sour → balanced', 'var(--bubble)', '4,26 24,18 44,12 66,10']].map(l => `<div class="cf-chart"><div style="display:flex;justify-content:space-between"><b style="font:900 15px ui-rounded,var(--f-phone);color:${l[2]}">${l[0]}</b><span class="cf-soft" style="font-size:13px">${l[1]}</span></div><svg viewBox="0 0 70 30" preserveAspectRatio="none"><polyline points="${l[3]}" fill="none" stroke="${l[2]}" stroke-width="2.4" stroke-linecap="round"/>${l[3].split(' ').map((p, i, a) => `<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="3" fill="${['var(--bubble)', 'var(--mango)', 'var(--mint)', 'var(--mint)'][i]}"/>`).join('')}</svg></div>`).join('')}
+      <button class="cf-sq sm" style="--t:var(--mint);margin-top:6px" data-act="soon"><span>Same again from here</span></button><div class="cf-soft" style="font-size:13px;margin-top:4px">Your green espresso from 1 Nov: grind 13.5 · 18 g · 30 s</div></div>` : '';
+  return `<div class="cf-sheet" data-sh="bag"><div class="scr" data-keep>${title(isNew ? 'A new bag' : 'The bag', 'bean', 'var(--mint)')}
+    <div class="cf-card" style="--t:var(--grape)"><div class="cf-sr"><span class="cf-h" style="margin:0;flex:1">The bag</span><button class="cf-sq sm" style="--t:var(--grape)" data-act="soon">${icon('camera')}<span>Take photo</span></button><button class="cf-sq sm" style="--t:var(--sky)" data-act="bag-photo" data-t="bag-photo">${icon('photo')}<span>Choose</span></button></div></div>
+    ${suggestions}<div class="cf-card" style="--t:var(--mint)">${fat}
+      <div class="cf-sr" style="margin-top:4px"><span class="cf-h" style="margin:0">Roasted on</span><span class="cf-pill" style="margin-left:auto">${b.fills.date ? '20 Nov 2026' : 'off'}</span>${b.fills.date ? '<em style="font:800 13px ui-rounded,var(--f-phone);color:var(--bubble);font-style:normal">from the label</em>' : ''}</div></div>
+    <div class="cf-card" style="--t:var(--bubble)"><div class="cf-h">What does it taste like?</div><div class="cf-flow">${['Stone fruit', 'Caramel', 'Jasmine', 'Cocoa'].map((f, i) => `<span class="cf-pill" style="${i < 2 && !isNew ? 'background:var(--bubble);color:#fff;border-color:var(--bubble)' : ''}">${f}</span>`).join('')}</div><div class="cf-stars" style="font-size:22px">${isNew ? '☆☆☆☆☆' : '★★★★☆'}</div>
+      <div class="cf-lp">${['Undecided', 'Buy again', 'Never again'].map((v, i) => `<button class="${i === 0 ? 'on' : ''}" style="padding:6px 0">${v}</button>`).join('')}</div></div>
+    ${dial}${!isNew ? '<button class="cf-sq cf-red" data-act="soon">Remove</button>' : ''}</div>
+    <div class="cf-sticky"><button class="cf-sq" style="--t:var(--mint);flex:1" data-act="sheet-save" data-t="save-bag">${icon('check')}<span>Save the bag</span></button><button class="cf-x" data-act="sheet-cancel" data-t="sheet-cancel" aria-label="Cancel">${icon('cross')}</button></div></div>`;
+}
+
+/* The espresso editor */
+function shotSheet() {
+  const s = S.shot, t = S.timer || { st: 'idle', sec: 0 }, adv = advise(s);
+  const stand = t.sec > 32 ? ['past it', 'var(--danger)'] : t.sec >= 25 ? ['there', 'var(--mint)'] : t.sec >= 20 ? ['nearly', 'var(--mango)'] : ['', 'var(--pink)'];
+  const dial = (l, v, u) => `<div class="cf-dial"><div><small>${l}</small><b style="color:var(--blue)">${v}<span class="cf-soft" style="font-size:15px"> ${u}</span></b></div><div class="pm"><span>−</span><span>+</span></div></div>`;
+  const slider = (k, l, r, col, id) => `<div style="margin:16px 0 6px"><div class="cf-sl" style="--t:${col}" data-sl="${k}" data-act="sl" data-t="${id}"><div class="w"><span>${l}</span><span>${r}</span></div><i style="left:${(s[k] + 1) / 2 * 100}%"></i></div></div>`;
+  return `<div class="cf-sheet" data-sh="shot"><div class="scr" data-keep>${title('Espresso', 'dial', 'var(--bubble)')}
+    <div class="cf-card" style="--t:var(--mint)"><div class="cf-h">Which bag?</div><div class="cf-pill" style="display:inline-block">Finca Alba ▾</div><div class="cf-soft" style="margin-top:6px;font-size:14.5px" data-t="starting">Same again: your best espresso on this bag, 20 Sep.</div></div>
+    <div class="cf-card" style="--t:var(--mint)" data-t="timer-card"><div class="cf-h">Time it</div><div class="cf-clock" id="cfClock" style="color:${stand[1]}" data-t="clock">${t.sec ? Math.floor(t.sec) + ' s' : '0 s'}</div><div class="cf-soft" style="font-size:14px" id="cfStand">${stand[0] ? stand[0] + DOT : ''}aim 25–32 s</div>
+      <div style="display:flex;gap:8px;margin-top:8px">${t.st === 'run' ? `<button class="cf-sq sm" style="--t:var(--danger)" data-act="timer-stop" data-t="timer-stop"><span>Stop</span></button>` : `<button class="cf-sq sm" style="--t:var(--mint)" data-act="timer-start" data-t="timer-start"><span>${t.st === 'stop' ? 'Carry on' : 'Start'}</span></button>`}</div></div>
+    <div class="cf-card" style="--t:var(--blue)" data-t="dials">${dial('Grind setting', trim(s.g), '')}${dial('Coffee in', trim(s.dose), 'g')}${dial('Yield out', trim(s.y), 'g')}${dial('Total time', Math.round(s.sec), 's')}${dial('Temperature', s.temp, '°C')}${dial('Pre-infusion', 5, 's')}</div>
+    <div class="cf-card" style="--t:var(--mango)"><div class="cf-bn" style="grid-template-columns:1fr 1fr"><div><b style="color:var(--mango)">1 : ${trim(s.y / s.dose)}</b><span>ratio</span></div><div><b style="color:var(--apricot)">${s.sec ? trim(s.y / s.sec) : '—'}</b><span>g per second</span></div></div></div>
+    <div class="cf-card" style="--t:var(--bubble)" data-t="taste"><div class="cf-h">How was it?</div>${slider('sb', 'Sour', 'Bitter', 'var(--bubble)', 'sl-sb')}${slider('ts', 'Thin', 'Syrupy', 'var(--grape)', 'sl-ts')}
+      <div class="cf-lp" data-t="lights">${[['red', 'Tipped it out'], ['amber', 'Drinkable'], ['green', 'Lovely']].map(l => `<button class="${s.light === l[0] ? 'on' : ''}" data-act="light" data-id="${l[0]}" data-t="light-${l[0]}">${ltDot(LWORD[l[0]][2])}<span>${l[1]}</span></button>`).join('')}</div></div>
+    <div class="cf-card" style="--t:var(--sky)" data-t="advice"><div class="cf-soft" style="font-size:14px">Next time</div><div class="cf-adv" id="cfAdv">${esc(adv.h)}</div><div style="font:600 16px/1.3 var(--f-phone);margin-top:3px" id="cfAdvD">${esc(adv.d)}</div></div></div>
+    <div class="cf-sticky"><button class="cf-sq" style="--t:var(--bubble);flex:1" data-act="shot-save" data-t="save-shot">${icon('check')}<span>Save it</span></button><button class="cf-x" data-act="sheet-cancel" data-t="sheet-cancel" aria-label="Cancel">${icon('cross')}</button></div></div>`;
+}
+function nameSheet() {
+  return `<div class="cf-sheet" data-sh="name"><div class="scr" data-keep>${title('Name this cup', 'jar', 'var(--grape)')}<div class="cf-card" style="--t:var(--grape)"><div class="cf-soft">Keepsake cups are kept forever — the shelf never tips one out.</div><div class="cf-fat" style="margin-top:10px"><label>Call it something</label><input data-in="cupname" data-t="name-field" value="${esc(S.name)}"></div><div class="cf-soft" style="font-size:14px">Leave it blank and it will just be called Keepsake.</div></div></div>
+    <div class="cf-sticky"><button class="cf-sq" style="--t:var(--grape);flex:1" data-act="pour" data-t="pour-it">${icon('check')}<span>Pour it</span></button><button class="cf-x" data-act="sheet-cancel" data-t="sheet-cancel" aria-label="Cancel">${icon('cross')}</button></div></div>`;
+}
+function restoreSheet() {
+  const c = (S.cups || CUPS())[S.restore];
+  return `<div class="cf-sheet" data-sh="restore"><div class="scr" data-keep>${title('Pour it back?', 'jar', 'var(--grape)')}<div class="cf-card" style="--t:var(--grape)"><div style="font:900 18px ui-rounded,var(--f-phone)">${esc(c.name)}</div><div class="cf-soft" style="font-size:14px">${c.when}</div><div class="cf-flow">${chip(c.line, 'var(--grape)')}</div></div>
+    <div class="cf-card" style="--t:var(--sky)"><div class="cf-soft" style="font-size:14px">What changes</div><div class="cf-adv" style="font-size:24px" data-t="restore-preview">+2 bags · same brews</div></div>
+    <div class="cf-card" style="--t:var(--mint)" data-t="safety"><div style="font:600 17px/1.3 var(--f-phone)">Where you are now is saved first, as a keepsake cup called “Before restore”. Nothing is lost either way.</div></div></div>
+    <div class="cf-sticky"><button class="cf-sq" style="--t:var(--grape);flex:1" data-act="sheet-cancel" data-t="restore-go">${icon('check')}<span>Pour it back</span></button><button class="cf-x" data-act="sheet-cancel" data-t="sheet-cancel" aria-label="Cancel">${icon('cross')}</button></div></div>`;
+}
+function backupSheet() {
+  const b = S.backup;
+  return `<div class="cf-sheet" data-sh="backup"><div class="scr" data-keep>${title('A backup file', 'tray', 'var(--blue)')}<div class="cf-card" style="--t:var(--blue)"><div class="cf-soft">Every bag, brew and piece of kit in one file. Name it, then choose where it goes — Files, iCloud Drive, or a USB stick on the Mac.</div><div class="cf-fat" style="margin-top:10px"><label>Call it</label><input value="AMS Coffee 2026-11-27"></div><div class="cf-soft" style="font-size:14px">Photos stay with the app; the file holds everything else.</div></div>
+    ${b === 'proved' ? `<div class="cf-card" style="--t:var(--mint)" data-t="backup-proved"><div class="cf-sr"><span style="color:var(--mint);display:flex">${ico('check', 30)}</span><div><div class="cf-h" style="margin:0">Saved and proved</div><div class="cf-soft" style="font-size:14px">Opened and counted: 4 bags · 46 brews · 3 things</div></div></div></div>` : ''}</div>
+    <div class="cf-sticky"><button class="cf-sq" style="--t:var(--blue);flex:1" data-act="${b === 'proved' ? 'sheet-cancel' : 'backup-choose'}" data-t="backup-choose"><span>${b === 'proved' ? 'Done' : 'Choose where'}</span></button><button class="cf-x" data-act="sheet-cancel" data-t="sheet-cancel" aria-label="Cancel">${icon('cross')}</button></div></div>`;
+}
+function renderStage() {
+  const st = document.getElementById('stage');
+  const key = () => (S.sheet || S.page || S.tab);
+  const prevKeys = renderStage.keys || {}, scrolls = renderStage.scrolls = renderStage.scrolls || {};
+  st.querySelectorAll('[data-keep]').forEach(e => { if (e.dataset.k) scrolls[e.dataset.k] = e.scrollTop; });
+  const ae = document.activeElement, inId = ae && st.contains(ae) ? ae.dataset.in : null, sel = inId ? [ae.selectionStart, ae.selectionEnd] : null;
+  let body;
+  if (S.page === 'cups') body = cupsHTML(); else if (S.page === 'signs') body = sigPage();
+  else body = S.tab === 'today' ? todayHTML() : S.tab === 'bags' ? bagsHTML() : S.tab === 'shots' ? brewsHTML() : settingsHTML();
+  const over = S.sheet === 'bag' ? bagSheet() : S.sheet === 'shot' ? shotSheet() : S.sheet === 'name' ? nameSheet() : S.sheet === 'restore' ? restoreSheet() : S.sheet === 'backup' ? backupSheet() : '';
+  st.innerHTML = `<div class="sbar"><span>9:41</span><span class="bat"></span></div>${body}${over}${S.toast ? `<div class="cf-toast">${esc(S.toast)}</div>` : ''}`;
+  renderStage.keys = {};
+  st.querySelectorAll('[data-keep]').forEach(e => { const k = (e.closest('.cf-sheet') ? 'sh:' + key() : 'pg:' + key()); e.dataset.k = k; renderStage.keys[k] = 1; e.scrollTop = prevKeys[k] ? (scrolls[k] || 0) : 0; });
+  if (inId) { const nf = st.querySelector(`[data-in="${inId}"]`); if (nf) { nf.focus(); try { nf.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
+  markTarget();
+}
+let toastH = null;
+function toast(t) { S.toast = t; renderStage(); clearTimeout(toastH); toastH = setTimeout(() => { S.toast = ''; renderStage(); }, 2400); }
+const soon = () => toast('Practice copy: not drawn here.');
+
+/* ---------- Actions inside the pretend iPhone ---------- */
+const stage = document.getElementById('stage');
+const newShot = () => ({ g: 13.5, dose: 18, y: 36, sec: 0, temp: 93, sb: 0, ts: 0, light: null });
+const newBag = o => Object.assign({ mode: 'new', roaster: '', name: '', origin: '', process: '', roast: '', label: 'idle', fills: {}, dateOff: false }, o || {});
+stage.addEventListener('input', ev => {
+  const k = ev.target.dataset.in; if (!k) return; const v = ev.target.value;
+  if (k === 'q') { S.q = v; renderStage(); if (v.trim()) emit('search-typed', v); }
+  else if (k === 'cupname') { S.name = v; if (v.trim()) emit('name-typed', v); }
+  else if (/^f-/.test(k)) { const f = k.slice(2); S.bag[f] = v; delete S.bag.fills[f]; if (v.trim()) emit('field-typed', f); }
+});
+stage.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.dataset && ev.target.dataset.in) ev.target.blur(); });
+stage.addEventListener('click', ev => {
+  const sl = ev.target.closest('[data-sl]');
+  if (sl && S.sheet === 'shot') { const r = sl.getBoundingClientRect(); let v = ev.clientX === 0 && ev.clientY === 0 ? 0.6 : ((ev.clientX - r.left) / r.width) * 2 - 1; v = Math.max(-1, Math.min(1, Math.round(v * 20) / 20)); S.shot[sl.dataset.sl] = v; renderStage(); emit('taste', sl.dataset.sl); return; }
+  const el = ev.target.closest('[data-act]'); if (!el) return;
+  act(el.dataset.act, el.dataset.id, el);
+});
+function stopTimer() { S.timer = Object.assign(S.timer || {}, { st: 'stop' }); }
+function tick() {
+  const t = S.timer; if (!t || t.st !== 'run') return;
+  t.sec = Math.min(45, t.sec + 1); S.shot.sec = t.sec;
+  const stand = t.sec > 32 ? ['past it', 'var(--danger)'] : t.sec >= 25 ? ['there', 'var(--mint)'] : t.sec >= 20 ? ['nearly', 'var(--mango)'] : ['', 'var(--pink)'];
+  const c = document.getElementById('cfClock'), sd = document.getElementById('cfStand');
+  if (c) { c.textContent = t.sec + ' s'; c.style.color = stand[1]; } if (sd) sd.textContent = (stand[0] ? stand[0] + DOT : '') + 'aim 25–32 s';
+  later(tick, 100);
+}
+function act(a, id, el) {
+  switch (a) {
+    case 'soon': soon(); break;
+    case 'tab': S.tab = id; S.page = null; renderStage(); emit('tab', id); break;
+    case 'pull': S.tab = 'today'; S.shot = newShot(); S.timer = null; S.sheet = 'shot'; renderStage(); emit('shot-open'); break;
+    case 'meth': S.meth = id; renderStage(); break;
+    case 'bag-new': S.bag = newBag(); S.sheet = 'bag'; renderStage(); emit('bag-open'); break;
+    case 'bag-open': { const b = bagOf(id); S.bag = newBag({ mode: 'edit', roaster: b.roaster, name: b.name, origin: b.origin, process: b.process, roast: b.roast }); S.sheet = 'bag'; renderStage(); emit('bag-open', 'edit'); break; }
+    case 'bag-photo': S.bag.label = 'reading'; renderStage(); later(() => { S.bag.label = 'found'; renderStage(); emit('label'); }, 800); break;
+    case 'use': S.bag[id === 'date' ? 'dateOff' : id] = id === 'date' ? true : SUG[id]; S.bag.fills[id] = true; renderStage(); emit('use', id); break;
+    case 'sheet-save': S.sheet = null; renderStage(); emit('sheet-saved'); break;
+    case 'sheet-cancel': S.sheet = null; renderStage(); break;
+    case 'timer-start': S.timer = { st: 'run', sec: 0 }; renderStage(); later(tick, 100); emit('timer-start'); break;
+    case 'timer-stop': stopTimer(); renderStage(); emit('timer-stop'); break;
+    case 'light': S.shot.light = id; renderStage(); emit('light', id); break;
+    case 'shot-save': S.sheet = null; S.shotSaved = true; S.advice = advise(Object.assign({}, S.shot, { sec: S.shot.sec || 28 })); renderStage(); emit('shot-saved'); break;
+    case 'ask': S.ask = S.ask === id ? null : id; renderStage(); emit('ask', S.ask); break;
+    case 'kit-done': S.kitDue = false; renderStage(); emit('kit-done'); break;
+    case 'cups-open': S.page = 'cups'; S.cups = S.cups || CUPS(); renderStage(); emit('cups-open'); break;
+    case 'page-back': S.page = null; renderStage(); break;
+    case 'save-cup': S.name = ''; S.sheet = 'name'; renderStage(); emit('name-open'); break;
+    case 'pour': { const nm = S.name.trim() || 'Keepsake'; S.cups = [{ kind: 'keepsake', name: nm, when: '27 Nov 2026, 09:41', line: '4 bags · 46 brews · 3 things', ok: true }].concat(S.cups || CUPS()); S.sheet = null; renderStage(); emit('cup-poured'); break; }
+    case 'restore-open': S.restore = +id; S.sheet = 'restore'; renderStage(); emit('restore-open'); break;
+    case 'backup-open': S.backup = null; S.sheet = 'backup'; renderStage(); emit('backup-open'); break;
+    case 'backup-choose': S.backup = 'proved'; renderStage(); emit('backup-proved'); break;
+    default: break;
+  }
+}
+
+/* ---------- Lessons (see, try, check). Every step's setup does a full reset of what that step needs. ---------- */
+const todayS = o => set(o || {});
+const shotS = o => { set(o || {}); S.shot = newShot(); S.sheet = 'shot'; };
+const LESSONS = [
+  { title: 'The four places', icon: 'cup', steps: [
+    { kind: 'look', head: 'Today, the morning screen', text: 'The app opens on Today, headed "AMS Coffee". The one big full-colour button is "Pull a shot". Under it four big numbers: brews logged today, brews in total, bags, and "lovely" (brews with a green light). There is no money anywhere in the app. Further down: what the coach said, the "What should I change?" card, and "In the hopper", the bag you are drinking.', target: 'pull', setup: () => todayS() },
+    { kind: 'look', head: 'Four numbers', text: 'today · brews · bags · lovely. The last one counts the brews you marked green. Nothing on this screen is a total of spending.', target: 'numbers', setup: () => todayS() },
+    { kind: 'try', head: 'Beans', text: 'Four places sit in the bar at the bottom: Today, Beans, Brews and Settings, and only four. Tap "Beans".', target: 'tab-bags', setup: () => todayS(), wait: 'tab', when: d => d === 'bags', ok: 'Beans is the list of bags you bought. Everything you touch only once (the guide, the version history, the cups, your kit, the Sink, the backup file) lives in Settings, out of the morning’s way.' },
+    { kind: 'try', head: 'Brews', text: 'Now tap "Brews".', target: 'tab-shots', setup: () => todayS({ tab: 'bags' }), wait: 'tab', when: d => d === 'shots', ok: 'Brews is every coffee you made, newest first, with the six other ways to make one, a search box and "Pull a shot" at the bottom, where a thumb is.' },
+    { kind: 'check', head: 'Quick check', text: 'Where do "How this works" and the version history live?', answers: ['In Settings', 'On Today', 'In Brews'], right: 0, ok: 'Right. Settings also holds your cups, your kit, the Sink and the backup file.', setup: () => todayS({ tab: 'settings' }) },
+  ]},
+  { title: 'The bags you bought', icon: 'bean', steps: [
+    { kind: 'look', head: 'A bag card', text: 'Each bag is a coloured card: the roaster in capitals, the name, and one bold line in the bag’s own colour with where it is from, how it was processed and how it was roasted ("Colombia · Anaerobic natural · Medium-light roast"). Then a grams-left bar and small chips: grams left, days off roast and, when it is nearly empty, "1 more brew". Stars, flavours and the ways you made it follow.', target: 'details-0', setup: () => todayS({ tab: 'bags' }) },
+    { kind: 'look', head: 'Colours that talk', text: 'The days-off-roast chip drifts in colour as the bag ages: sky is resting, mint is at its best, mango is fading, apricot is past it. The second bag is nearly gone: its chip says "1 more brew", worked out from that bag’s own recipe. While there is plenty it says nothing.', target: 'runout-1', setup: () => todayS({ tab: 'bags' }) },
+    { kind: 'try', head: 'Add a bag', text: 'Tap "Add a bag" at the bottom of the list.', target: 'bags-add', setup: () => todayS({ tab: 'bags' }), wait: 'bag-open', ok: 'The editor opens: a photo row, then Roaster, Name of the bean, Origin, Process, Roast, "Roasted on" behind a switch, flavours, stars and "Undecided / Buy again / Never again". "Save the bag" is the big full-colour button; the round cross cancels (Escape on the Mac).' },
+    { kind: 'try', head: 'The roast box', text: 'Type "Medium-light" in the Roast box.', target: 'f-roast', setup: () => { todayS({ tab: 'bags' }); S.bag = newBag(); S.sheet = 'bag'; }, wait: 'field-typed', when: d => d === 'roast', robot: { type: 'type', value: 'Medium-light' }, ok: 'Since 2.8 there is a box for it. On the bag card it will read "Medium-light roast". A roast that already says roast ("Light roast", "Ljusrost") is shown exactly as you typed it.' },
+    { kind: 'try', head: 'Read the label', text: 'Tap "Choose" in the photo row, as if you had picked a photo of the bag.', target: 'bag-photo', setup: () => { todayS({ tab: 'bags' }); S.bag = newBag(); S.sheet = 'bag'; }, wait: 'label', ok: 'The phone read the words on the bag, on the phone itself: no internet, nothing sent. It offers what it found, each with its own Use button. It only offers a box that is still empty, and never takes a best-before date for a roast date.' },
+    { kind: 'try', head: 'Use one', text: 'Tap "Use" on the Roast row.', target: 'use-roast', setup: () => { todayS({ tab: 'bags' }); S.bag = newBag({ label: 'found' }); S.sheet = 'bag'; }, wait: 'use', when: d => d === 'roast', ok: 'The box is filled in, and small pink words "from the label" stand beside its title so you can give it a quick look. Change the box by hand and the words go.' },
+    { kind: 'check', head: 'Quick check', text: 'When does the label reader offer a name, roaster, origin, process or roast?', answers: ['Only while that box is still empty', 'Always, replacing what you typed', 'Only for a bag with a photo of the receipt'], right: 0, ok: 'Right. Nothing is ever filled in behind your back; start typing yourself and its suggestion goes away.', setup: () => { todayS({ tab: 'bags' }); S.bag = newBag({ label: 'found', roaster: 'Tern' }); S.sheet = 'bag'; } },
+  ]},
+  { title: 'Espresso and the coach', icon: 'dial', steps: [
+    { kind: 'try', head: 'Pull a shot', text: 'On Today tap the big "Pull a shot" button.', target: 'pull', setup: () => todayS(), wait: 'shot-open', ok: 'A new espresso opens. Each method shows only its own dials: espresso asks for grams out and seconds; a pour-over asks for water, bloom and pours; cold brew asks for hours.' },
+    { kind: 'look', head: 'Where the numbers came from', text: 'Under "Which bag?" a line says whether these numbers are yours: "Same again: your best espresso on this bag, 20 Sep". With nothing logged yet it says so instead. So you always know if they are your numbers or the book’s.', target: 'starting', setup: () => shotS() },
+    { kind: 'look', head: 'The dials', text: 'Grind setting, Coffee in, Yield out, Total time, Temperature and Pre-infusion, each with minus and plus. Under them the ratio and the grams per second work themselves out.', target: 'dials', setup: () => shotS() },
+    { kind: 'try', head: 'Time it', text: 'Tap "Start", then "Stop" when the number turns green. (In this practice copy the clock runs ten times faster.)', target: 'timer-start', setup: () => shotS(), wait: 'timer-stop', on: { 'timer-start': 'timer-stop' }, ok: 'The time writes itself into "Total time". The number says what to aim for (25–32 s) and changes colour: plain, mango when nearly there, green inside the window, calm red once past it. The real clock works from the moment you started, so a locked phone does not matter.' },
+    { kind: 'try', head: 'How was it?', text: 'Tap the right-hand end of the "Sour ↔ Bitter" slider to say it was bitter.', target: 'sl-sb', setup: () => { shotS(); S.shot.sec = 28; }, wait: 'taste', ok: 'You drag it in the real app. The coach answers at once under "Next time".' },
+    { kind: 'look', head: 'Next time', text: 'Taste leads and time only explains why. Bitter with a normal time: "A touch coarser, a touch cooler — Try grind 14.5 and 92°C." One change at a time: that is the whole trick.', target: 'advice', setup: () => { shotS(); S.shot.sec = 28; S.shot.sb = .6; } },
+    { kind: 'try', head: 'A green light', text: 'It was lovely after all. Tap the green "Lovely".', target: 'light-green', setup: () => { shotS(); S.shot.sec = 28; S.shot.sb = .6; }, wait: 'light', when: d => d === 'green', ok: 'The coach now says "Keep it exactly here" with your numbers, and this brew becomes the recipe the bag offers you next time for espresso.' },
+    { kind: 'try', head: 'Save it', text: 'Tap "Save it".', target: 'save-shot', setup: () => { shotS(); S.shot.sec = 28; S.shot.light = 'green'; }, wait: 'shot-saved', ok: 'Back on Today the coach’s line is at the top, and the numbers moved by one.' },
+    { kind: 'check', head: 'Quick check', text: 'The shot tasted sour and ran through in 18 seconds. What does the coach say?', answers: ['Grind finer', 'Grind coarser', 'Stop it earlier'], right: 0, ok: 'Right: "Grind finer — About 2 clicks. It ran through in 18 s — too quick to taste sweet." On a French press it would say "steep it longer" instead, because that is the knob you turn.', setup: () => todayS() },
+  ]},
+  { title: 'The Cup System', icon: 'jar', steps: [
+    { kind: 'try', head: 'Your cups', text: 'Tap Settings, then "Your cups". (Here: just tap "Your cups".)', target: 'big-cups-open', setup: () => todayS({ tab: 'settings' }), wait: 'cups-open', ok: 'The shelf of cups. Every save is poured into a cup, silently; the shelf fills itself.' },
+    { kind: 'look', head: 'Three kinds of cup', text: 'A quick cup after every change (the last 10 kept), a daily cup once a day (the last 7), and a keepsake cup when you press "Save a cup" (kept forever). Each row says when it was poured and what it holds, and a green tick means it proved itself: it was opened again and counted.', target: 'cup-tick-0', setup: () => todayS({ page: 'cups', cups: CUPS() }) },
+    { kind: 'try', head: 'Save a cup', text: 'Tap the purple "Save a cup".', target: 'save-cup', setup: () => todayS({ page: 'cups', cups: CUPS() }), wait: 'name-open', ok: 'A page asks for a name. Leave it blank and it is just called Keepsake.' },
+    { kind: 'try', head: 'Name it and pour it', text: 'Type "Before the move" and press "Pour it".', target: 'name-field', setup: () => { todayS({ page: 'cups', cups: CUPS() }); S.sheet = 'name'; }, wait: 'cup-poured', on: { 'name-typed': 'pour-it' }, robot: { type: 'type', value: 'Before the move' }, ok: 'The new keepsake is at the top of the shelf, with its own green tick once it has been read back and counted. A keepsake is never tipped out.' },
+    { kind: 'try', head: 'Pour it back', text: 'Tap "Pour it back" on the Daily cup.', target: 'restore-1', setup: () => todayS({ page: 'cups', cups: CUPS() }), wait: 'restore-open', ok: 'It does not do it yet. It shows what would change first: "+2 bags · same brews". And where you are now is saved first, as a keepsake called "Before restore". Cancel, with the cross, and nothing has changed.' },
+    { kind: 'check', head: 'Quick check', text: 'A new cup would hold fewer records than the newest cup on the shelf. What happens?', answers: ['It is refused, the good cup stays, and the shelf says so', 'It replaces the old one', 'It is poured and the old one is deleted'], right: 0, ok: 'Right. "A cup never shrinks silently": a good backup can never be overwritten by an empty one.', setup: () => todayS({ page: 'cups', cups: CUPS(), cupWarn: true }) },
+  ]},
+  { title: 'Ask the coach, find a brew', icon: 'search', steps: [
+    { kind: 'try', head: 'Ask outright', text: 'On Today, under "What should I change?", tap "Too bitter".', target: 'ask-bitter', setup: () => todayS(), wait: 'ask', when: d => d === 'bitter', ok: 'One concrete change, worked out from the espresso you just made, by the same coach that reads a logged brew. Tap the same choice again and the answer is put away.' },
+    { kind: 'try', head: 'It was lovely', text: 'Tap "It was lovely".', target: 'ask-lovely', setup: () => todayS(), wait: 'ask', when: d => d === 'lovely', ok: '"Change nothing. That is the recipe." It does not invent a change.' },
+    { kind: 'try', head: 'Search the brews', text: 'On Brews type "light" in the search box.', target: 'search', setup: () => todayS({ tab: 'shots' }), wait: 'search-typed', robot: { type: 'type', value: 'light' }, ok: 'Two brews are found: those of the bag whose roast is Light. The search also looks at the bag, its roaster, origin, process, your notes, the light (green, amber, red) and when it was made.' },
+    { kind: 'check', head: 'Quick check', text: 'You type "dark" in the search box. What is found?', answers: ['Brews of dark-roast bags only, not medium-dark ones', 'Dark and medium-dark bags', 'Every bag with a roast filled in'], right: 0, ok: 'Right. The roast matches as a whole word: "dark" does not find medium-dark, and "light" does not find medium-light. Type "medium dark" for those. The word "roast" finds every bag with a roast filled in, and Swedish and German words work too (ljusrost, helle Röstung).', setup: () => todayS({ tab: 'shots', q: 'dark' }) },
+    { kind: 'try', head: 'Its light and its month', text: 'Type "green" in the search box.', target: 'search', setup: () => todayS({ tab: 'shots' }), wait: 'search-typed', robot: { type: 'type', value: 'green' }, ok: 'Green also means "lovely". You can add a month ("november"), a year, "today" or "yesterday". Every word has to turn up somewhere, so "kenya green october" finds exactly that. Capitals and accents never matter.' },
+  ]},
+  { title: 'Backup, kit and signs', icon: 'gear', steps: [
+    { kind: 'try', head: 'A backup file', text: 'In Settings tap "Save a backup file", then "Choose where".', target: 'settings-backup', setup: () => todayS({ tab: 'settings' }), wait: 'backup-proved', on: { 'backup-open': 'backup-choose' }, ok: 'Saved and proved: the file was opened again where it landed and counted. "Opened and counted: 4 bags · 46 brews · 3 things." Settings now says when you last saved one, in one quiet line. Photos stay with the app.' },
+    { kind: 'try', head: 'Looking after the kit', text: 'A grinder counts the coffee that went through it, so when it is due Today shows one quiet line. Tap its apricot "Done".', target: 'kit-done', setup: () => todayS({ kitDue: true }), wait: 'kit-done', ok: 'The line is gone and today is kept as the date it was done. Nothing is typed: the grinder adds up the grams of every brew, a machine counts its espresso shots. Burrs every 5 kg and a backflush every 50 shots to start with.' },
+    { kind: 'look', head: 'Signs in this app (1)', text: 'Marks and colours that mean something: the days-off-roast and running-out chips, the light, the pink "from the label".', target: 'sign-1', setup: () => todayS({ page: 'signs', sig: 1 }) },
+    { kind: 'look', head: 'Signs in this app (2)', text: 'And: the running clock, the tick and the warning on a cup, the apricot Done, the calm red Remove, the dial-in chart, the full-colour button.', target: 'sign-2', setup: () => todayS({ page: 'signs', sig: 2 }) },
+    { kind: 'check', head: 'Quick check', text: 'A cup on the shelf shows an orange warning instead of a green tick. What does it mean?', answers: ['It could not be proved: opened again and counted', 'It is the oldest cup', 'It is a keepsake'], right: 0, ok: 'Right. "Tested" means the cup was read back and its records counted, not just that the write returned no error.', setup: () => todayS({ page: 'cups', cups: CUPS() }) },
+  ]},
+];
+
+/* ---------- Tour engine (reusable) ---------- */
+let ci = 0, si = 0, solved = false, targetOff = false;
+const store = { get(k) { try { return localStorage.getItem(k) } catch { return null } }, set(k, v) { try { localStorage.setItem(k, v) } catch {} } };
+let doneChapters = new Set(JSON.parse(store.get('coffee-done') || '[]'));
+
+function emit(name, data) {
+  const st = LESSONS[ci]?.steps[si]; if (!st || solved || st.kind !== 'try') return;
+  if (st.on && st.on[name]) { markTarget(st.on[name]); }
+  if ((st.wait === name || st.alt === name) && (!st.when || st.when(data))) succeed(st.ok);
+}
+function succeed(msg) {
+  solved = true; targetOff = true; const fb = document.getElementById('fb'); if (fb) { fb.textContent = '\u2713 ' + msg; fb.className = 'feedback'; }
+  const nx = document.getElementById('next'); if (nx) { nx.disabled = false; nx.focus({ preventScroll: true }); }
+  markTarget();
+}
+let curTarget = null;
+function markTarget(t) {
+  if (t !== undefined) curTarget = t;
+  document.querySelectorAll('.target').forEach(e => e.classList.remove('target'));
+  if (!curTarget || targetOff) return;
+  const q = n => document.querySelector(`#stage [data-t="${CSS.escape(n)}"]`);
+  // If the thing to tap is out of sight (a stray tap closed a page), point at the way back to it.
+  const first = LESSONS[ci] && LESSONS[ci].steps[si] && LESSONS[ci].steps[si].target;
+  const el = q(curTarget) || (first && first !== curTarget ? q(first) : null)
+    || (S.sub ? q('sub-back') : S.sheet ? q('sheet-cancel') : S.page ? q('page-back') : null);
+  if (el) {
+    el.classList.add('target');
+    const sc = el.closest('.scr');
+    if (sc) { const r = el.getBoundingClientRect(), s = sc.getBoundingClientRect(), k = document.getElementById('stagebox').clientWidth / 390;
+      if (r.top < s.top + 40 * k || r.bottom > s.bottom - 110 * k) sc.scrollTop += (r.top - s.top - 120 * k) / k; }
+  }
+}
+function renderRail() {
+  const total = LESSONS.reduce((n, l) => n + l.steps.length, 0);
+  const before = LESSONS.slice(0, ci).reduce((n, l) => n + l.steps.length, 0) + si;
+  document.getElementById('rail').innerHTML = `<div class="brand"><span class="logo">${icon('cup')}</span><div><h1>Coffee Tour</h1><small>Written for Coffee 2.9</small></div></div>
+    ${LESSONS.map((l, i) => `<button class="chap ${i === ci ? 'cur' : ''} ${doneChapters.has(i) ? 'done' : ''}" data-ch="${i}">${icon(l.icon)}<span>${l.title}</span><span class="n">${doneChapters.has(i) ? '\u2713' : l.steps.length + ' steps'}</span></button>`).join('')}
+    <button class="chap ${ci === LESSONS.length ? 'cur' : ''}" data-ch="${LESSONS.length}">${icon('phone')}<span>Now on your iPhone</span></button>
+    <div class="bar"><i style="width:${Math.round(100 * Math.min(before, total) / total)}%"></i></div>
+    <p class="railnote">Written for AMS Coffee 2.9.</p>`;
+}
+document.getElementById('rail').addEventListener('click', e => { const b = e.target.closest('[data-ch]'); if (b) goChapter(+b.dataset.ch); });
+
+function goChapter(i) {
+  ci = i; si = 0; clearTimers(); S = START();
+  const L = LESSONS[i]; if (L && L.setup) L.setup();
+  renderStep();
+}
+function renderStep() {
+  renderRail();
+  const coach = document.getElementById('coach'), fin = document.getElementById('finish');
+  if (ci >= LESSONS.length) { renderFinish(); coach.hidden = true; return; }
+  coach.hidden = false; fin.hidden = true;
+  const L = LESSONS[ci], st = L.steps[si];
+  solved = st.kind === 'look'; targetOff = false;
+  clearTimers(); clearTimeout(toastH);
+  if (st.setup) st.setup();
+  S.toast = '';
+  const kindName = { look: 'Look', try: 'Try it', check: 'Check' }[st.kind];
+  coach.innerHTML = `<div class="eyebrow">${icon(L.icon)} ${esc(L.title)} <span class="kind">\u00B7 ${kindName} \u00B7 step ${si + 1} of ${L.steps.length}</span></div>
+    <div><h2>${esc(st.head)}</h2><p>${esc(st.text)}</p>${st.hint ? `<p style="color:var(--muted);font-size:13px">${esc(st.hint)}</p>` : ''}</div>
+    <div class="btns">${ci + si > 0 ? '<button class="btn ghost" id="back">Back</button>' : ''}<button class="btn main-b" id="next" ${solved ? '' : 'disabled'}>${si === L.steps.length - 1 ? 'Finish chapter' : 'Next'}</button></div>
+    ${st.kind === 'check' ? `<div class="answers">${st.answers.map((a, i) => `<button class="ans" data-a="${i}">${esc(a)}</button>`).join('')}</div>` : ''}
+    <p class="feedback" id="fb"></p>`;
+  curTarget = st.target || null;
+  renderStage();
+  if (st.kind === 'check') coach.querySelectorAll('.ans').forEach(b => b.onclick = () => {
+    const fb = document.getElementById('fb');
+    if (+b.dataset.a === st.right) { coach.querySelectorAll('.ans').forEach(x => x.disabled = true); b.classList.add('right'); succeed(st.ok); }
+    else { b.classList.add('wrong'); fb.textContent = 'Not quite. Try another answer.'; fb.className = 'feedback no'; }
+  });
+  document.getElementById('next').onclick = next;
+  const bk = document.getElementById('back'); if (bk) bk.onclick = back;
+}
+function next() {
+  const L = LESSONS[ci];
+  if (si < L.steps.length - 1) { si++; renderStep(); return; }
+  doneChapters.add(ci); store.set('coffee-done', JSON.stringify([...doneChapters]));
+  goChapter(ci + 1);
+}
+function back() { if (si > 0) { si--; renderStep(); } else if (ci > 0) { goChapter(ci - 1); } }
+
+function renderFinish() {
+  const fin = document.getElementById('finish'); fin.hidden = false;
+  clearTimers(); S = START(); curTarget = null; renderStage();
+  const items = ["Open Coffee. On Today tap the big \"Pull a shot\" button. Look for \"Same again: your best espresso on this bag\", then tap Start, then Stop, and watch the number change colour.", "Move the Sour ↔ Bitter slider, read \"Next time\", tap a light and tap \"Save it\". Look for the coach's line on Today.", "On Today tap \"Too bitter\" under \"What should I change?\", then \"It was lovely\".", "Open Beans. Look at the bold line under a bag's name (origin, process, roast) and its days-off-roast chip. Tap \"Add a bag\" and take a photo of a real bag: tap \"Use\" on a suggestion and look for \"from the label\".", "Open Brews and search for \"light\", then \"medium dark\", then \"green\".", "Open Settings → Your cups. Tap \"Save a cup\", name it and pour it. Look for the green tick. Tap \"Pour it back\" on one and read what would change, then cancel.", "In Settings tap \"Save a backup file\" and \"Choose where\". Look for \"Saved and proved\" and the line \"Last backup file\"."];
+  let ticks = JSON.parse(store.get('coffee-real') || '[]');
+  fin.innerHTML = `<h3>Now on your iPhone</h3>${items.map((t, i) => `<label><input type="checkbox" id="real-${i}" ${ticks.includes(i) ? 'checked' : ''}><span>${esc(t)}</span></label>`).join('')}
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn main-b" id="again">Start the tour again</button></div>`;
+  fin.querySelectorAll('input').forEach((c, i) => c.onchange = () => { ticks = ticks.filter(x => x !== i); if (c.checked) ticks.push(i); store.set('coffee-real', JSON.stringify(ticks)); });
+  document.getElementById('again').onclick = () => goChapter(0);
+}
+
+/* Fit the 390 x 760 pretend iPhone into its box */
+function fit() { const box = document.getElementById('stagebox'); document.getElementById('stage').style.transform = `scale(${box.clientWidth / 390})`; }
+new ResizeObserver(fit).observe(document.getElementById('stagebox'));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (S.menu) { S.menu = null; renderStage(); return; }
+    if (S.sub) { act('sub-back'); return; }
+    if (S.sheet) { act('sheet-cancel'); return; }
+  }
+  if (e.key === 'Enter' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') { const n = document.getElementById('next'); if (n && !n.disabled && document.activeElement !== n) n.click(); }
+});
+goChapter(0); fit();
+</script>
