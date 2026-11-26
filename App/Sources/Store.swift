@@ -22,7 +22,8 @@ final class CoffeeStore: ObservableObject {
 
     init(root: URL? = nil) {
         isTestRun = ProcessInfo.processInfo.arguments.contains("-uiTesting")
-        let home = root ?? CoffeeStore.defaultRoot(freshForTests: isTestRun)
+        // Picture mode (2.10) lives in a fresh temporary folder like a UI test: never the real shelf, never iCloud.
+        let home = root ?? CoffeeStore.defaultRoot(freshForTests: isTestRun || PictureMode.on)
         try? FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
         dataURL = home.appendingPathComponent("coffee.json")
         let photoFolder = home.appendingPathComponent("Photos")
@@ -30,6 +31,9 @@ final class CoffeeStore: ObservableObject {
                                photoFolder: photoFolder)
         photos = PhotoStore(folder: photoFolder)
         load()
+        if root == nil, PictureMode.on, let sample = PictureSample.data(now: Date()) {
+            data = sample
+        }
     }
 
     private static func defaultRoot(freshForTests: Bool) -> URL {

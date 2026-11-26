@@ -5,7 +5,7 @@ identifier, never by the words on it**, and every test is seen failing before
 it is believed. The suite runs in CI on every push, and a red run blocks the
 release.
 
-As of 2.9: **140 checks of the rules** (`Tests/`) and **22 of the screens**
+As of 2.10: **142 checks of the rules** (`Tests/`) and **22 of the screens**
 (`UITests/`).
 
 ## What the rule tests guard

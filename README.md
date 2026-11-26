@@ -4,22 +4,24 @@ A native app for iPhone **and** Mac (one SwiftUI target, XcodeGen project) that
 remembers what coffee you bought, what it tasted like, and exactly how you made
 the good ones.
 
-**Live version: 1.1** — see the Version history pill on the app's main screen.
+**Live version: 2.10** — see the Version history pill in Settings.
 
 ---
 
 ## What it does
 
+Four tabs: **Today · Beans · Brews · Settings**.
+
 | | |
 |---|---|
-| 🫘 **Bags** | Roaster, bean, origin, process, weight, price, roast date. Tap the flavours you taste, give it stars, stamp it *Buy again* or *Never again*. The grams-left bar counts itself down as you brew, and the card shows which methods you have used that bag for. |
+| 🫘 **Beans** | Roaster, bean, origin, process, weight, price, roast date. Tap the flavours you taste, give it stars, stamp it *Buy again* or *Never again*. The grams-left bar counts itself down as you brew, and the card shows which methods you have used that bag for. |
 | 🎛 **Brews** | Seven methods, each showing **only its own dials**: ☕️ espresso · 🌀 pour-over · 🪗 AeroPress · 🫙 French press · 🔥 Moka · 🧊 cold brew · 🫗 filter. Ratio computes itself from grams out (espresso) or water in (everything else). Taste goes in as two sliders plus 🔴 🟡 🟢. Filter the list by method with one tap. |
 | 🧑‍🏫 **The coach** | **One** change per brew, in that method's own language: *grind finer* on a pour-over, *steep it shorter* on a French press. It knows each method's usual ratio and time window. Green means keep it exactly here, and that brew becomes the bag's recipe for that method. |
-| 🛒 **Money** | Machines, grinders, accessories, subscriptions: price, shop, date, warranty — with a warning when a warranty has under two months left. Spend this year split into beans and gear, and cost per cup both with and without the gear. **Bags are counted automatically from the bags, so nothing is entered twice.** |
-| 🏺 **Cups** | The safety system. See below. |
-| 🚰 **The Sink** | Rinsed bags, brews and purchases wait 30 days instead of vanishing. |
-| 📜 **Version history** | Folded onto the main screen, unfolds in place. Never tidied up. |
-| 📖 **How this works** | Eleven short chapters, in the app, kept current with every release. |
+| 🧰 **Your kit** (in Settings) | Machines, grinders, scales and the rest: shop, date, warranty — with a warning when a warranty has under two months left, and a count of when burrs or backflush are due. **No money totals anywhere**; the Money tab was removed in 2.0. |
+| 🏺 **Cups** (in Settings) | The safety system. See below. |
+| 🚰 **The Sink** (in Settings) | Rinsed bags, brews and kit wait 30 days instead of vanishing. |
+| 📜 **Version history** | A pill in Settings that unfolds in place. Never tidied up. |
+| 📖 **How this works** | Fourteen short chapters in Settings, kept current with every release — including *Signs in this app*, every mark and colour with its meaning. |
 
 Adding a method is a `BrewMethod` case plus its `fields` and `starter()` — the
 editor, the cards, the coach and the per-bag recipes all follow from that.
@@ -37,7 +39,7 @@ Every save is poured into a cup. Cups sit on a shelf you can look at.
 Three rules, each one a lesson from a real data loss in another app:
 
 1. **Each cup proves itself.** `CupCupboard.test(_:)` reads the file back,
-   decodes it and counts the records — bags, brews *and* purchases. Only a
+   decodes it and counts the records — bags, brews *and* kit. Only a
    match earns the green ✓. "The write returned no error" is not proof.
 2. **A cup never shrinks silently.** `CupPolicy.mayPour` refuses a cup holding
    less than the newest cup on the shelf, and raises a warning the main screen
@@ -54,7 +56,7 @@ runs after the new cup has passed its test.
 
 Every record decodes with `decodeIfPresent` and a default. A missing key is
 filled in; a key from a newer version is ignored. So a file or a cup written by
-1.0 opens in 1.1, and one written today will open in a version that has not been
+1.0 still opens in 2.10, and one written today will open in a version that has not been
 written yet. `OldFileTests` pins this down with a verbatim 1.0 file and a
 verbatim 1.0 cup — **new features can never lock you out of your own history.**
 
@@ -96,6 +98,17 @@ every candidate, and `python3 tools/make-icons.py C` installs one of them.
 
 ---
 
+## Picture mode
+
+Start the app with the launch word `-pictures` and it fills with made-up sample
+coffee (4 bags, 10 brews over a week, 2 kit purchases) kept in a temporary
+folder — it never reads or changes your real coffee and never touches iCloud.
+`-startTab today|bags|shots|settings` opens on that tab. It is for making
+pictures for the AMS Apps Overview and the course. Details:
+`docs/spec/README.md`.
+
+---
+
 ## Tests
 
 Unit tests cover the places where a silent bug costs data or trust: cup policy,
@@ -114,6 +127,7 @@ The suite grows by one or two per release, never in a heap:
 |---|---|
 | 1.0 | `testLoggingAShotPutsItInTheList`, `testSavingACupProvesItself` |
 | 1.1 | `testEachMethodShowsOnlyItsOwnDials`, `testAddingAPurchaseReachesTheTotals` |
+| 2.x | one small rule test per new rule and one screen test per new screen — see `docs/spec/testing.md` |
 
 **A red run means the build is not fit to install.**
 

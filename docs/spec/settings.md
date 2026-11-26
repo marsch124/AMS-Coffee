@@ -11,19 +11,33 @@ the morning screen stays a morning screen.
 | The Sink | — | rinsed things, restorable for 30 days |
 | A backup file (2.6) | `settings-backup`, `settings-open-backup` | named, placed anywhere, proved by reading it back — see [cups.md](cups.md#the-backup-file-26-backupfileswift-backupbuttons-in-cupsviewswift) |
 | Last backup file (2.7) | `settings-last-backup` | one quiet line under the backup buttons: *Last backup file: 3 days ago*, or *No backup file saved yet*. Only a **proved** save counts. Never a warning or a reminder |
-| How it works | `settings-guide-toggle` → `settings-guide-list` | the guide below |
-| What's new | `settings-version-toggle` → `settings-version-list` | every version, newest first |
+| How this works | `settings-guide-toggle` → `settings-guide-list` | the guide below |
+| Version history | `settings-version-toggle` → `settings-version-list` | every version, newest first |
 
-The version number is shown in the app.
+The version number is shown in the app (the Version history pill reads *v2.10 · headline*). The two pills are named in the app *How this works* (subtitle: *14 short chapters*) and *Version history*; some older notes call them "How it works" and "What's new".
 
-## How it works
+## How this works (the guide)
 
 `Guide.chapters` in `Guide.swift` — one source for the whole guide, so it
-cannot drift from the app. Chapters: The idea · Bags of beans · Making coffee ·
+cannot drift from the app. Chapters (14, as of 2.10): The idea · Bags of beans · Making coffee ·
 Finding a brew · The coach · Your kit · Photos · The Cup System · Why old cups still open · The
-Sink · Phone and Mac · Settings · Coming next.
+Sink · Phone and Mac · Settings · **Signs in this app (2.10)** · Coming next.
 
-## What's new
+**Signs in this app** lists every mark and colour that carries a meaning, one
+line each — **31 lines** in 2.10: the four tab colours (Today pink, Beans green,
+Brews blue, Settings purple); the brew light (green lovely, yellow drinkable,
+pink tipped out); a bag's verdict (filled star, thumb down, question mark),
+its rating stars and grams-left bar; the four freshness words (resting, at its
+best, fading, past it) and the running-out chip; on Today *In the hopper*, the
+four numbers, the orange kit *Done* line, the coach card and the *What should I
+change?* chips; the timer's four colours; the dial-in line colours (grind,
+dose, time, taste); cups (green tick, warning mark, purple keepsake); kit (*due*
+/ *fine*, warranty shield); *from the label*; and the red remove word. It is
+written from the code (`Candy`, `LightMark`, `VerdictMark`, `TabMark`,
+`Candy.forFreshness`, `Candy.forRunningOut`, `Candy.forStanding`). **A new mark
+or colour in a release adds a line here in the same release.**
+
+## Version history
 
 `Guide.releases`, newest first. `Guide.appVersion` must equal
 `Guide.current.version`, and a test asserts it.

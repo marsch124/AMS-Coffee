@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1335D96465AE31EF02212211 /* Release210Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8340FAE526F1D38A5933FE73 /* Release210Tests.swift */; };
 		27984FB22456C349363FE92F /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DF529735D372B3978F641B8 /* Photos.swift */; };
 		2B7CD38D807C62BA328C2E97 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B27ED9A2278BA03DED4E540 /* Theme.swift */; };
 		2C981C0ACF528FE3CC0EF3AD /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75C3CF6DBFA097EA7D5F2E2 /* HomeView.swift */; };
@@ -28,6 +29,7 @@
 		95647B6D4DCEBFE2F980F215 /* KitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C59ED7DE7FCC4FA373F5740 /* KitView.swift */; };
 		9E581B4240FDE910BF75353E /* KitCare.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22C6BC281BB0CB650726A0 /* KitCare.swift */; };
 		9EF0F741BDFEBA7611CBAD85 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 629C542C490591DFBD98F844 /* Assets.xcassets */; };
+		A6DFAF922A1D071EED47C78B /* PictureSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1181C3781E20BD42C3FC31 /* PictureSample.swift */; };
 		AA7FE17C1B45EF02E3EE6142 /* LabelReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E40C54A6F8CDF2C88CEDE1E4 /* LabelReader.swift */; };
 		B12AA23BE5E67176AEE342BC /* TabMarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6523A657F5C4E496E534721A /* TabMarks.swift */; };
 		B49C71A829777FE672352853 /* Cups.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5EBFF79F626018D21A200F /* Cups.swift */; };
@@ -71,12 +73,14 @@
 		47853112347A44A344E62137 /* DialIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialIn.swift; sourceTree = "<group>"; };
 		51F8DE063A7C0199814F093C /* BrewMethodTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewMethodTests.swift; sourceTree = "<group>"; };
 		55C76F9EAD397D9C678BA6C9 /* BrewTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewTimer.swift; sourceTree = "<group>"; };
+		5B1181C3781E20BD42C3FC31 /* PictureSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictureSample.swift; sourceTree = "<group>"; };
 		5FA92EC1B0090B618DF8E482 /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		629C542C490591DFBD98F844 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		63ABD49DBA7551B7406DFE01 /* Release29Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Release29Tests.swift; sourceTree = "<group>"; };
 		6523A657F5C4E496E534721A /* TabMarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabMarks.swift; sourceTree = "<group>"; };
 		6B27ED9A2278BA03DED4E540 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		6C59ED7DE7FCC4FA373F5740 /* KitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KitView.swift; sourceTree = "<group>"; };
+		8340FAE526F1D38A5933FE73 /* Release210Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Release210Tests.swift; sourceTree = "<group>"; };
 		85E512105F5F3A506D2E173D /* AMSCoffeeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMSCoffeeApp.swift; sourceTree = "<group>"; };
 		8644D316E33D62F1805912FA /* BagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BagsView.swift; sourceTree = "<group>"; };
 		8B56068E47EE0AF11B403350 /* AMSCoffeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMSCoffeeTests.swift; sourceTree = "<group>"; };
@@ -120,6 +124,7 @@
 				E2DC6E9C67FCC152C2637250 /* Release27Tests.swift */,
 				148A2B171A2BDFA2B889F918 /* Release28Tests.swift */,
 				63ABD49DBA7551B7406DFE01 /* Release29Tests.swift */,
+				8340FAE526F1D38A5933FE73 /* Release210Tests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -144,6 +149,7 @@
 				43EF7078D1C8FA588F071747 /* Model.swift */,
 				0664923D4B913CD78E93F7EC /* PhotoPicker.swift */,
 				3DF529735D372B3978F641B8 /* Photos.swift */,
+				5B1181C3781E20BD42C3FC31 /* PictureSample.swift */,
 				8E4A36F53F1AD3D3696DEFE2 /* Pieces.swift */,
 				90AB3ED19FA9562D6E6CE59E /* SettingsView.swift */,
 				DEEDF7482741C9F8FBE31EBD /* Shelf.swift */,
@@ -314,6 +320,7 @@
 				35E34C6C279432298376117F /* BrewMethodTests.swift in Sources */,
 				33F867C8E27439431F2B2363 /* DialInTests.swift in Sources */,
 				5C54C3FAB0D9DA0786B97600 /* PhotoTests.swift in Sources */,
+				1335D96465AE31EF02212211 /* Release210Tests.swift in Sources */,
 				C6A1669F9AB0F9A7606F7F79 /* Release26Tests.swift in Sources */,
 				3EF763271444C6BBA670465D /* Release27Tests.swift in Sources */,
 				CACFBC00DD93B69EA0762607 /* Release28Tests.swift in Sources */,
@@ -350,6 +357,7 @@
 				92D6074E7E782FABA5879260 /* Model.swift in Sources */,
 				D5943B15ED4DFF5D723A28DD /* PhotoPicker.swift in Sources */,
 				27984FB22456C349363FE92F /* Photos.swift in Sources */,
+				A6DFAF922A1D071EED47C78B /* PictureSample.swift in Sources */,
 				38DD48F6F61B87DC44DA68B6 /* Pieces.swift in Sources */,
 				393A199AA8E9B2EC11BBFAAF /* SettingsView.swift in Sources */,
 				F673E2013A30FF84C5D43479 /* Shelf.swift in Sources */,
@@ -432,7 +440,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 2.9;
+				MARKETING_VERSION = 2.10;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -605,7 +613,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 2.9;
+				MARKETING_VERSION = 2.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

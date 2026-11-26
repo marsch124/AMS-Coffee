@@ -12,10 +12,20 @@ struct Release: Identifiable {
 
 enum Guide {
 
-    static let appVersion = "2.9"
+    static let appVersion = "2.10"
 
     /// Newest first. Every release adds an entry — never edits an old one.
     static let releases: [Release] = [
+        Release(version: "2.10", date: "2026-11-26",
+                headline: "Picture mode, and a guide to every sign",
+                lines: [
+                    "NEW — picture mode. Starting the app with the launch word -pictures fills it with made-up sample coffee: 4 bags from invented roasters (Hilltop Roastery, North Pier Coffee, Lantern Roasters, Fjord & Fern), 10 brews over the last week with their dial-in numbers (espresso, V60, AeroPress, French press and moka), and 2 kit purchases. Before, there was no way to show the app full of coffee without using your own.",
+                    "The sample lives in a temporary place, so it never reads or changes your real coffee and never touches iCloud. When the app is closed and opened normally, your own coffee is there exactly as you left it.",
+                    "NEW — the launch word -startTab opens the app on a chosen tab: today, bags, shots or settings (Today, Beans, Brews, Settings). Without it the app opens on Today as always.",
+                    "Picture mode is only for making pictures for the AMS Apps Overview and the course. You do not need it day to day, and nothing in the normal app has changed.",
+                    "NEW — a part in this guide called \"Signs in this app\": 31 lines, each one a mark or colour that means something, with its meaning in a few plain words. Before, the guide had no list of the signs — the colours of the tabs, the green, amber and red of a brew, the stars and the freshness words were explained only here and there.",
+                    "CHANGED — the Settings part of this guide now mentions the version history under its real name, and the guide has 14 short chapters instead of 13.",
+                ]),
         Release(version: "2.9", date: "2026-11-03",
                 headline: "The roast on the bag card, and search by roast",
                 lines: [
@@ -439,6 +449,72 @@ enum Guide {
                 The version history is the whole story of the app, newest at the \
                 top, one line per thing that changed. It is never tidied up or \
                 shortened.
+                """),
+        Chapter(title: "Signs in this app",
+                body: """
+                Every mark and colour that means something, one line each.
+
+                Pink tab — Today, the morning screen.
+
+                Green tab — Beans, your bags.
+
+                Blue tab — Brews, every coffee you made.
+
+                Purple tab — Settings. Each tab's colour is also on the top of its screen.
+
+                Green dot on a brew — lovely. Keep it exactly here: that brew becomes the bag's recipe for that method.
+
+                Yellow dot on a brew — drinkable, but change one thing.
+
+                Pink dot on a brew — you tipped it out.
+
+                Filled star at the right of a bag — Buy again.
+
+                Thumb pointing down on a bag — Never again.
+
+                Question mark on a bag — you have not decided yet.
+
+                Small row of stars on a bag — the rating you gave it.
+
+                Bar across a bag — the grams left, counting down as you brew.
+
+                Blue \"resting\" on a bag — the beans are still settling after the roast.
+
+                Green \"at its best\" — the good weeks, about 4 to 21 days after the roast.
+
+                Yellow \"fading\" — the beans are slipping.
+
+                Orange \"past it\" — the beans are old.
+
+                Yellow, orange or red \"running out\" chip — a few brews left, only one left, none left.
+
+                \"In the hopper\" on Today — the bag you are drinking now.
+
+                Four big numbers on Today — brews today, all brews, bags, and lovely (the green ones).
+
+                Orange line with Done on Today — a grinder or machine wants looking after; Done starts its count again.
+
+                Blue card on Today — what the coach says to change next.
+
+                Purple chips \"What should I change?\" — your answer to the coach; the chosen one fills in purple.
+
+                Running clock — plain while it settles, yellow when nearly in the window, green when there, red when past it.
+
+                Blue, purple, light blue and pink dial-in lines — grind, dose, time and taste; each dot is one brew in its own light colour.
+
+                Green tick on a cup — it was opened again and proved itself.
+
+                Warning mark and orange words on a cup — not proved yet.
+
+                Purple cup — a keepsake, kept for ever.
+
+                Orange \"due\" and blue \"fine\" on kit — burrs or backflush are due, or fine.
+
+                Green shield with a date on kit — the warranty is still running.
+
+                Pink \"from the label\" — the box was filled from a photo and you have not changed it.
+
+                Red word — it removes something, and it is always last on the screen.
                 """),
         Chapter(title: "Coming next",
                 body: """

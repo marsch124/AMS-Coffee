@@ -28,6 +28,13 @@ enum Tab: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// The tab the app opens on: Today, or the one after the launch word `-startTab` (picture mode, 2.10).
+    static func start(from arguments: [String]) -> Tab {
+        guard let at = arguments.firstIndex(of: "-startTab"), at + 1 < arguments.count,
+              let tab = Tab(rawValue: arguments[at + 1]) else { return .today }
+        return tab
+    }
+
     var title: String {
         switch self {
         case .today:    return "Today"
@@ -49,7 +56,7 @@ enum Tab: String, CaseIterable, Identifiable {
 
 struct RootView: View {
     @EnvironmentObject private var store: CoffeeStore
-    @State private var tab: Tab = .today
+    @State private var tab: Tab = Tab.start(from: ProcessInfo.processInfo.arguments)
 
     var body: some View {
         ZStack {
